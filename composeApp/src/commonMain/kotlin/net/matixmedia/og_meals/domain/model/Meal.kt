@@ -14,10 +14,10 @@ data class Meal(
     val sustainabilityCo2: Int?,
     val canteenId: Long,
     val nutritionalInfo: NutritionalInfo?,
-    val allergens: List<Allergen>,
-    val additives: List<Additive>,
-    val features: List<Feature>,
-    val category: Category?,
+    val allergens: List<MealAllergen>,
+    val additives: List<MealAdditive>,
+    val features: List<MealFeature>,
+    val category: MealCategory?,
     val mealImages: List<MealImage>
 )
 
@@ -32,26 +32,27 @@ data class NutritionalInfo(
     val salt: Double
 )
 
-data class Allergen(
+data class MealAllergen(
     val id: Long,
     val name: String?,
     val shortName: String?
 )
 
-data class Additive(
+data class MealAdditive(
     val id: Long,
     val name: String?,
     val shortName: String?
 )
 
-data class Feature(
+data class MealFeature(
     val id: Long,
     val name: String?,
     val shortName: String?,
-    val showInOverview: Boolean?
+    val showInOverview: Boolean?,
+    val showInFilter: Boolean?
 )
 
-data class Category(
+data class MealCategory(
     val id: Long,
     val name: String?
 )

@@ -7,7 +7,8 @@ import io.ktor.client.request.parameter
 import kotlinx.datetime.LocalDate
 import net.matixmedia.og_meals.data.remote.dto.MealsApiResponseDto
 
-private const val BASE_URL = "https://3b-meals.mh-homet.net"
+private const val BASE_URL = "https://3b-meals.mh-home.net"
+//private const val BASE_URL = "http://localhost:3000"
 
 class MealsApiImpl(
     private val httpClient: HttpClient
@@ -19,5 +20,9 @@ class MealsApiImpl(
             parameter("start", start.toString())
             parameter("end", end.toString())
         }.body<MealsApiResponseDto>() // Ktor deserialisiert das gesamte Objekt
+    }
+
+    override fun buildImageUrl(path: String): String {
+        return "$BASE_URL$path"
     }
 }

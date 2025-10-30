@@ -1,0 +1,40 @@
+jobs:
+  prepare_environment:
+    name: Prepare Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+      - name: Build Android APK
+        run: gradle :composeApp:assembleDebug
+
+  build_debug_android:
+      name: Bild Android Debug APK
+      runs-on: ubuntu-latest
+      needs: [prepare_environment]
+      steps:
+        - name: Build Android Debug APK
+          run: gradle :composeApp:assembleDebug
+        - name: Upload Debug APK
+          uses: actions/upload-artifact@v3
+          with:
+            name: debug-apk
+            path: composeApp/build/outputs/apk/debug/composeApp-debug.apk
+
+  build_release_android:
+      name: Build Android Release APK
+      runs-on: ubuntu-latest
+      needs: [prepare_environment]
+      steps:
+        - name: Build Android Release APK
+          run: gradle :composeApp:assembleRelease
+        - name: Upload Release APK
+          uses: actions/upload-artifact@v3
+          with:
+            name: release-apk
+            path: composeApp/build/outputs/apk/release/composeApp-release.apk
+
+
+on: push

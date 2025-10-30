@@ -1,10 +1,10 @@
 package net.matixmedia.og_meals.data.remote.dto
 
 import kotlinx.serialization.Serializable
-import net.matixmedia.og_meals.domain.model.Additive
-import net.matixmedia.og_meals.domain.model.Allergen
-import net.matixmedia.og_meals.domain.model.Category
-import net.matixmedia.og_meals.domain.model.Feature
+import net.matixmedia.og_meals.domain.model.MealAdditive
+import net.matixmedia.og_meals.domain.model.MealAllergen
+import net.matixmedia.og_meals.domain.model.MealCategory
+import net.matixmedia.og_meals.domain.model.MealFeature
 import net.matixmedia.og_meals.domain.model.MealImage
 import net.matixmedia.og_meals.domain.model.Meal
 import net.matixmedia.og_meals.domain.model.NutritionalInfo
@@ -35,7 +35,7 @@ fun MealDto.toDomain() = Meal(
     price = price,
     studentPrice = studentPrice,
     guestPrice = guestPrice,
-    date = kotlinx.datetime.LocalDate.parse(date),
+    date = kotlinx.datetime.LocalDate.parse(date.split("T")[0]),
     sustainabilityCo2 = sustainabilityCo2,
     canteenId = canteenId,
     nutritionalInfo = nutritionalInfo?.toDomain(),
@@ -76,7 +76,7 @@ data class AllergenDto(
     val shortName: String
 )
 
-fun AllergenDto.toDomain() = Allergen(
+fun AllergenDto.toDomain() = MealAllergen(
     id = id,
     name = name,
     shortName = shortName
@@ -89,7 +89,7 @@ data class AdditiveDto(
     val shortName: String? // Kann null sein
 )
 
-fun AdditiveDto.toDomain() = Additive(
+fun AdditiveDto.toDomain() = MealAdditive(
     id = id,
     name = name,
     shortName = shortName
@@ -98,16 +98,18 @@ fun AdditiveDto.toDomain() = Additive(
 @Serializable
 data class FeatureDto(
     val id: Long,
-    val name: String,
-    val shortName: String,
-    val showInOverview: Boolean
+    val name: String?,
+    val shortName: String?,
+    val showInOverview: Boolean?,
+    val showInFilter: Boolean?
 )
 
-fun FeatureDto.toDomain() = Feature(
+fun FeatureDto.toDomain() = MealFeature(
     id = id,
     name = name,
     shortName = shortName,
-    showInOverview = showInOverview
+    showInOverview = showInOverview,
+    showInFilter = showInFilter
 )
 
 @Serializable
@@ -116,7 +118,7 @@ data class CategoryDto(
     val name: String? // Kann null sein
 )
 
-fun CategoryDto.toDomain() = Category(
+fun CategoryDto.toDomain() = MealCategory(
     id = id,
     name = name
 )

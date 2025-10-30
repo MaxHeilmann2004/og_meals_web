@@ -13,6 +13,7 @@ expect fun createHttpClientEngine(): HttpClientEngineFactory<*>
 // 2. Erstelle den gemeinsamen Client
 fun createKtorClient(): HttpClient {
     return HttpClient(createHttpClientEngine()) { // Nutzt die plattformspezifische Engine
+        expectSuccess = true
 
         // JSON-Serialisierung mit kotlinx.serialization
         install(ContentNegotiation) {

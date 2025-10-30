@@ -51,15 +51,17 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            implementation("org.jetbrains.compose.material3:material3:1.9.0-alpha04")
-
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
+            implementation(libs.koin.compose)
             implementation(libs.bundles.ktor)
             implementation(libs.decompose.core)
             implementation(libs.decompose.compose)
             implementation(libs.kotlinx.datetime)
             implementation(libs.essenty.coroutines)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network)
+            implementation(libs.shimmer.compose)
         }
         nativeMain.dependencies {
             implementation(libs.ktor.client.darwin)

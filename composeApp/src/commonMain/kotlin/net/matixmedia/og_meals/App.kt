@@ -14,6 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import net.matixmedia.og_meals.presentation.root.RootComponent
+import net.matixmedia.og_meals.presentation.root.RootUi
+import net.matixmedia.og_meals.ui.theme.AppTheme
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -21,32 +24,8 @@ import og_meals.composeapp.generated.resources.Res
 import og_meals.composeapp.generated.resources.compose_multiplatform
 @Composable
 @Preview
-fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-
-
-
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
-            }
-        }
+fun App(root: RootComponent) {
+    AppTheme {
+        RootUi(component = root)
     }
 }
