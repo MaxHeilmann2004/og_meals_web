@@ -13,6 +13,8 @@ jobs:
       runs-on: ubuntu-latest
       needs: [prepare_environment]
       steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
         - name: Build Android Debug APK
           run: gradle :composeApp:assembleDebug
         - name: Upload Debug APK
@@ -27,6 +29,8 @@ jobs:
       runs-on: ubuntu-latest
       needs: [prepare_environment]
       steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
         - name: Build Android Release APK
           run: gradle :composeApp:assembleRelease
         - name: Upload Release APK
