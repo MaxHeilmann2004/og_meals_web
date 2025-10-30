@@ -16,10 +16,11 @@ jobs:
         - name: Build Android Debug APK
           run: gradle :composeApp:assembleDebug
         - name: Upload Debug APK
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v5
           with:
             name: debug-apk
             path: composeApp/build/outputs/apk/debug/composeApp-debug.apk
+            if-no-files-found: error
 
   build_release_android:
       name: Build Android Release APK
@@ -29,10 +30,11 @@ jobs:
         - name: Build Android Release APK
           run: gradle :composeApp:assembleRelease
         - name: Upload Release APK
-          uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v5
           with:
             name: release-apk
             path: composeApp/build/outputs/apk/release/composeApp-release.apk
+            if-no-files-found: error
 
 
 on: push
