@@ -36,8 +36,8 @@ jobs:
         - name: Upload Release APK
           uses: actions/upload-artifact@v5
           with:
-            name: release-apk
-            path: composeApp/build/outputs/apk/release/composeApp-release.apk
+            name: release-apk-unsigned
+            path: composeApp/build/outputs/apk/release/composeApp-release-unsigned.apk
             if-no-files-found: error
 
 
