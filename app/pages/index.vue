@@ -75,6 +75,7 @@ interface MealFeature {
   name?: string | null
   shortName?: string | null
   showInFilter?: boolean | null
+  showInOverview?: boolean | null
 }
 
 interface Meal {

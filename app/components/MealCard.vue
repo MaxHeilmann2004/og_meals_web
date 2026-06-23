@@ -41,7 +41,7 @@
       </div>
     </div>
 
-    <!-- Canteen and Features Row -->
+    <!-- Footer: canteen name + feature icons -->
     <div class="meal-footer-row">
       <span class="canteen-name">{{ canteen.name }}</span>
       <div class="feature-icons">
@@ -49,7 +49,6 @@
           v-for="feature in visibleFeatures"
           :key="feature.id"
           :feature="feature"
-          class="feature-icon"
         />
       </div>
     </div>
@@ -70,6 +69,7 @@ interface MealFeature {
   name?: string | null
   shortName?: string | null
   showInFilter?: boolean | null
+  showInOverview?: boolean | null
 }
 
 interface Meal {
@@ -114,10 +114,10 @@ const cleanedTitle = computed(() => {
     .join(', ')
 })
 
-// Filter features that should be displayed
+// Show features that appear on the card overview (matches Compose app behaviour)
 const visibleFeatures = computed(() => {
   if (!props.meal.features) return []
-  return props.meal.features.filter(f => f.showInFilter === true)
+  return props.meal.features.filter(f => f.showInOverview === true)
 })
 
 // Format prices into Euro currency string
@@ -237,7 +237,7 @@ const formatPrice = (price: number | null | undefined) => {
   justify-content: space-between;
   align-items: center;
   margin-top: 6px;
-  gap: 16px;
+  gap: 12px;
 }
 
 .canteen-name {
@@ -245,15 +245,13 @@ const formatPrice = (price: number | null | undefined) => {
   color: var(--color-on-secondary-container);
   font-weight: 500;
   flex: 1;
+  min-width: 0;
 }
 
 .feature-icons {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.feature-icon {
+  gap: 6px;
   flex-shrink: 0;
 }
 </style>
