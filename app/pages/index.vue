@@ -9,6 +9,7 @@
           class="day-chip"
           :class="{ 'is-selected': index === selectedDayIndex }"
           :plain="index !== selectedDayIndex"
+          :round="false"
           @click="selectedDayIndex = index"
         >
           {{ dayName }}
