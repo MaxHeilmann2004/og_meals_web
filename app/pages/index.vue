@@ -3,15 +3,16 @@
     <!-- Day Chips Navigation -->
     <div class="day-chips-scroll">
       <div class="day-chips-row">
-        <button
+        <var-chip
           v-for="(dayName, index) in dayNames"
           :key="index"
           class="day-chip"
           :class="{ 'is-selected': index === selectedDayIndex }"
+          :plain="index !== selectedDayIndex"
           @click="selectedDayIndex = index"
         >
           {{ dayName }}
-        </button>
+        </var-chip>
       </div>
     </div>
 
@@ -244,22 +245,11 @@ onMounted(() => {
 
 
 .day-chip {
-  background-color: var(--color-surface-container-high);
-  color: var(--color-on-surface);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: 8px;
-  padding: 6px 16px;
-  font-size: 0.875rem;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
 }
 
 .day-chip.is-selected {
-  background-color: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-  border-color: var(--color-primary);
   font-weight: 700;
 }
 
