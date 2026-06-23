@@ -147,16 +147,15 @@ const formatPrice = (price: number | null | undefined) => {
 }
 
 .single-image-wrapper {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   border-radius: 28px;
   overflow: hidden;
 }
 
 .empty-image-placeholder {
-  width: 100%;
-  height: 100%;
-  position: relative;
+  position: absolute;
+  inset: 0;
   background-color: var(--color-surface-container-highest);
   border-radius: 28px;
   overflow: hidden;
