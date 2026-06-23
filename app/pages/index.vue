@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 
 interface MealImageDto {
   url: string
@@ -202,8 +202,26 @@ const totalMealsForSelectedDay = computed(() => {
   return filteredCanteens.value.reduce((acc, c) => acc + (c.mealsForSelectedDay?.length || 0), 0)
 })
 
+const scrollSelectedChipIntoView = (smooth = true) => {
+  nextTick(() => {
+    const selectedEl = document.querySelector('.day-chip.is-selected')
+    if (selectedEl) {
+      selectedEl.scrollIntoView({
+        behavior: smooth ? 'smooth' : 'auto',
+        block: 'nearest',
+        inline: 'center'
+      })
+    }
+  })
+}
+
+watch(selectedDayIndex, () => {
+  scrollSelectedChipIntoView(true)
+})
+
 onMounted(() => {
   fetchMeals()
+  scrollSelectedChipIntoView(false)
 })
 </script>
 
