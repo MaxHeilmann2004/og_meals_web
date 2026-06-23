@@ -1,0 +1,166 @@
+/* Global Reset & Mobile Tap Highlight Removal */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Varlet UI Theme Customization */
+
+/* Light Theme Variables */
+:root, [var-theme="light"] {
+  --hsl-primary: 352, 100%, 38% !important;
+  --color-primary: hsla(var(--hsl-primary), 1) !important;
+  --hsl-on-primary: 0, 0%, 100% !important;
+  --color-on-primary: hsla(var(--hsl-on-primary), 1) !important;
+  --hsl-primary-container: 6, 100%, 92% !important;
+  --color-primary-container: hsla(var(--hsl-primary-container), 1) !important;
+  --hsl-on-primary-container: 357, 100%, 13% !important;
+  --color-on-primary-container: hsla(var(--hsl-on-primary-container), 1) !important;
+  --hsl-info: 5, 18%, 40% !important;
+  --color-info: hsla(var(--hsl-info), 1) !important;
+  --hsl-on-info: 0, 0%, 100% !important;
+  --color-on-info: hsla(var(--hsl-on-info), 1) !important;
+  --hsl-info-container: 6, 100%, 92% !important;
+  --color-info-container: hsla(var(--hsl-info-container), 1) !important;
+  --hsl-on-info-container: 5, 40%, 12% !important;
+  --color-on-info-container: hsla(var(--hsl-on-info-container), 1) !important;
+  --hsl-warning: 40, 43%, 31% !important;
+  --color-warning: hsla(var(--hsl-warning), 1) !important;
+  --hsl-on-warning: 0, 0%, 100% !important;
+  --color-on-warning: hsla(var(--hsl-on-warning), 1) !important;
+  --hsl-warning-container: 38, 98%, 82% !important;
+  --color-warning-container: hsla(var(--hsl-warning-container), 1) !important;
+  --hsl-on-warning-container: 39, 100%, 7% !important;
+  --color-on-warning-container: hsla(var(--hsl-on-warning-container), 1) !important;
+  --hsl-danger: 0, 75%, 42% !important;
+  --color-danger: hsla(var(--hsl-danger), 1) !important;
+  --hsl-on-danger: 0, 0%, 100% !important;
+  --color-on-danger: hsla(var(--hsl-on-danger), 1) !important;
+  --hsl-danger-container: 6, 100%, 92% !important;
+  --color-danger-container: hsla(var(--hsl-danger-container), 1) !important;
+  --hsl-on-danger-container: 358, 100%, 13% !important;
+  --color-on-danger-container: hsla(var(--hsl-on-danger-container), 1) !important;
+  --hsl-body: 300, 100%, 99% !important;
+  --color-body: hsla(var(--hsl-body), 1) !important;
+  --hsl-text: 9, 12%, 11% !important;
+  --color-text: hsla(var(--hsl-text), 1) !important;
+  --hsl-on-surface-variant: 4, 11%, 29% !important;
+  --color-on-surface-variant: hsla(var(--hsl-on-surface-variant), 1) !important;
+  --hsl-outline: 6, 8%, 48% !important;
+  --color-outline: hsla(var(--hsl-outline), 1) !important;
+  --hsl-inverse-surface: 8, 8%, 20% !important;
+  --color-inverse-surface: hsla(var(--hsl-inverse-surface), 1) !important;
+
+  /* Derived Surface Container Colors for Light Mode */
+  --color-surface: var(--color-body) !important;
+  --color-on-surface: var(--color-text) !important;
+  --color-surface-container: hsla(300, 10%, 96%, 1) !important;
+  --color-surface-container-low: hsla(300, 10%, 98%, 1) !important;
+  --color-surface-container-high: hsla(300, 10%, 93%, 1) !important;
+  --color-surface-container-highest: hsla(300, 10%, 90%, 1) !important;
+  --color-outline-variant: hsla(6, 8%, 85%, 1) !important;
+  --color-text-muted: var(--color-on-surface-variant) !important;
+}
+
+/* Dark Theme Variables */
+[var-theme="dark"] {
+  --hsl-primary: 4, 100%, 84% !important;
+  --color-primary: hsla(var(--hsl-primary), 1) !important;
+  --hsl-on-primary: 355, 100%, 20% !important;
+  --color-on-primary: hsla(var(--hsl-on-primary), 1) !important;
+  --hsl-primary-container: 353, 100%, 29% !important;
+  --color-primary-container: hsla(var(--hsl-primary-container), 1) !important;
+  --hsl-on-primary-container: 6, 100%, 92% !important;
+  --color-on-primary-container: hsla(var(--hsl-on-primary-container), 1) !important;
+  --hsl-info: 5, 49%, 82% !important;
+  --color-info: hsla(var(--hsl-info), 1) !important;
+  --hsl-on-info: 4, 27%, 21% !important;
+  --color-on-info: hsla(var(--hsl-on-info), 1) !important;
+  --hsl-info-container: 5, 22%, 30% !important;
+  --color-info-container: hsla(var(--hsl-info-container), 1) !important;
+  --hsl-on-info-container: 6, 100%, 92% !important;
+  --color-on-info-container: hsla(var(--hsl-on-info-container), 1) !important;
+  --hsl-warning: 38, 59%, 72% !important;
+  --color-warning: hsla(var(--hsl-warning), 1) !important;
+  --hsl-on-warning: 41, 88%, 13% !important;
+  --color-on-warning: hsla(var(--hsl-on-warning), 1) !important;
+  --hsl-warning-container: 41, 56%, 22% !important;
+  --color-warning-container: hsla(var(--hsl-warning-container), 1) !important;
+  --hsl-on-warning-container: 38, 98%, 82% !important;
+  --color-on-warning-container: hsla(var(--hsl-on-warning-container), 1) !important;
+  --hsl-danger: 6, 100%, 84% !important;
+  --color-danger: hsla(var(--hsl-danger), 1) !important;
+  --hsl-on-danger: 357, 100%, 21% !important;
+  --color-on-danger: hsla(var(--hsl-on-danger), 1) !important;
+  --hsl-danger-container: 356, 100%, 29% !important;
+  --color-danger-container: hsla(var(--hsl-danger-container), 1) !important;
+  --hsl-on-danger-container: 6, 100%, 84% !important;
+  --color-on-danger-container: hsla(var(--hsl-on-danger-container), 1) !important;
+  --hsl-body: 9, 12%, 11% !important;
+  --color-body: hsla(var(--hsl-body), 1) !important;
+  --hsl-text: 8, 29%, 90% !important;
+  --color-text: hsla(var(--hsl-text), 1) !important;
+  --hsl-on-surface-variant: 7, 24%, 80% !important;
+  --color-on-surface-variant: hsla(var(--hsl-on-surface-variant), 1) !important;
+  --hsl-outline: 5, 10%, 58% !important;
+  --color-outline: hsla(var(--hsl-outline), 1) !important;
+  --hsl-inverse-surface: 8, 29%, 90% !important;
+  --color-inverse-surface: hsla(var(--hsl-inverse-surface), 1) !important;
+
+  /* Derived Surface Container Colors for Dark Mode */
+  --color-surface: var(--color-body) !important;
+  --color-on-surface: var(--color-text) !important;
+  --color-surface-container: hsla(9, 12%, 15%, 1) !important;
+  --color-surface-container-low: hsla(9, 12%, 13%, 1) !important;
+  --color-surface-container-high: hsla(9, 12%, 18%, 1) !important;
+  --color-surface-container-highest: hsla(9, 12%, 22%, 1) !important;
+  --color-outline-variant: hsla(5, 10%, 25%, 1) !important;
+  --color-text-muted: var(--color-on-surface-variant) !important;
+}
+
+/* Global Styles & Mappings for Varlet Component Tokens */
+:root {
+  --app-bar-bg-color: var(--color-surface) !important;
+  --app-bar-color: var(--color-surface) !important;
+  --app-bar-text-color: var(--color-on-surface) !important;
+
+  --chip-primary-color: var(--color-primary-container) !important;
+  --chip-primary-text-color: var(--color-on-primary-container) !important;
+  --chip-default-color: var(--color-surface-container-high) !important;
+  --chip-default-text-color: var(--color-on-surface) !important;
+
+  --card-background: var(--color-surface-container-low) !important;
+  --card-text-color: var(--color-on-surface) !important;
+  
+  --swipe-indicator-active-color: var(--color-primary) !important;
+  --swipe-indicator-color: var(--color-outline-variant) !important;
+
+  --loading-color: var(--color-primary) !important;
+}
+
+/* Global Body Styles */
+html, body {
+  background-color: var(--color-body);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-surface-container-low);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
