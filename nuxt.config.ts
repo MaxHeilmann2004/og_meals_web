@@ -8,7 +8,8 @@ export default defineNuxtConfig({
   },
 
   modules: [
-    '@varlet/nuxt'
+    '@varlet/nuxt',
+    '@pinia/nuxt'
   ],
 
   css: [

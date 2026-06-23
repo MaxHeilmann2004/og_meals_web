@@ -30,12 +30,12 @@
         <!-- Original Price -->
         <span 
           class="price-regular" 
-          :class="{ 'has-student-price': !!meal.studentPrice }"
+          :class="{ 'has-student-price': showStudentPrice }"
         >
           {{ formatPrice(meal.price) }}
         </span>
         <!-- Student Price -->
-        <span v-if="meal.studentPrice" class="price-student">
+        <span v-if="showStudentPrice" class="price-student">
           {{ formatPrice(props.meal.studentPrice) }}
         </span>
       </div>
@@ -58,6 +58,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useFilterStore } from '~/stores/filters'
 
 interface MealImageDto {
   url: string
@@ -89,6 +90,9 @@ const props = defineProps<{
   meal: Meal
   canteen: Canteen
 }>()
+
+const filterStore = useFilterStore()
+const showStudentPrice = computed(() => filterStore.showStudentPrices && !!props.meal.studentPrice)
 
 // Test simulation setting first image of sliders as AI suggested (matches native app logic)
 const carouselImages = computed(() => {

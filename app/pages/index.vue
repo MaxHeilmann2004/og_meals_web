@@ -62,7 +62,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
+import { useFilterStore } from '~/stores/filters'
 
 interface MealImageDto {
   url: string
@@ -94,6 +95,9 @@ interface Canteen {
   meals: Meal[]
   mealsForSelectedDay?: Meal[]
 }
+
+const filterStore = useFilterStore()
+const setLayoutCanteens = inject<(c: { id: number; name: string; displayName: string }[]) => void>('setLayoutCanteens')
 
 const dayNames = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']
 
@@ -167,6 +171,18 @@ const fetchMeals = async () => {
     const data = await res.json()
     rawCanteens.value = data.canteens || []
     rawMeals.value = data.meals || []
+
+    // Initialize filter store with canteen data
+    filterStore.initFromCanteens(rawCanteens.value)
+
+    // Push canteen info up to layout for the filter panel
+    if (setLayoutCanteens) {
+      setLayoutCanteens(rawCanteens.value.map(c => ({
+        id: c.id,
+        name: c.name,
+        displayName: c.displayName,
+      })))
+    }
   } catch (e: any) {
     error.value = e.message || 'Ein unbekannter Fehler ist aufgetreten.'
   } finally {
@@ -174,19 +190,29 @@ const fetchMeals = async () => {
   }
 }
 
-// Group and filter canteens
+// Group and filter canteens — now driven by the filter store
 const filteredCanteens = computed(() => {
-  // Only canteens with IDs 6, 7, 8 (matching native app filter)
-  const allowedCanteenIds = [6, 7, 8]
-  
   return rawCanteens.value
-    .filter(c => allowedCanteenIds.includes(c.id))
+    .filter(c => filterStore.isCanteenEnabled(c.id))
     .map(c => {
-      // Find and map meals belonging to this canteen on the selected date
+      // Find meals belonging to this canteen on the selected date
       const mealsForCanteen = rawMeals.value.filter(meal => {
         const mealCanteenId = Number(meal.canteenId)
         const mealDatePart = meal.date.split('T')[0]
-        return mealCanteenId === c.id && mealDatePart === selectedDayDateStr.value
+        if (mealCanteenId !== c.id || mealDatePart !== selectedDayDateStr.value) {
+          return false
+        }
+
+        // Apply feature exclusion filter
+        if (meal.features && meal.features.length > 0) {
+          for (const feature of meal.features) {
+            if (filterStore.isFeatureExcluded(feature.id)) {
+              return false
+            }
+          }
+        }
+
+        return true
       })
       
       return {
