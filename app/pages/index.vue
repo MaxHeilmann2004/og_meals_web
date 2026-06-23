@@ -237,9 +237,6 @@ onMounted(() => {
   width: 100%;
   overflow-x: auto;
   background-color: var(--color-surface);
-  position: sticky;
-  top: 64px; /* Directly below the sticky header */
-  z-index: 90;
   padding: 8px 16px;
   box-sizing: border-box;
   scrollbar-width: none; /* Hide scrollbars for cleaner layout */
