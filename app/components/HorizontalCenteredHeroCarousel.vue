@@ -84,14 +84,12 @@ const onTouchMove = (e: TouchEvent) => {
     }
   }
 
-  if (swipeAxis) {
-    // Only block page scroll if swiping
+  if (swipeAxis === 'x') {
     if (e.cancelable) {
       e.preventDefault()
     }
-    const delta = swipeAxis === 'x' ? diffX : diffY
     const maxDrag = 180 // Distance in pixels for a 100% transition
-    let progress = delta / maxDrag
+    let progress = diffX / maxDrag
     
     // Clamp progress
     if (progress > 1) progress = 1
@@ -122,43 +120,42 @@ let accumulatedDelta = 0
 let wheelTimeout: ReturnType<typeof setTimeout> | null = null
 
 const onWheel = (e: WheelEvent) => {
-  e.preventDefault()
+  // Only capture horizontal scrolling
+  if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+    e.preventDefault()
+    isInteracting.value = true
+    accumulatedDelta += e.deltaX
 
-  isInteracting.value = true
+    const maxWheel = 150 // Scroll distance unit for a 100% transition
+    let progress = accumulatedDelta / maxWheel
 
-  // Capture delta along dominant scroll direction
-  const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX
-  accumulatedDelta += delta
+    // Clamp progress
+    if (progress > 1) progress = 1
+    if (progress < -1) progress = -1
 
-  const maxWheel = 150 // Scroll distance unit for a 100% transition
-  let progress = accumulatedDelta / maxWheel
+    liveProgress.value = progress
 
-  // Clamp progress
-  if (progress > 1) progress = 1
-  if (progress < -1) progress = -1
-
-  liveProgress.value = progress
-
-  if (wheelTimeout) {
-    clearTimeout(wheelTimeout)
-  }
-
-  wheelTimeout = setTimeout(() => {
-    // Finished wheeling gesture
-    isInteracting.value = false
-
-    const p = liveProgress.value
-    if (Math.abs(p) > 0.25) {
-      if (p > 0) {
-        activeIndex.value = Math.min(activeIndex.value + 1, props.images.length - 1)
-      } else {
-        activeIndex.value = Math.max(activeIndex.value - 1, 0)
-      }
+    if (wheelTimeout) {
+      clearTimeout(wheelTimeout)
     }
 
-    liveProgress.value = 0
-    accumulatedDelta = 0
-  }, 150)
+    wheelTimeout = setTimeout(() => {
+      // Finished wheeling gesture
+      isInteracting.value = false
+
+      const p = liveProgress.value
+      if (Math.abs(p) > 0.25) {
+        if (p > 0) {
+          activeIndex.value = Math.min(activeIndex.value + 1, props.images.length - 1)
+        } else {
+          activeIndex.value = Math.max(activeIndex.value - 1, 0)
+        }
+      }
+
+      liveProgress.value = 0
+      accumulatedDelta = 0
+    }, 150)
+  }
 }
 
 // Custom flex width calculations during active drag/swipe
@@ -226,6 +223,11 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.carousel-container,
+.carousel-container * {
+  touch-action: pan-y !important;
+}
+
 .carousel-container {
   position: absolute;
   top: 0;
@@ -236,7 +238,6 @@ onUnmounted(() => {
   gap: 8px;
   overflow: hidden;
   user-select: none;
-  touch-action: none; /* Prevents vertical scrolling defaults while swiping inside the container */
 }
 
 .carousel-item {
