@@ -10,6 +10,7 @@
           :class="{ 'is-selected': index === selectedDayIndex }"
           :plain="index !== selectedDayIndex"
           :round="false"
+          type="primary"
           @click="selectedDayIndex = index"
         >
           {{ dayName }}
