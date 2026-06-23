@@ -28,6 +28,7 @@ import { onMounted } from 'vue'
 onMounted(async () => {
   // Initialize Varlet Touch Emulator for desktop browser mouse events
   try {
+    // @ts-expect-error - no types available for @varlet/touch-emulator
     const { default: touchEmulator } = await import('@varlet/touch-emulator')
     touchEmulator()
   } catch (e) {

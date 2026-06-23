@@ -9,7 +9,7 @@
       />
       <div v-else-if="meal.images && meal.images.length === 1" class="single-image-wrapper">
         <MealImage
-          :meal-image="meal.images[0]"
+          :meal-image="meal.images[0]!"
           :content-description="meal.title"
         />
       </div>

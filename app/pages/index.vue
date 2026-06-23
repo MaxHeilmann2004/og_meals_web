@@ -131,8 +131,8 @@ const formatDate = (date: Date) => {
 }
 
 const weekDates = getWeekDates()
-const startOfWeekStr = formatDate(weekDates[0])
-const endOfWeekStr = formatDate(weekDates[4])
+const startOfWeekStr = formatDate(weekDates[0]!)
+const endOfWeekStr = formatDate(weekDates[4]!)
 
 // Determine default selected day index based on current day of the week
 const getInitialDayIndex = () => {
@@ -143,7 +143,7 @@ const getInitialDayIndex = () => {
 }
 
 const selectedDayIndex = ref(getInitialDayIndex())
-const selectedDayDateStr = computed(() => formatDate(weekDates[selectedDayIndex.value]))
+const selectedDayDateStr = computed(() => formatDate(weekDates[selectedDayIndex.value]!))
 
 // API states
 const isLoading = ref(true)

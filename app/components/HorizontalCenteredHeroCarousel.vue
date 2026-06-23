@@ -61,6 +61,7 @@ let touchStartY = 0
 let swipeAxis: 'x' | 'y' | null = null
 
 const onTouchStart = (e: TouchEvent) => {
+  if (!e.touches || !e.touches[0]) return
   touchStartX = e.touches[0].clientX
   touchStartY = e.touches[0].clientY
   swipeAxis = null
@@ -69,7 +70,7 @@ const onTouchStart = (e: TouchEvent) => {
 }
 
 const onTouchMove = (e: TouchEvent) => {
-  if (!isInteracting.value) return
+  if (!isInteracting.value || !e.touches || !e.touches[0]) return
 
   const currentX = e.touches[0].clientX
   const currentY = e.touches[0].clientY
