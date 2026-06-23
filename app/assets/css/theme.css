@@ -123,13 +123,14 @@
   --app-bar-color: var(--color-surface) !important;
   --app-bar-text-color: var(--color-on-surface) !important;
 
+  --card-background: var(--color-surface-container-low) !important;
+  --card-text-color: var(--color-on-surface) !important;
+  
+  --chip-border-radius: 8px !important;
   --chip-primary-color: var(--color-primary-container) !important;
   --chip-primary-text-color: var(--color-on-primary-container) !important;
   --chip-default-color: var(--color-surface-container-high) !important;
   --chip-default-text-color: var(--color-on-surface) !important;
-
-  --card-background: var(--color-surface-container-low) !important;
-  --card-text-color: var(--color-on-surface) !important;
   
   --swipe-indicator-active-color: var(--color-primary) !important;
   --swipe-indicator-color: var(--color-outline-variant) !important;
