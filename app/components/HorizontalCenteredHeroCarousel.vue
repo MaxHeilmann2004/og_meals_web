@@ -266,11 +266,6 @@ onUnmounted(() => {
 }
 
 /* Specific styling for inactive pill state */
-.carousel-item:not(.is-active) :deep(.meal-image) {
-  opacity: 0.8;
-  filter: brightness(0.85) contrast(0.9);
-}
-
 .ai-badge {
   position: absolute;
   top: 12px;
