@@ -8,76 +8,74 @@
     @update:show="emit('update:show', $event)"
   >
     <section
+      v-if="meal && canteen"
       class="meal-detail-dialog"
       :class="{ 'is-mobile': isMobile }"
       role="dialog"
       aria-modal="true"
       :aria-label="`${cleanedTitle} Details`"
     >
-      <header class="dialog-topbar">
-        <div class="dialog-kicker">Mahlzeit Details</div>
-        <var-button round text type="primary" class="close-button" @click="emit('update:show', false)">
-          Schliessen
-        </var-button>
-      </header>
-
       <div class="dialog-scroll">
-        <div class="hero-shell">
-          <div class="hero-media">
-            <HorizontalCenteredHeroCarousel
-              v-if="meal.images && meal.images.length > 1"
-              :images="carouselImages"
+        <div class="hero-media">
+          <HorizontalCenteredHeroCarousel
+            v-if="meal.images && meal.images.length > 1"
+            :images="carouselImages"
+            :content-description="meal.title"
+          />
+          <div v-else-if="meal.images && meal.images.length === 1" class="single-image-wrapper">
+            <MealImage
+              :meal-image="meal.images[0]!"
               :content-description="meal.title"
             />
-            <div v-else-if="meal.images && meal.images.length === 1" class="single-image-wrapper">
-              <MealImage
-                :meal-image="meal.images[0]!"
-                :content-description="meal.title"
-              />
-            </div>
-            <div v-else class="empty-image-placeholder">
-              <img src="/meal_placeholder.png" alt="No image" class="placeholder-bg" />
-              <div class="placeholder-overlay">
-                <span>Kein Bild verfugbar</span>
-              </div>
+          </div>
+          <div v-else class="empty-image-placeholder">
+            <img src="/meal_placeholder.png" alt="No image" class="placeholder-bg" />
+            <div class="placeholder-overlay">
+              <span>Kein Bild verfügbar</span>
             </div>
           </div>
+
+          <!-- Circular Close Button overlaying the image/media -->
+          <button class="dialog-close-btn" @click="emit('update:show', false)" aria-label="Schließen">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
 
         <div class="dialog-content">
           <div class="meal-heading">
-            <p class="meal-day-label">{{ formattedDate }}</p>
             <h2 class="meal-title">{{ cleanedTitle }}</h2>
+            <p class="canteen-name">{{ canteen.displayName || canteen.name }}</p>
           </div>
 
-          <div class="price-row">
-            <div class="price-block">
-              <span class="price-label">Preis</span>
-              <span class="price-value">{{ formatPrice(meal.price) || 'n. a.' }}</span>
-            </div>
-            <div v-if="showStudentPrice" class="price-block accent">
-              <span class="price-label">Studierende</span>
-              <span class="price-value">{{ formatPrice(meal.studentPrice) }}</span>
-            </div>
+          <div class="price-display">
+            <span class="main-price">{{ formatPrice(showStudentPrice ? meal.studentPrice : meal.price) }}</span>
+            <span v-if="showStudentPrice" class="regular-price-muted">Regulär: {{ formatPrice(meal.price) }}</span>
           </div>
 
-          <div class="meta-grid">
-            <div class="meta-card">
-              <span class="meta-label">Mensa</span>
-              <span class="meta-value">{{ canteen.displayName || canteen.name }}</span>
+          <div class="info-meta-row">
+            <div class="info-meta-item">
+              <svg class="info-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>{{ shortDateStr }}</span>
             </div>
-            <div class="meta-card">
-              <span class="meta-label">Tag</span>
-              <span class="meta-value">{{ formattedDate }}</span>
-            </div>
-            <div class="meta-card meta-card-wide">
-              <span class="meta-label">Nachhaltigkeit</span>
-              <span class="meta-value">{{ sustainabilityText }}</span>
+            <div v-if="sustainabilityTextShort" class="info-meta-item">
+              <svg class="info-icon" viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.2 0 8.8A7 7 0 0 1 11 20z"></path>
+                <path d="M19 2c-2.26 4.33-5.27 7.14-8 10"></path>
+              </svg>
+              <span>{{ sustainabilityTextShort }}</span>
             </div>
           </div>
 
           <var-collapse v-model="openSections" :offset="false" :divider="false" :elevation="false" class="detail-collapse">
-            <var-collapse-item name="nutrition" title="Nahrwerte">
+            <var-collapse-item name="nutrition" title="Nährwerte">
               <div class="nutrition-panel">
                 <table class="nutrition-table">
                   <tbody>
@@ -90,7 +88,7 @@
                       <td>{{ formatNutrient(meal.nutritionalInfo?.fat, 'g') }}</td>
                     </tr>
                     <tr>
-                      <th>davon gesattigte Fettsauren</th>
+                      <th>davon gesättigte Fettsäuren</th>
                       <td>{{ formatNutrient(meal.nutritionalInfo?.saturatedFat, 'g') }}</td>
                     </tr>
                     <tr>
@@ -102,7 +100,7 @@
                       <td>{{ formatNutrient(meal.nutritionalInfo?.sugar, 'g') }}</td>
                     </tr>
                     <tr>
-                      <th>Eiweiss</th>
+                      <th>Eiweiß</th>
                       <td>{{ formatNutrient(meal.nutritionalInfo?.protein, 'g') }}</td>
                     </tr>
                     <tr>
@@ -172,8 +170,24 @@ const emit = defineEmits<{
 const filterStore = useFilterStore()
 const openSections = ref<string[]>([])
 
-const meal = computed(() => props.meal)
-const canteen = computed(() => props.canteen)
+// Local copies to prevent component crashes on close animation when parent sets props to null
+const localMeal = ref<Meal | null>(null)
+const localCanteen = ref<Canteen | null>(null)
+
+watch(() => props.meal, (newMeal) => {
+  if (newMeal) {
+    localMeal.value = newMeal
+  }
+}, { immediate: true })
+
+watch(() => props.canteen, (newCanteen) => {
+  if (newCanteen) {
+    localCanteen.value = newCanteen
+  }
+}, { immediate: true })
+
+const meal = computed(() => localMeal.value)
+const canteen = computed(() => localCanteen.value)
 
 watch(() => props.show, (show) => {
   if (show) {
@@ -201,20 +215,24 @@ const cleanedTitle = computed(() => {
     .join(', ')
 })
 
-const formattedDate = computed(() => {
+const shortDateStr = computed(() => {
   if (!meal.value?.date) return ''
-  return new Intl.DateTimeFormat('de-DE', {
-    weekday: 'long',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(new Date(meal.value.date))
+  const d = new Date(meal.value.date)
+  const weekdays = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
+  const weekday = weekdays[d.getDay()]
+  const day = d.getDate()
+  const month = d.getMonth() + 1
+  return `${weekday} ${day}.${month}`
 })
 
-const sustainabilityText = computed(() => {
+const sustainabilityTextShort = computed(() => {
   const co2 = meal.value?.sustainabilityCo2
-  if (co2 == null) return 'Keine Nachhaltigkeitsangabe verfugbar'
-  return `${formatNumber(co2)} kg CO2e`
+  if (co2 == null) return null
+  if (co2 < 2.0) {
+    return `${Math.round(co2 * 1000)}g CO₂`
+  } else {
+    return `${Math.round(co2)}g CO₂`
+  }
 })
 
 const energyValue = computed(() => {
@@ -271,16 +289,34 @@ const featureMaskStyle = (feature: MealFeature) => ({
 </script>
 
 <style scoped>
+/* Style Varlet's popup container directly to ensure rounded corners clip properly */
+:deep(.var-popup__content) {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 32px !important;
+  overflow: hidden !important;
+  transform: translateZ(0); /* Fix rounded corner clipping bug */
+}
+
+@media (max-width: 767px) {
+  :deep(.var-popup__content) {
+    border-radius: 0 !important;
+  }
+}
+
+:deep(.meal-image-wrapper) {
+  background-color: transparent !important;
+}
+
 .meal-detail-dialog {
-  width: min(920px, calc(100vw - 40px));
-  max-height: calc(100dvh - 40px);
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(820px, calc(100dvh - 32px));
   border-radius: 32px;
-  background:
-    radial-gradient(circle at top right, rgba(145, 19, 19, 0.08), transparent 26%),
-    var(--color-surface-container-low);
+  background: var(--color-surface-container-low);
   color: var(--color-on-surface);
   overflow: hidden;
-  box-shadow: 0 28px 80px rgba(20, 10, 10, 0.28);
+  transform: translateZ(0); /* Fix rounded corner clipping bug */
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
 }
@@ -292,43 +328,29 @@ const featureMaskStyle = (feature: MealFeature) => ({
   border-radius: 0;
 }
 
-.dialog-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 20px;
-  background: rgba(255, 255, 255, 0.76);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(102, 73, 67, 0.12);
-}
-
-.dialog-kicker {
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-on-surface-variant);
-}
-
-.close-button {
-  flex-shrink: 0;
-}
-
 .dialog-scroll {
-  overflow: auto;
-}
-
-.hero-shell {
-  padding: 20px 20px 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  border-radius: inherit; /* Inherit border-radius to clip inner scrolls */
 }
 
 .hero-media {
+  width: 100%;
   aspect-ratio: 16 / 9;
-  border-radius: 28px;
-  overflow: hidden;
-  background-color: var(--color-surface-container-highest);
+  background-color: var(--color-surface-container-low); /* Match the dialog background */
   position: relative;
+  border-top-left-radius: 32px;
+  border-top-right-radius: 32px;
+  overflow: hidden;
+  transform: translateZ(0); /* Force layer for clipping */
+}
+
+@media (max-width: 767px) {
+  .hero-media {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
 }
 
 .single-image-wrapper,
@@ -358,135 +380,139 @@ const featureMaskStyle = (feature: MealFeature) => ({
   font-weight: 600;
 }
 
+.dialog-close-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.4);
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 100;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.dialog-close-btn:hover {
+  background: rgba(0, 0, 0, 0.6);
+  transform: scale(1.05);
+}
+
+.dialog-close-btn:active {
+  transform: scale(0.95);
+}
+
 .dialog-content {
-  padding: 24px 20px 28px;
+  padding: 24px 20px 32px;
 }
 
 .meal-heading {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.meal-day-label {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--color-on-surface-variant);
-  text-transform: capitalize;
 }
 
 .meal-title {
   margin: 0;
-  font-size: clamp(1.9rem, 3vw, 2.8rem);
-  line-height: 1.05;
-  letter-spacing: -0.03em;
-}
-
-.price-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 22px;
-}
-
-.price-block {
-  min-width: 160px;
-  padding: 14px 16px;
-  border-radius: 20px;
-  background: var(--color-surface-container-high);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.price-block.accent {
-  background: var(--color-primary-container);
-  color: var(--color-on-primary-container);
-}
-
-.price-label {
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  opacity: 0.72;
-}
-
-.price-value {
-  font-size: 1.35rem;
-  font-weight: 800;
-}
-
-.meta-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 22px;
-}
-
-.meta-card {
-  padding: 16px;
-  border-radius: 20px;
-  background: var(--color-surface-container);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.meta-card-wide {
-  grid-column: 1 / -1;
-}
-
-.meta-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-on-surface-variant);
-}
-
-.meta-value {
-  font-size: 1rem;
+  font-size: 1.6rem;
   font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-on-surface);
+}
+
+.canteen-name {
+  font-size: 1rem;
+  color: var(--color-primary);
+  font-weight: 500;
+  margin: 4px 0 0 0;
+}
+
+.price-display {
+  margin-top: 16px;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.main-price {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.regular-price-muted {
+  font-size: 0.95rem;
+  color: var(--color-on-surface-variant);
+  opacity: 0.7;
+  text-decoration: line-through;
+}
+
+.info-meta-row {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+  color: var(--color-on-surface-variant);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.info-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-icon {
+  opacity: 0.8;
+  flex-shrink: 0;
 }
 
 .detail-collapse {
   margin-top: 24px;
+  background: transparent;
 }
 
 :deep(.detail-collapse .var-collapse-item) {
-  margin-top: 12px;
-  border-radius: 22px;
-  overflow: hidden;
-  border: 1px solid rgba(106, 77, 73, 0.12);
-  background: var(--color-surface-container-low);
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 0 !important;
+  margin-top: 0 !important;
 }
 
 :deep(.detail-collapse .var-collapse-item__header) {
-  padding: 18px 18px 16px;
-  font-weight: 700;
+  padding: 20px 0 !important;
+  font-size: 1.1rem !important;
+  font-weight: 500 !important;
+  color: var(--color-on-surface) !important;
 }
 
 :deep(.detail-collapse .var-collapse-item__content) {
-  padding: 0 18px 18px;
+  padding: 0 0 20px 0 !important;
 }
 
 .nutrition-panel {
   border-radius: 18px;
-  border: 1px solid var(--color-outline);
+  border: 1px solid var(--color-outline-variant);
   overflow: hidden;
+  margin-top: 8px;
 }
 
 .nutrition-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--color-surface);
+  background: var(--color-surface-container);
 }
 
 .nutrition-table th,
 .nutrition-table td {
   padding: 12px 14px;
   font-size: 0.96rem;
+  color: var(--color-on-surface);
 }
 
 .nutrition-table th {
@@ -510,6 +536,7 @@ const featureMaskStyle = (feature: MealFeature) => ({
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  margin-top: 8px;
 }
 
 .detail-chip {
@@ -576,33 +603,13 @@ const featureMaskStyle = (feature: MealFeature) => ({
 }
 
 .empty-copy {
-  margin: 0;
+  margin: 8px 0 0 0;
   color: var(--color-on-surface-variant);
 }
 
 @media (max-width: 767px) {
-  .dialog-topbar {
-    padding-top: calc(16px + env(safe-area-inset-top));
-  }
-
-  .hero-shell {
-    padding: 12px 12px 0;
-  }
-
-  .hero-media {
-    border-radius: 24px;
-  }
-
   .dialog-content {
-    padding: 20px 12px 28px;
-  }
-
-  .meta-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .meta-card-wide {
-    grid-column: auto;
+    padding: 20px 16px 32px;
   }
 }
 </style>

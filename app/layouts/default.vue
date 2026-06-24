@@ -11,9 +11,11 @@
       <div class="header-right">
         <button class="icon-button" aria-label="Filter" @click="filterStore.toggleFilters()">
           <div class="filter-icon-mask"></div>
-          <span v-if="filterStore.activeFilterCount > 0" class="filter-badge">
-            {{ filterStore.activeFilterCount }}
-          </span>
+          <ClientOnly>
+            <span v-if="filterStore.activeFilterCount > 0" class="filter-badge">
+              {{ filterStore.activeFilterCount }}
+            </span>
+          </ClientOnly>
         </button>
       </div>
     </header>
@@ -50,9 +52,7 @@ provide('setLayoutCanteens', setCanteens)
 onMounted(async () => {
   // Initialize Varlet Touch Emulator for desktop browser mouse events
   try {
-    // @ts-expect-error - no types available for @varlet/touch-emulator
-    const { default: touchEmulator } = await import('@varlet/touch-emulator')
-    touchEmulator()
+    await import('@varlet/touch-emulator')
   } catch (e) {
     console.warn('Touch emulator failed to initialize:', e)
   }

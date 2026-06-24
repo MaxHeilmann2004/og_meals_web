@@ -165,3 +165,26 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-outline);
 }
+
+/* Dialog & Popup global overrides to fix border clipping and background blending */
+.var-popup__content {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 32px !important;
+  overflow: hidden !important;
+  transform: translateZ(0) !important;
+}
+
+@media (max-width: 767px) {
+  .var-popup__content {
+    border-radius: 0 !important;
+  }
+}
+
+/* Ensure the carousel and image wrappers inside the detail dialog match the dark container background */
+.meal-detail-dialog .hero-media,
+.meal-detail-dialog .carousel-container,
+.meal-detail-dialog .carousel-item,
+.meal-detail-dialog .meal-image-wrapper {
+  background-color: var(--color-surface-container-low) !important;
+}

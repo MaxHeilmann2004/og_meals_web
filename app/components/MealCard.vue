@@ -137,23 +137,24 @@ const formatPrice = (price: number | null | undefined) => {
   padding: 12px;
   display: flex;
   flex-direction: column;
-  background-color: var(--color-surface-container-low);
+  background-color: transparent;
   border-radius: 28px;
   margin-bottom: 8px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   outline: none;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, outline 0.2s ease;
 }
 
-.meal-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(38, 20, 18, 0.08);
+.meal-card:hover,
+.meal-card:focus-visible {
+  background-color: hsla(var(--hsl-primary), 0.06);
 }
 
 .meal-card:focus-visible {
-  box-shadow: 0 0 0 3px rgba(146, 22, 22, 0.2);
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
 }
 
 .meal-image-container {

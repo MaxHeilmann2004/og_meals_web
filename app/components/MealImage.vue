@@ -2,6 +2,7 @@
   <div class="meal-image-wrapper">
     <!-- Main Image -->
     <img
+      ref="imgRef"
       v-show="!isError"
       :src="fullImageUrl"
       :alt="contentDescription"
@@ -26,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 interface MealImageDto {
   url: string
@@ -54,6 +55,7 @@ const fullImageUrl = computed(() => {
   return `${BASE_URL}${url}`
 })
 
+const imgRef = ref<HTMLImageElement | null>(null)
 const isLoading = ref(true)
 const isError = ref(false)
 
@@ -65,6 +67,16 @@ const onImageError = () => {
   isLoading.value = false
   isError.value = true
 }
+
+onMounted(() => {
+  if (imgRef.value && imgRef.value.complete) {
+    if (imgRef.value.naturalWidth === 0) {
+      onImageError()
+    } else {
+      onImageLoad()
+    }
+  }
+})
 </script>
 
 <style scoped>

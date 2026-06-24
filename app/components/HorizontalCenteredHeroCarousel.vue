@@ -17,7 +17,7 @@
         flex: getFlexForIndex(index),
         transition: isInteracting ? 'none' : 'flex 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
       }"
-      @click="onItemClick(index)"
+      @click="onItemClick($event, index)"
     >
       <div class="carousel-img-wrapper">
         <MealImage
@@ -201,8 +201,14 @@ const getFlexForIndex = (index: number) => {
   }
 }
 
-const onItemClick = (index: number) => {
-  if (!isInteracting.value) {
+const onItemClick = (event: MouseEvent, index: number) => {
+  if (isInteracting.value) {
+    event.stopPropagation()
+    return
+  }
+
+  if (index !== activeIndex.value) {
+    event.stopPropagation()
     activeIndex.value = index
   }
 }
@@ -238,6 +244,7 @@ onUnmounted(() => {
   gap: 8px;
   overflow: hidden;
   user-select: none;
+  overscroll-behavior-x: none;
 }
 
 .carousel-item {
