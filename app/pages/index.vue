@@ -48,6 +48,7 @@
               :key="meal.id"
               :meal="meal"
               :canteen="canteen"
+              @select="openMealDetails(meal, canteen)"
             />
           </div>
         </div>
@@ -58,11 +59,20 @@
         </div>
       </div>
     </div>
+
+    <MealDetailDialog
+      :show="isMealDialogOpen"
+      :meal="selectedMeal"
+      :canteen="selectedMealCanteen"
+      :is-mobile="isMobile"
+      @update:show="isMealDialogOpen = $event"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
 import type { Canteen, Meal, MealsApiResponse } from '~/types/meals'
 import { useFilterStore } from '~/stores/filters'
 
@@ -111,6 +121,10 @@ const getInitialDayIndex = () => {
 
 const selectedDayIndex = ref(getInitialDayIndex())
 const selectedDayDateStr = computed(() => formatDate(weekDates[selectedDayIndex.value]!))
+const isMobile = useMediaQuery('(max-width: 767px)')
+const isMealDialogOpen = ref(false)
+const selectedMeal = ref<Meal | null>(null)
+const selectedMealCanteen = ref<Canteen | null>(null)
 
 // Server-side data fetch — pre-rendered and sent to the client
 const { data, pending, error, refresh } = await useAsyncData<MealsApiResponse>(
@@ -146,6 +160,12 @@ const totalMealsForSelectedDay = computed(() =>
   filteredCanteens.value.reduce((acc, c) => acc + c.mealsForSelectedDay.length, 0)
 )
 
+const openMealDetails = (meal: Meal, canteen: Canteen) => {
+  selectedMeal.value = meal
+  selectedMealCanteen.value = canteen
+  isMealDialogOpen.value = true
+}
+
 const scrollSelectedChipIntoView = (smooth = true) => {
   nextTick(() => {
     document.querySelector('.day-chip.is-selected')?.scrollIntoView({
@@ -157,6 +177,13 @@ const scrollSelectedChipIntoView = (smooth = true) => {
 }
 
 watch(selectedDayIndex, () => scrollSelectedChipIntoView(true))
+
+watch(isMealDialogOpen, (isOpen) => {
+  if (!isOpen) {
+    selectedMeal.value = null
+    selectedMealCanteen.value = null
+  }
+})
 
 onMounted(() => scrollSelectedChipIntoView(false))
 </script>

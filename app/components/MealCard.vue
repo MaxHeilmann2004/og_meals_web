@@ -1,5 +1,14 @@
 <template>
-  <div class="meal-card">
+  <article
+    v-ripple="{ color: 'rgba(120, 32, 28, 0.14)' }"
+    class="meal-card"
+    role="button"
+    tabindex="0"
+    :aria-label="`${cleanedTitle}, Details anzeigen`"
+    @click="emit('select')"
+    @keydown.enter.prevent="emit('select')"
+    @keydown.space.prevent="emit('select')"
+  >
     <!-- Image Section -->
     <div class="meal-image-container">
       <HorizontalCenteredHeroCarousel
@@ -60,7 +69,7 @@
         />
       </div>
     </div>
-  </div>
+  </article>
 </template>
 
 <script setup lang="ts">
@@ -71,6 +80,10 @@ import { useFilterStore } from '~/stores/filters'
 const props = defineProps<{
   meal: Meal
   canteen: Canteen
+}>()
+
+const emit = defineEmits<{
+  select: []
 }>()
 
 const filterStore = useFilterStore()
@@ -127,6 +140,20 @@ const formatPrice = (price: number | null | undefined) => {
   background-color: var(--color-surface-container-low);
   border-radius: 28px;
   margin-bottom: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  outline: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.meal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(38, 20, 18, 0.08);
+}
+
+.meal-card:focus-visible {
+  box-shadow: 0 0 0 3px rgba(146, 22, 22, 0.2);
 }
 
 .meal-image-container {
@@ -191,6 +218,7 @@ const formatPrice = (price: number | null | undefined) => {
   flex: 1;
   word-break: break-word;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;

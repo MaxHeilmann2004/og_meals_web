@@ -11,6 +11,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { getFeatureColor, getFeatureIconUrl } from '~/utils/mealFeatures'
 
 interface MealFeature {
   id: number
@@ -27,45 +28,13 @@ const props = withDefaults(
   { onImage: false }
 )
 
-/** Colors matching the original Compose app's feature color scheme */
-const FEATURE_COLORS: Record<number, string> = {
-  11: '#4CAF50', // Vegan — green
-  12: '#FF9800', // Glutenfrei — amber
-  14: '#AB47BC', // Knoblauch — purple
-  15: '#8D6E63', // Rind — brown
-  16: '#EC407A', // Schwein — pink
-  17: '#FF7043', // Geflügel — deep orange
-  19: '#78909C', // Lamm — blue-grey
-  25: '#66BB6A', // Vegetarisch — light green
-  44: '#42A5F5', // Lactosefrei — blue
-  45: '#6D4C41', // Wild — dark brown
-  48: '#26C6DA', // Klimafreundlich — cyan
-}
-
 const featureName = computed(() =>
   props.feature.name || props.feature.shortName || 'Unknown'
 )
 
-const iconUrl = computed(() => {
-  switch (Number(props.feature.id)) {
-    case 11: return '/icons/ic_mf_vegan.svg'
-    case 12: return '/icons/ic_mf_gluten_free.svg'
-    case 14: return '/icons/ic_mf_garlic.svg'
-    case 15: return '/icons/ic_mf_beef.svg'
-    case 16: return '/icons/ic_mf_pork.svg'
-    case 17: return '/icons/ic_mf_chicken.svg'
-    case 19: return '/icons/ic_mf_lamb.svg'
-    case 25: return '/icons/ic_mf_vegetarian.svg'
-    case 44: return '/icons/ic_mf_lactose_free.svg'
-    case 45: return '/icons/ic_mf_venison.svg'
-    case 48: return '/icons/ic_mf_environment_friendly.svg'
-    default: return null
-  }
-})
+const iconUrl = computed(() => getFeatureIconUrl(props.feature))
 
-const featureColor = computed(() =>
-  FEATURE_COLORS[Number(props.feature.id)] ?? 'var(--color-secondary)'
-)
+const featureColor = computed(() => getFeatureColor(props.feature))
 
 const maskStyle = computed(() => {
   if (!iconUrl.value) return {}
