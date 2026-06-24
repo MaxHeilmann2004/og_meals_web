@@ -41,6 +41,14 @@
       </div>
     </div>
 
+    <!-- Rating -->
+    <div v-if="meal.reviewStats.totalReviews > 0" class="meal-rating-row">
+      <span class="rating-stars" :aria-label="`${meal.reviewStats.averageStars} von 5 Sternen`">
+        <span v-for="i in 5" :key="i" class="star" :class="starClass(i)">&#9733;</span>
+      </span>
+      <span class="rating-count">{{ meal.reviewStats.averageStars.toFixed(1) }} ({{ meal.reviewStats.totalReviews }})</span>
+    </div>
+
     <!-- Footer: canteen name + feature icons -->
     <div class="meal-footer-row">
       <span class="canteen-name">{{ canteen.name }}</span>
@@ -57,34 +65,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { Meal, Canteen } from '~/types/meals'
 import { useFilterStore } from '~/stores/filters'
-
-interface MealImageDto {
-  url: string
-  aiSuggested: boolean
-}
-
-interface MealFeature {
-  id: number
-  name?: string | null
-  shortName?: string | null
-  showInFilter?: boolean | null
-  showInOverview?: boolean | null
-}
-
-interface Meal {
-  id: number
-  title: string
-  price: number | null
-  studentPrice: number | null
-  images: MealImageDto[]
-  features: MealFeature[]
-}
-
-interface Canteen {
-  id: number
-  name: string
-}
 
 const props = defineProps<{
   meal: Meal
@@ -93,6 +75,13 @@ const props = defineProps<{
 
 const filterStore = useFilterStore()
 const showStudentPrice = computed(() => filterStore.showStudentPrices && !!props.meal.studentPrice)
+
+const starClass = (i: number) => {
+  const avg = props.meal.reviewStats.averageStars
+  if (i <= Math.floor(avg)) return 'star-full'
+  if (i === Math.ceil(avg) && avg % 1 >= 0.5) return 'star-half'
+  return 'star-empty'
+}
 
 // Test simulation setting first image of sliders as AI suggested (matches native app logic)
 const carouselImages = computed(() => {
@@ -230,6 +219,42 @@ const formatPrice = (price: number | null | undefined) => {
 .price-student {
   color: var(--color-on-surface);
   font-weight: 700;
+}
+
+.meal-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 1px;
+}
+
+.star {
+  font-size: 0.9rem;
+}
+
+.star-full {
+  color: var(--color-primary);
+}
+
+.star-half {
+  color: var(--color-primary);
+  opacity: 0.6;
+}
+
+.star-empty {
+  color: var(--color-on-surface-variant);
+  opacity: 0.3;
+}
+
+.rating-count {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  font-weight: 500;
 }
 
 .meal-footer-row {

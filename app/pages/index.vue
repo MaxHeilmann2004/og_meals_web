@@ -21,14 +21,14 @@
     <!-- Main List / Grid -->
     <div class="content-viewport">
       <!-- Loading State -->
-      <div v-if="isLoading" class="loading-overlay">
+      <div v-if="pending" class="loading-overlay">
         <var-loading type="cube" size="large" color="var(--color-primary)" description="Lade Speiseplan..." />
       </div>
 
       <!-- Error State -->
       <div v-else-if="error" class="error-banner">
-        <span class="error-text">Fehler beim Laden: {{ error }}</span>
-        <var-button type="primary" size="small" @click="fetchMeals">Erneut versuchen</var-button>
+        <span class="error-text">Fehler beim Laden: {{ error?.message }}</span>
+        <var-button type="primary" size="small" @click="() => refresh()">Erneut versuchen</var-button>
       </div>
 
       <!-- Meals Content -->
@@ -63,193 +63,102 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
+import type { Canteen, Meal, MealsApiResponse } from '~/types/meals'
 import { useFilterStore } from '~/stores/filters'
 
-interface MealImageDto {
-  url: string
-  aiSuggested: boolean
-}
-
-interface MealFeature {
-  id: number
-  name?: string | null
-  shortName?: string | null
-  showInFilter?: boolean | null
-  showInOverview?: boolean | null
-}
-
-interface Meal {
-  id: number
-  title: string
-  price: number | null
-  studentPrice: number | null
-  date: string
-  canteenId: number
-  images: MealImageDto[]
-  features: MealFeature[]
-}
-
-interface Canteen {
-  id: number
-  name: string
-  displayName: string
-  meals: Meal[]
-  mealsForSelectedDay?: Meal[]
-}
-
 const filterStore = useFilterStore()
-const setLayoutCanteens = inject<(c: { id: number; name: string; displayName: string }[]) => void>('setLayoutCanteens')
+const setLayoutCanteens = inject<(c: Pick<Canteen, 'id' | 'name' | 'displayName'>[]) => void>('setLayoutCanteens')
 
 const dayNames = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']
 
-// Date logic
+// Date helpers
 const getWorkDayScopedToday = () => {
   const today = new Date()
-  const day = today.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  if (day === 6) {
-    today.setDate(today.getDate() + 2) // Saturday -> Next Monday
-  } else if (day === 0) {
-    today.setDate(today.getDate() + 1) // Sunday -> Next Monday
-  }
+  const day = today.getDay()
+  if (day === 6) today.setDate(today.getDate() + 2) // Saturday -> Monday
+  else if (day === 0) today.setDate(today.getDate() + 1) // Sunday -> Monday
   return today
 }
 
 const getWeekDates = () => {
   const today = getWorkDayScopedToday()
-  const day = today.getDay()
-  const isoDayNumber = day === 0 ? 7 : day // Monday is 1, Sunday is 7
-  
+  const isoDayNumber = today.getDay() === 0 ? 7 : today.getDay()
   const startOfWeek = new Date(today)
   startOfWeek.setDate(today.getDate() - (isoDayNumber - 1))
-  
-  const dates: Date[] = []
-  for (let i = 0; i < 5; i++) {
+  return Array.from({ length: 5 }, (_, i) => {
     const d = new Date(startOfWeek)
     d.setDate(startOfWeek.getDate() + i)
-    dates.push(d)
-  }
-  return dates
+    return d
+  })
 }
 
 const formatDate = (date: Date) => {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
 const weekDates = getWeekDates()
 const startOfWeekStr = formatDate(weekDates[0]!)
 const endOfWeekStr = formatDate(weekDates[4]!)
 
-// Determine default selected day index based on current day of the week
 const getInitialDayIndex = () => {
-  const today = new Date()
-  const day = today.getDay()
-  if (day === 0 || day === 6) return 0 // Weekend defaults to Monday
-  return day - 1 // 1 (Monday) -> 0, 5 (Friday) -> 4
+  const day = new Date().getDay()
+  if (day === 0 || day === 6) return 0 // Weekend -> Monday
+  return day - 1 // Mon=0 … Fri=4
 }
 
 const selectedDayIndex = ref(getInitialDayIndex())
 const selectedDayDateStr = computed(() => formatDate(weekDates[selectedDayIndex.value]!))
 
-// API states
-const isLoading = ref(true)
-const error = ref<string | null>(null)
-const rawCanteens = ref<Canteen[]>([])
-const rawMeals = ref<Meal[]>([])
+// Server-side data fetch — pre-rendered and sent to the client
+const { data, pending, error, refresh } = await useAsyncData<MealsApiResponse>(
+  'meals-week',
+  () => $fetch(`https://3b-meals.mh-home.net/meals?start=${startOfWeekStr}&end=${endOfWeekStr}`)
+)
 
-const fetchMeals = async () => {
-  isLoading.value = true
-  error.value = null
-  try {
-    const res = await fetch(
-      `https://3b-meals.mh-home.net/meals?start=${startOfWeekStr}&end=${endOfWeekStr}`
-    )
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`)
-    }
-    const data = await res.json()
-    rawCanteens.value = data.canteens || []
-    rawMeals.value = data.meals || []
+const rawCanteens = computed(() => data.value?.canteens ?? [])
+const rawMeals = computed(() => data.value?.meals ?? [])
 
-    // Initialize filter store with canteen data
-    filterStore.initFromCanteens(rawCanteens.value)
+// Sync canteen list to filter store and layout whenever data arrives
+watch(rawCanteens, (canteens) => {
+  filterStore.initFromCanteens(canteens)
+  setLayoutCanteens?.(canteens.map(c => ({ id: c.id, name: c.name, displayName: c.displayName })))
+}, { immediate: true })
 
-    // Push canteen info up to layout for the filter panel
-    if (setLayoutCanteens) {
-      setLayoutCanteens(rawCanteens.value.map(c => ({
-        id: c.id,
-        name: c.name,
-        displayName: c.displayName,
-      })))
-    }
-  } catch (e: any) {
-    error.value = e.message || 'Ein unbekannter Fehler ist aufgetreten.'
-  } finally {
-    isLoading.value = false
-  }
-}
-
-// Group and filter canteens — now driven by the filter store
+// Group meals by canteen for the selected day, applying active filters
 const filteredCanteens = computed(() => {
   return rawCanteens.value
     .filter(c => filterStore.isCanteenEnabled(c.id))
     .map(c => {
-      // Find meals belonging to this canteen on the selected date
-      const mealsForCanteen = rawMeals.value.filter(meal => {
-        const mealCanteenId = Number(meal.canteenId)
-        const mealDatePart = meal.date.split('T')[0]
-        if (mealCanteenId !== c.id || mealDatePart !== selectedDayDateStr.value) {
-          return false
-        }
-
-        // Apply feature exclusion filter
-        if (meal.features && meal.features.length > 0) {
-          for (const feature of meal.features) {
-            if (filterStore.isFeatureExcluded(feature.id)) {
-              return false
-            }
-          }
-        }
-
-        return true
-      })
-      
-      return {
-        ...c,
-        mealsForSelectedDay: mealsForCanteen
-      }
+      const mealsForSelectedDay = rawMeals.value.filter(meal =>
+        Number(meal.canteenId) === c.id
+        && meal.date.split('T')[0] === selectedDayDateStr.value
+        && !meal.features?.some(f => filterStore.isFeatureExcluded(f.id))
+      )
+      return { ...c, mealsForSelectedDay }
     })
-    // Only display canteens that actually have meals on the selected day
-    .filter(c => c.mealsForSelectedDay && c.mealsForSelectedDay.length > 0)
+    .filter(c => c.mealsForSelectedDay.length > 0)
 })
 
-const totalMealsForSelectedDay = computed(() => {
-  return filteredCanteens.value.reduce((acc, c) => acc + (c.mealsForSelectedDay?.length || 0), 0)
-})
+const totalMealsForSelectedDay = computed(() =>
+  filteredCanteens.value.reduce((acc, c) => acc + c.mealsForSelectedDay.length, 0)
+)
 
 const scrollSelectedChipIntoView = (smooth = true) => {
   nextTick(() => {
-    const selectedEl = document.querySelector('.day-chip.is-selected')
-    if (selectedEl) {
-      selectedEl.scrollIntoView({
-        behavior: smooth ? 'smooth' : 'auto',
-        block: 'nearest',
-        inline: 'center'
-      })
-    }
+    document.querySelector('.day-chip.is-selected')?.scrollIntoView({
+      behavior: smooth ? 'smooth' : 'auto',
+      block: 'nearest',
+      inline: 'center',
+    })
   })
 }
 
-watch(selectedDayIndex, () => {
-  scrollSelectedChipIntoView(true)
-})
+watch(selectedDayIndex, () => scrollSelectedChipIntoView(true))
 
-onMounted(() => {
-  fetchMeals()
-  scrollSelectedChipIntoView(false)
-})
+onMounted(() => scrollSelectedChipIntoView(false))
 </script>
 
 <style scoped>
