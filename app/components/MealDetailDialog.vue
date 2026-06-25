@@ -841,7 +841,6 @@ onUnmounted(() => {
   height: 100%;
   overflow-y: auto;
   overflow-y: overlay; /* Floating scrollbar */
-  scrollbar-gutter: stable; /* Reserve scrollbar space always — prevents layout shift */
   background: var(--color-surface-container-low);
   border-radius: 32px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
@@ -872,7 +871,6 @@ onUnmounted(() => {
   height: 100%;
   overflow-y: auto;
   overflow-y: overlay; /* Floating scrollbar */
-  scrollbar-gutter: stable; /* Reserve scrollbar space always — prevents layout shift */
   background: transparent;
 }
 
@@ -905,6 +903,17 @@ onUnmounted(() => {
 .hero-media :deep(.carousel-item) {
   border-top-left-radius: 32px;
   border-top-right-radius: 32px;
+}
+
+/* The first and last items sit at the hero's outer corners. A narrow
+   pill can't render a full 32px radius, so it visually mismatches the
+   hero's 32px curve. Setting the outer corner to 0 lets hero-media's
+   overflow:hidden + 32px radius do the clipping for a perfect match. */
+.hero-media :deep(.carousel-item:first-child) {
+  border-top-left-radius: 0;
+}
+.hero-media :deep(.carousel-item:last-child) {
+  border-top-right-radius: 0;
 }
 
 /* Single-image wrapper fills the hero-media — let the parent clip the corners */
