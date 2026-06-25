@@ -298,15 +298,15 @@ onMounted(() => scrollSelectedChipIntoView(false))
   width: 100%;
 }
 
-@media (max-width: 440px) {
+@media (max-width: 767px) {
   .meals-grid {
     grid-template-columns: 1fr;
   }
   .canteens-list {
-    padding: 8px 12px 24px;
+    padding: 8px 4px 24px;
   }
   .canteen-header {
-    margin: 8px 8px 12px;
+    margin: 8px 4px 12px;
     font-size: 1.25rem;
   }
 }
