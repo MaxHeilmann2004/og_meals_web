@@ -380,7 +380,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import type { Canteen, Meal, MealFeature, MealReviewItem, MealReviewStats } from '~/types/meals'
+import type { Canteen, Meal, MealFeature, MealReviewItem, MealReviewStats, PaginatedMealReviewsResponse } from '~/types/meals'
 import { useFilterStore } from '~/stores/filters'
 import { getFeatureColor, getFeatureIconUrl } from '~/utils/mealFeatures'
 
