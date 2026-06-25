@@ -20,19 +20,19 @@
 
     <!-- Main List / Grid -->
     <div class="content-viewport">
-      <!-- Loading State -->
-      <div v-if="pending" class="loading-overlay">
+      <!-- Initial Loading State (only when no data at all yet) -->
+      <div v-if="pending && !data" class="loading-overlay">
         <var-loading type="cube" size="large" color="var(--color-primary)" description="Lade Speiseplan..." />
       </div>
 
-      <!-- Error State -->
-      <div v-else-if="error" class="error-banner">
+      <!-- Error State (shown as inline banner, doesn't remove content) -->
+      <div v-if="error" class="error-banner">
         <span class="error-text">Fehler beim Laden: {{ error?.message }}</span>
         <var-button type="primary" size="small" @click="() => refresh()">Erneut versuchen</var-button>
       </div>
 
-      <!-- Meals Content -->
-      <div v-else class="canteens-list">
+      <!-- Meals Content — always rendered once data exists, never torn down -->
+      <div v-if="data" class="canteens-list">
         <div 
           v-for="canteen in filteredCanteens" 
           :key="canteen.id" 
@@ -54,19 +54,21 @@
         </div>
 
         <!-- No Meals State -->
-        <div v-if="totalMealsForSelectedDay === 0" class="no-meals-state">
+        <div v-if="totalMealsForSelectedDay === 0 && !pending" class="no-meals-state">
           <p>Keine Gerichte für diesen Tag verfügbar.</p>
         </div>
       </div>
     </div>
 
-    <MealDetailDialog
-      :show="isMealDialogOpen"
-      :meal="selectedMeal"
-      :canteen="selectedMealCanteen"
-      :is-mobile="isMobile"
-      @update:show="isMealDialogOpen = $event"
-    />
+    <ClientOnly>
+      <MealDetailDialog
+        :show="isMealDialogOpen"
+        :meal="selectedMeal"
+        :canteen="selectedMealCanteen"
+        :is-mobile="isMobile"
+        @update:show="isMealDialogOpen = $event"
+      />
+    </ClientOnly>
   </div>
 </template>
 

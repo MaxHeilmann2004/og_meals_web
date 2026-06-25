@@ -82,3 +82,25 @@ export interface MealsApiResponse {
   canteens: Canteen[]
   meals: Meal[]
 }
+
+export interface MealReviewItem {
+  id: number
+  star: number
+  comment: string
+  createdAt: string
+  mealId: number
+  isFromOriginalMeal: boolean
+}
+
+export interface Pagination {
+  page: number
+  limit: number
+  total: number
+  pages: number
+}
+
+export interface PaginatedMealReviewsResponse {
+  reviews: MealReviewItem[]
+  pagination: Pagination
+  stats: MealReviewStats
+}

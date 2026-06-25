@@ -7,7 +7,7 @@
   >
     <div
       v-for="(image, index) in images"
-      :key="index"
+      :key="image.url"
       class="carousel-item"
       :class="{
         'is-active': index === activeIndex,
@@ -28,7 +28,7 @@
         />
       </div>
       <!-- AI Suggested Badge placed relative to the clipping mask container -->
-      <div v-if="image.aiSuggested" class="ai-badge" title="AI suggested image">
+      <div v-if="image.aiSuggested" class="ai-badge" :class="`ai-badge--${badgePosition}`" title="AI suggested image">
         <img src="/ic_ai.svg" alt="AI Icon" class="ai-icon" />
       </div>
     </div>
@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 interface MealImageDto {
   url: string
@@ -46,7 +46,10 @@ interface MealImageDto {
 const props = defineProps<{
   images: MealImageDto[]
   contentDescription: string
+  badgePosition?: 'top-right' | 'bottom-right'
 }>()
+
+const badgePosition = computed(() => props.badgePosition ?? 'top-right')
 
 const activeIndex = ref(0)
 const containerRef = ref<HTMLElement | null>(null)
@@ -287,6 +290,11 @@ onUnmounted(() => {
   z-index: 10;
   pointer-events: none;
   transition: right 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.ai-badge--bottom-right {
+  top: auto;
+  bottom: 12px;
 }
 
 @container (max-width: 60px) {

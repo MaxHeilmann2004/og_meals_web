@@ -12,15 +12,15 @@
     />
 
     <!-- Shimmer Loader -->
-    <div v-if="isLoading && !isError" class="shimmer-placeholder"></div>
+    <div class="shimmer-placeholder" :class="{ 'shimmer-hidden': !isLoading || isError }"></div>
 
     <!-- Error State -->
-    <div v-if="isError" class="error-placeholder">
+    <div class="error-placeholder" :class="{ 'error-hidden': !isError }">
       <span>Fehler beim Laden des Bildes</span>
     </div>
 
     <!-- AI Suggested Badge -->
-    <div v-if="mealImage.aiSuggested && showAiBadge" class="ai-badge" title="AI suggested image">
+    <div v-if="mealImage.aiSuggested && showAiBadge" class="ai-badge" :class="`ai-badge--${badgePosition}`" title="AI suggested image">
       <img src="/ic_ai.svg" alt="AI Icon" class="ai-icon" />
     </div>
   </div>
@@ -39,9 +39,11 @@ const props = withDefaults(
     mealImage: MealImageDto
     contentDescription: string
     showAiBadge?: boolean
+    badgePosition?: 'top-right' | 'bottom-right'
   }>(),
   {
-    showAiBadge: true
+    showAiBadge: true,
+    badgePosition: 'top-right'
   }
 )
 
@@ -122,6 +124,14 @@ onMounted(() => {
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite linear;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.shimmer-hidden {
+  opacity: 0;
+  pointer-events: none;
+  animation: none; /* Stop animating when hidden to save GPU */
 }
 
 .error-placeholder {
@@ -139,6 +149,12 @@ onMounted(() => {
   font-weight: 500;
   padding: 12px;
   text-align: center;
+  transition: opacity 0.15s ease;
+}
+
+.error-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .ai-badge {
@@ -153,6 +169,12 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   z-index: 10;
+  transition: top 0.2s ease, bottom 0.2s ease;
+}
+
+.ai-badge--bottom-right {
+  top: auto;
+  bottom: 12px;
 }
 
 .ai-icon {
