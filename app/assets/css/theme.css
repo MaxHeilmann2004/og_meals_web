@@ -150,19 +150,31 @@ html, body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
+/* Custom scrollbar styling.
+   IMPORTANT: We DO NOT customize ::-webkit-scrollbar on every element, because
+   on macOS that disables the native floating overlay scrollbar and forces a
+   classic scrollbar that reserves layout space. Instead, we opt into custom
+   scrollbars only on the main page body, where overlay isn't desirable. */
+html, body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-outline-variant) var(--color-surface-container-low);
+}
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
-::-webkit-scrollbar-track {
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
   background: var(--color-surface-container-low);
 }
-::-webkit-scrollbar-thumb {
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
   background: var(--color-outline-variant);
   border-radius: 4px;
 }
-::-webkit-scrollbar-thumb:hover {
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
   background: var(--color-outline);
 }
 
