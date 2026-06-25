@@ -483,7 +483,7 @@ const sustainabilityTextShort = computed(() => {
 const reviewStatsSummary = computed(() => {
   const stats = localMeal.value?.reviewStats
   if (!stats || stats.totalReviews === 0) return 'Keine Bewertungen'
-  return `${formatNumber(stats.averageStars, 1)} ★ (${stats.totalReviews})`
+  return `${formatNumber(stats.averageStars, 1)} (${stats.totalReviews})`
 })
 
 const energyValue = computed(() => {
