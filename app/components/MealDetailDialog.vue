@@ -379,7 +379,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { computed, ref, watch, onUnmounted, nextTick } from 'vue'
 import type { Canteen, Meal, MealFeature, MealReviewItem, MealReviewStats, PaginatedMealReviewsResponse } from '~/types/meals'
 import { useFilterStore } from '~/stores/filters'
 import { getFeatureColor, getFeatureIconUrl } from '~/utils/mealFeatures'
@@ -744,6 +744,19 @@ watch(() => newReview.value.star, (star) => {
 
 watch(isReviewFormExpanded, (expanded) => {
   if (expanded) {
+    // Inject the Turnstile API script on demand so the page doesn't pay for
+    // it (or for Cloudflare's preloaded challenge platform) until needed.
+    if (typeof window !== 'undefined'
+      && !(window as any).turnstile
+      && !document.querySelector('script[data-turnstile]')) {
+      const script = document.createElement('script')
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+      script.async = true
+      script.defer = true
+      script.dataset.turnstile = 'true'
+      document.head.appendChild(script)
+    }
+
     // Wait for v-show to make the container visible before rendering Turnstile
     // Using setTimeout to ensure the element is in the render tree and visible
     setTimeout(() => {
@@ -773,16 +786,6 @@ watch(isReviewFormExpanded, (expanded) => {
       turnstileWidgetId.value = null
       turnstileToken.value = ''
     }
-  }
-})
-
-onMounted(() => {
-  if (typeof window !== 'undefined' && !(window as any).turnstile) {
-    const script = document.createElement('script')
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
-    script.async = true
-    script.defer = true
-    document.head.appendChild(script)
   }
 })
 
