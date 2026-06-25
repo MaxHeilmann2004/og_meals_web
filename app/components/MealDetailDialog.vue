@@ -245,7 +245,7 @@
                           <var-rate
                             readonly
                             :model-value="rev.star"
-                            size="13"
+                            size="18"
                             color="var(--color-primary)"
                             empty-color="var(--color-outline-variant)"
                           />
@@ -355,7 +355,7 @@
                       <var-rate
                         readonly
                         :model-value="rev.star"
-                        size="13"
+                        size="18"
                         color="var(--color-primary)"
                         empty-color="var(--color-outline-variant)"
                       />
@@ -702,6 +702,18 @@ watch(() => props.show, async (show) => {
     
     await fetchReviews(props.meal.id)
   } else {
+    // Remove the Turnstile widget now, while its container is still in the DOM.
+    // Doing it later (in @closed/onClosed) is too late — Vue has already torn
+    // down the v-if="meal && canteen" tree, so Turnstile can't find its widget
+    // and logs "Cannot find Widget cf-chl-widget-…".
+    if (typeof window !== 'undefined' && (window as any).turnstile && turnstileWidgetId.value !== null) {
+      try {
+        (window as any).turnstile.remove(turnstileWidgetId.value)
+      } catch (e) {}
+      turnstileWidgetId.value = null
+      turnstileToken.value = ''
+    }
+
     if (typeof window !== 'undefined') {
       window.removeEventListener('popstate', handlePopState)
       if (history.state?.dialogOpen) {
@@ -925,6 +937,14 @@ onUnmounted(() => {
   .hero-media {
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+  }
+
+  /* On mobile the hero has no rounded corners, so all carousel item corners
+     should just use the carousel's own 28px radius uniformly. */
+  .hero-media :deep(.carousel-item),
+  .hero-media :deep(.carousel-item:first-child),
+  .hero-media :deep(.carousel-item:last-child) {
+    border-radius: 28px;
   }
 }
 
@@ -1241,8 +1261,22 @@ onUnmounted(() => {
   border-radius: 12px !important;
   border: 1px solid var(--color-outline-variant) !important;
   padding: 8px 12px !important;
-  --input-placeholder-color: var(--color-on-surface-variant);
-  --input-input-text-color: var(--color-on-surface);
+}
+
+/* Force theme-aware text colors inside Varlet's input (which otherwise hardcodes
+   colors that don't follow our CSS variables in dark mode). */
+.custom-textarea :deep(textarea),
+.custom-textarea :deep(.var-input__input) {
+  color: var(--color-on-surface) !important;
+  caret-color: var(--color-on-surface) !important;
+}
+.custom-textarea :deep(textarea::placeholder),
+.custom-textarea :deep(.var-input__placeholder) {
+  color: var(--color-on-surface-variant) !important;
+  opacity: 0.7;
+}
+.custom-textarea :deep(.var-input__count) {
+  color: var(--color-on-surface-variant) !important;
 }
 
 @media (max-width: 767px) {
@@ -1362,14 +1396,21 @@ onUnmounted(() => {
   }
 }
 
-.review-card:hover {
-  border-color: color-mix(in srgb, var(--color-primary) 20%, var(--color-outline-variant));
-}
-
 .review-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+/* Readonly rate inside review cards: no interactive hover styles and a bit larger. */
+.review-card-header :deep(.var-rate__content) {
+  cursor: default !important;
+  padding: 0 1px !important;
+  background: transparent !important;
+}
+.review-card-header :deep(.var-rate__content .var-hover-overlay),
+.review-card-header :deep(.var-rate__content .var-ripple) {
+  display: none !important;
 }
 
 .review-card-date {
