@@ -28,6 +28,7 @@
       <div class="dialog-layout-wrapper">
         <!-- ── Left Column: Meal Details ── -->
         <div class="dialog-left-col">
+          <div class="dialog-left-col-scroll">
           <div class="hero-media">
             <HorizontalCenteredHeroCarousel
               v-if="meal.images && meal.images.length > 1"
@@ -261,6 +262,7 @@
                 </div>
               </var-collapse-item>
             </var-collapse>
+          </div>
           </div>
         </div>
 
@@ -855,20 +857,35 @@ onUnmounted(() => {
   }
 }
 
-/* Left Column: Meal Details Card */
+/* Left Column: Meal Details Card.
+   The column itself is the rounded "frame" with overflow:hidden so the inner
+   scroll container's scrollbar gets clipped at the rounded corners (otherwise
+   the rectangular scrollbar visually extends past the curve). */
 .dialog-left-col {
   flex: 0 0 calc(57% - 8px); /* Fixed width — never shrinks/grows */
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto;
-  overflow-y: overlay; /* Floating scrollbar */
+  overflow: hidden;
   background: var(--color-surface-container-low);
   border-radius: 32px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
   border: 1px solid var(--color-outline-variant);
   position: relative;
   transform: translateZ(0); /* For corner clipping */
+}
+
+/* The actual scrollable layer. Has the same background so rubber-band
+   overscroll on macOS doesn't reveal any transparent area between the
+   content end and the dialog border. */
+.dialog-left-col-scroll {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  background: var(--color-surface-container-low);
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 767px) {
@@ -881,6 +898,12 @@ onUnmounted(() => {
     border-radius: 0;
     box-shadow: none;
     border: none;
+  }
+  .dialog-left-col-scroll {
+    flex: none;
+    height: auto;
+    overflow: visible;
+    background: transparent;
   }
 }
 
