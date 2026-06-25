@@ -13,16 +13,16 @@ export default defineConfig({
       ...preset.maskable,
       resizeOptions: {
         ...preset.maskable.resizeOptions,
-        background: '#EE0020',
+        background: '#201A19',
       },
     },
     apple: {
       ...preset.apple,
       resizeOptions: {
         ...preset.apple.resizeOptions,
-        background: '#EE0020',
+        background: '#201A19',
       },
     },
   },
-  images: ['public/pwa-icon.svg'],
+  images: ['public/icon.svg'],
 })

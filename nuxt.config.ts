@@ -42,7 +42,7 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
-        { rel: 'icon', href: '/pwa-icon.svg', sizes: 'any', type: 'image/svg+xml' },
+        { rel: 'icon', href: '/icon.svg', sizes: 'any', type: 'image/svg+xml' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' }
       ]
     }
@@ -56,7 +56,7 @@ export default defineNuxtConfig({
       description: 'Browse and filter OG canteen meals as a native-feeling app.',
       lang: 'en',
       theme_color: '#EE0020',
-      background_color: '#FDF7F8',
+      background_color: '#201A19',
       display: 'standalone',
       orientation: 'portrait',
       start_url: '/',
@@ -69,33 +69,22 @@ export default defineNuxtConfig({
       ]
     },
     workbox: {
-      globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff,woff2}'],
-      navigateFallback: '/',
+      // No precaching, no runtime caching: app requires network.
+      // The service worker exists only to satisfy PWA install criteria.
+      globPatterns: [],
+      navigateFallback: null,
       cleanupOutdatedCaches: true,
-      runtimeCaching: [
-        {
-          urlPattern: ({ request }) => request.destination === 'image',
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'images',
-            expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 }
-          }
-        },
-        {
-          urlPattern: ({ request }) => ['style', 'script', 'worker'].includes(request.destination),
-          handler: 'StaleWhileRevalidate',
-          options: { cacheName: 'assets' }
-        }
-      ]
+      skipWaiting: true,
+      clientsClaim: true,
+      runtimeCaching: []
     },
     client: {
       installPrompt: true,
+      // Re-check for a new service worker every hour while the app is open.
       periodicSyncForUpdates: 3600
     },
     devOptions: {
-      enabled: true,
-      type: 'module',
-      navigateFallback: '/'
+      enabled: false
     }
   }
 })
