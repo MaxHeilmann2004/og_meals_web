@@ -6,6 +6,9 @@
 .cache
 dist
 
+# Vite PWA dev service worker output
+dev-dist
+
 # Node dependencies
 node_modules
 

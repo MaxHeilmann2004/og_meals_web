@@ -22,6 +22,8 @@
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
+    "@vite-pwa/assets-generator": "^1.0.2",
+    "@vite-pwa/nuxt": "^1.1.1",
     "typescript": "^5.9.3",
     "vue-tsc": "^3.3.5"
   }
