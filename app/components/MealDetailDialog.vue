@@ -648,12 +648,22 @@ const submitReview = async () => {
 
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr)
+  const now = new Date()
+  const diffMs = now.getTime() - d.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Gerade eben'
+  if (diffMins < 60) return `Vor ${diffMins} Min.`
+  if (diffHours < 24) return `Vor ${diffHours} Std.`
+  if (diffDays === 1) return 'Gestern'
+  if (diffDays < 7) return `Vor ${diffDays} Tagen`
+
   return d.toLocaleDateString('de-DE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+    day: 'numeric',
+    month: 'short',
+    year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
   })
 }
 
@@ -1417,6 +1427,9 @@ onUnmounted(() => {
   font-size: 0.8rem;
   color: var(--color-on-surface-variant);
   opacity: 0.75;
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 
 .review-card-comment {
