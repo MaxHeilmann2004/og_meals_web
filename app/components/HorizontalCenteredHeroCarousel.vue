@@ -28,9 +28,11 @@
         />
       </div>
       <!-- AI Suggested Badge placed relative to the clipping mask container -->
-      <div v-if="image.aiSuggested" class="ai-badge" :class="`ai-badge--${badgePosition}`" title="AI suggested image">
-        <img src="/ic_ai.svg" alt="AI Icon" class="ai-icon" />
-      </div>
+      <AiBadge
+        v-if="image.aiSuggested"
+        :absolute="true"
+        :position="badgePosition"
+      />
     </div>
   </div>
 </template>
@@ -276,36 +278,15 @@ onUnmounted(() => {
 }
 
 /* Specific styling for inactive pill state */
-.ai-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
+/* Specific styling for inactive pill state */
+:deep(.ai-badge) {
   pointer-events: none;
   transition: right 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.ai-badge--bottom-right {
-  top: auto;
-  bottom: 12px;
-}
-
 @container (max-width: 60px) {
-  .ai-badge {
+  :deep(.ai-badge) {
     right: calc(50% - 16px) !important; /* Center horizontally when container is narrow (pilled) */
   }
-}
-
-.ai-icon {
-  width: 18px;
-  height: 18px;
-  filter: brightness(0) invert(1);
 }
 </style>

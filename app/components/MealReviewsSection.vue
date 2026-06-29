@@ -6,36 +6,22 @@
         <h3 class="reviews-heading" style="margin: 0;">Gericht bewerten</h3>
         <!-- Custom star input always visible - hover preview + click to expand -->
         <div class="star-input-row">
-          <button
-            v-for="n in 5"
-            :key="n"
-            class="star-btn"
+          <button v-for="n in 5" :key="n" class="star-btn"
             :class="{ filled: n <= (hoverStar > 0 ? hoverStar : newReview.star), hovered: hoverStar > 0 && n <= hoverStar }"
-            @mouseenter="hoverStar = n"
-            @mouseleave="hoverStar = 0"
-            @click="newReview.star = n"
-            :aria-label="`${n} Stern${n > 1 ? 'e' : ''}`"
-          >
+            @mouseenter="hoverStar = n" @mouseleave="hoverStar = 0" @click="newReview.star = n"
+            :aria-label="`${n} Stern${n > 1 ? 'e' : ''}`">
             <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/>
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z" />
             </svg>
           </button>
         </div>
       </div>
-      
+
       <Transition name="review-expand">
         <div v-if="isReviewFormExpanded" class="add-review-body">
           <div class="review-form-comment">
-            <var-input
-              v-model="newReview.comment"
-              textarea
-              rows="3"
-              :maxlength="500"
-              show-word-limit
-              placeholder="Schreibe eine Bewertung zum Gericht..."
-              :line="false"
-              class="custom-textarea"
-            />
+            <var-input v-model="newReview.comment" textarea rows="3" :maxlength="500" show-word-limit
+              placeholder="Schreibe eine Bewertung zum Gericht..." :line="false" class="custom-textarea" />
           </div>
 
           <!-- Turnstile Widget -->
@@ -44,14 +30,9 @@
           </div>
 
           <div class="review-form-actions">
-            <var-button
-              type="primary"
+            <var-button type="primary"
               :disabled="isSubmitting || newReview.star === 0 || !newReview.comment.trim() || !turnstileToken"
-              :loading="isSubmitting"
-              block
-              class="submit-review-btn"
-              @click="submitReview"
-            >
+              :loading="isSubmitting" block class="submit-review-btn" @click="submitReview">
               Bewertung senden
             </var-button>
           </div>
@@ -85,17 +66,13 @@
         <div v-else class="reviews-cards-list">
           <div v-for="rev in reviews" :key="rev.id" class="review-card">
             <div class="review-card-header">
-              <var-rate
-                readonly
-                :model-value="rev.star"
-                size="18"
-                color="var(--color-primary)"
-                empty-color="var(--color-outline-variant)"
-              />
+              <var-rate readonly :model-value="rev.star" size="18" color="var(--color-primary)"
+                empty-color="var(--color-outline-variant)" />
               <span class="review-card-date">{{ formatDate(rev.createdAt) }}</span>
             </div>
             <p class="review-card-comment">{{ rev.comment }}</p>
-            <span v-if="!rev.isFromOriginalMeal" class="propagated-tag">
+            <span v-if="!rev.isFromOriginalMeal && rev.matchType === 'similarity'" class="propagated-tag">
+              <AiBadge :inline="true" />
               Ähnliches Gericht
             </span>
           </div>
@@ -153,12 +130,12 @@ const renderTurnstile = () => {
     if (turnstileWidgetId.value !== null) {
       try {
         (window as any).turnstile.remove(turnstileWidgetId.value)
-      } catch (e) {}
+      } catch (e) { }
       turnstileWidgetId.value = null
     }
-    
+
     const siteKey = runtimeConfig.public.turnstileSiteKey || '0x4AAAAAADqKcwY5vdT51caz'
-    
+
     turnstileWidgetId.value = (window as any).turnstile.render(containerId, {
       sitekey: siteKey,
       appearance: 'always',
@@ -232,13 +209,13 @@ const submitReview = async () => {
       newReview.value.star = 0
       newReview.value.comment = ''
       turnstileToken.value = ''
-      
+
       if (typeof window !== 'undefined' && (window as any).turnstile && turnstileWidgetId.value !== null) {
         try {
           (window as any).turnstile.reset(turnstileWidgetId.value)
-        } catch (e) {}
+        } catch (e) { }
       }
-      
+
       await fetchReviews(props.mealId)
     }
   } catch (err: any) {
@@ -298,7 +275,7 @@ watch(() => props.show, (show) => {
     if (typeof window !== 'undefined' && (window as any).turnstile && turnstileWidgetId.value !== null) {
       try {
         (window as any).turnstile.remove(turnstileWidgetId.value)
-      } catch (e) {}
+      } catch (e) { }
       turnstileWidgetId.value = null
       turnstileToken.value = ''
     }
@@ -349,7 +326,7 @@ watch(isReviewFormExpanded, (expanded) => {
     if (typeof window !== 'undefined' && (window as any).turnstile && turnstileWidgetId.value !== null) {
       try {
         (window as any).turnstile.remove(turnstileWidgetId.value)
-      } catch (e) {}
+      } catch (e) { }
       turnstileWidgetId.value = null
       turnstileToken.value = ''
     }
@@ -360,7 +337,7 @@ onUnmounted(() => {
   if (typeof window !== 'undefined' && (window as any).turnstile && turnstileWidgetId.value !== null) {
     try {
       (window as any).turnstile.remove(turnstileWidgetId.value)
-    } catch (e) {}
+    } catch (e) { }
     turnstileWidgetId.value = null
   }
 })
@@ -577,6 +554,9 @@ onUnmounted(() => {
 }
 
 .propagated-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.72rem;
   color: var(--color-primary);
   background: color-mix(in srgb, var(--color-primary) 10%, transparent);

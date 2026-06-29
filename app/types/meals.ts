@@ -90,6 +90,7 @@ export interface MealReviewItem {
   createdAt: string
   mealId: number
   isFromOriginalMeal: boolean
+  matchType?: "original" | "hash" | "similarity" | null
 }
 
 export interface Pagination {

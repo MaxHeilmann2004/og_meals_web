@@ -20,9 +20,11 @@
     </div>
 
     <!-- AI Suggested Badge -->
-    <div v-if="mealImage.aiSuggested && showAiBadge" class="ai-badge" :class="`ai-badge--${badgePosition}`" title="AI suggested image">
-      <img src="/ic_ai.svg" alt="AI Icon" class="ai-icon" />
-    </div>
+    <AiBadge
+      v-if="mealImage.aiSuggested && showAiBadge"
+      :absolute="true"
+      :position="badgePosition"
+    />
   </div>
 </template>
 
@@ -157,29 +159,4 @@ onMounted(() => {
   pointer-events: none;
 }
 
-.ai-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  transition: top 0.2s ease, bottom 0.2s ease;
-}
-
-.ai-badge--bottom-right {
-  top: auto;
-  bottom: 12px;
-}
-
-.ai-icon {
-  width: 18px;
-  height: 18px;
-  filter: brightness(0) invert(1); /* Ensure it renders white */
-}
 </style>
