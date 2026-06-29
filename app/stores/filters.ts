@@ -23,16 +23,22 @@ export const useFilterStore = defineStore(
     const isFilterOpen = ref(false)
 
     // --- Getters ---
-    const isCanteenEnabled = (id: number): boolean =>
-      enabledCanteens.value[id] !== false // new ids default to true
+    const isCanteenEnabled = (id: number): boolean => {
+      const val = enabledCanteens.value[id]
+      if (val === undefined) {
+        return id !== 4 && id !== 9
+      }
+      return val
+    }
 
     const isFeatureExcluded = (id: number): boolean =>
       excludedFeatures.value[id] === true // new ids default to false
 
     const activeFilterCount = computed(() => {
       let count = 0
-      for (const val of Object.values(enabledCanteens.value)) {
-        if (val === false) count++
+      for (const [idStr, val] of Object.entries(enabledCanteens.value)) {
+        const id = Number(idStr)
+        if (val === false && id !== 4 && id !== 9) count++
       }
       for (const val of Object.values(excludedFeatures.value)) {
         if (val === true) count++
@@ -45,7 +51,7 @@ export const useFilterStore = defineStore(
     function initFromCanteens(canteens: { id: number }[]) {
       for (const c of canteens) {
         if (enabledCanteens.value[c.id] === undefined) {
-          enabledCanteens.value[c.id] = true
+          enabledCanteens.value[c.id] = c.id !== 4 && c.id !== 9
         }
       }
     }
