@@ -74,6 +74,7 @@ interface Canteen {
   id: number
   name: string
   displayName: string
+  orderInApp: number
 }
 
 defineProps<{ canteens: Canteen[] }>()

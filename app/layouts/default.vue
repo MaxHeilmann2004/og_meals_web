@@ -39,6 +39,7 @@ interface Canteen {
   id: number
   name: string
   displayName: string
+  orderInApp: number
 }
 
 const canteens = ref<Canteen[]>([])

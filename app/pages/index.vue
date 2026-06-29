@@ -79,7 +79,7 @@ import type { Canteen, Meal, MealsApiResponse } from '~/types/meals'
 import { useFilterStore } from '~/stores/filters'
 
 const filterStore = useFilterStore()
-const setLayoutCanteens = inject<(c: Pick<Canteen, 'id' | 'name' | 'displayName'>[]) => void>('setLayoutCanteens')
+const setLayoutCanteens = inject<(c: Pick<Canteen, 'id' | 'name' | 'displayName' | 'orderInApp'>[]) => void>('setLayoutCanteens')
 
 const dayNames = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']
 
@@ -134,13 +134,20 @@ const { data, pending, error, refresh } = await useAsyncData<MealsApiResponse>(
   () => $fetch(`https://3b-meals.mh-home.net/meals?start=${startOfWeekStr}&end=${endOfWeekStr}`)
 )
 
-const rawCanteens = computed(() => data.value?.canteens ?? [])
+const rawCanteens = computed(() => {
+  const canteens = data.value?.canteens ?? []
+  return [...canteens].sort((a, b) => {
+    const aOrder = a.orderInApp ?? Number.MAX_SAFE_INTEGER
+    const bOrder = b.orderInApp ?? Number.MAX_SAFE_INTEGER
+    return aOrder - bOrder
+  })
+})
 const rawMeals = computed(() => data.value?.meals ?? [])
 
 // Sync canteen list to filter store and layout whenever data arrives
 watch(rawCanteens, (canteens) => {
   filterStore.initFromCanteens(canteens)
-  setLayoutCanteens?.(canteens.map(c => ({ id: c.id, name: c.name, displayName: c.displayName })))
+  setLayoutCanteens?.(canteens.map(c => ({ id: c.id, name: c.name, displayName: c.displayName, orderInApp: c.orderInApp })))
 }, { immediate: true })
 
 // Group meals by canteen for the selected day, applying active filters

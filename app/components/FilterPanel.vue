@@ -3,7 +3,7 @@
     <h3 class="filter-section-title">Kantinen</h3>
     <div class="filter-chips-grid">
       <button
-        v-for="canteen in canteens"
+        v-for="canteen in sortedCanteens"
         :key="canteen.id"
         class="filter-chip"
         :class="{ 'is-active': filterStore.isCanteenEnabled(canteen.id) }"
@@ -55,17 +55,27 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useFilterStore, EXCLUDE_FEATURES } from '~/stores/filters'
 
 interface Canteen {
   id: number
   name: string
   displayName: string
+  orderInApp: number
 }
 
-defineProps<{
+const props = defineProps<{
   canteens: Canteen[]
 }>()
+
+const sortedCanteens = computed(() => {
+  return [...props.canteens].sort((a, b) => {
+    const aOrder = a.orderInApp ?? Number.MAX_SAFE_INTEGER
+    const bOrder = b.orderInApp ?? Number.MAX_SAFE_INTEGER
+    return aOrder - bOrder
+  })
+})
 
 const filterStore = useFilterStore()
 const excludeFeatures = EXCLUDE_FEATURES
