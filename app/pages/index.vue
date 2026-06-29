@@ -155,11 +155,31 @@ const filteredCanteens = computed(() => {
   return rawCanteens.value
     .filter(c => filterStore.isCanteenEnabled(c.id))
     .map(c => {
-      const mealsForSelectedDay = rawMeals.value.filter(meal =>
-        Number(meal.canteenId) === c.id
-        && meal.date.split('T')[0] === selectedDayDateStr.value
-        && !meal.features?.some(f => filterStore.isFeatureExcluded(f.id))
-      )
+      const mealsForSelectedDay = rawMeals.value.filter(meal => {
+        if (Number(meal.canteenId) !== c.id) return false
+        if (meal.date.split('T')[0] !== selectedDayDateStr.value) return false
+
+        // Exclusions
+        if (meal.features?.some(f => filterStore.isFeatureExcluded(f.id))) return false
+
+        // Inclusions
+        const activeIncludes = Object.keys(filterStore.includedFeatures)
+          .map(Number)
+          .filter(id => filterStore.isFeatureIncluded(id))
+
+        if (activeIncludes.length > 0) {
+          const satisfiesAll = activeIncludes.every(incId => {
+            if (incId === 25) {
+              // Vegetarian includes both vegetarian and vegan dishes
+              return meal.features?.some(f => f.id === 25 || f.id === 11)
+            }
+            return meal.features?.some(f => f.id === incId)
+          })
+          if (!satisfiesAll) return false
+        }
+
+        return true
+      })
       return { ...c, mealsForSelectedDay }
     })
     .filter(c => c.mealsForSelectedDay.length > 0)

@@ -41,6 +41,31 @@
 
     <div class="filter-divider"></div>
 
+    <h3 class="filter-section-title">Ernährung</h3>
+    <p class="filter-section-hint">Nur Gerichte mit diesen Merkmalen anzeigen</p>
+    <div class="filter-chips-grid">
+      <button
+        v-for="feature in includeFeatures"
+        :key="feature.id"
+        class="filter-chip include-chip"
+        :class="{ 'is-active': filterStore.isFeatureIncluded(feature.id) }"
+        @click="filterStore.toggleFeatureInclusion(feature.id)"
+      >
+        <div
+          v-if="feature.icon"
+          class="chip-icon-mask"
+          :style="{
+            maskImage: `url(${feature.icon})`,
+            webkitMaskImage: `url(${feature.icon})`
+          }"
+        ></div>
+        <span class="chip-label">{{ feature.name }}</span>
+        <span v-if="filterStore.isFeatureIncluded(feature.id)" class="chip-check">✓</span>
+      </button>
+    </div>
+
+    <div class="filter-divider"></div>
+
     <h3 class="filter-section-title">Preise</h3>
     <div class="filter-switch-row" @click="filterStore.toggleStudentPrices()">
       <span class="switch-label">Studierendenpreise anzeigen</span>
@@ -56,7 +81,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useFilterStore, EXCLUDE_FEATURES } from '~/stores/filters'
+import { useFilterStore, EXCLUDE_FEATURES, INCLUDE_FEATURES } from '~/stores/filters'
 
 interface Canteen {
   id: number
@@ -79,6 +104,7 @@ const sortedCanteens = computed(() => {
 
 const filterStore = useFilterStore()
 const excludeFeatures = EXCLUDE_FEATURES
+const includeFeatures = INCLUDE_FEATURES
 </script>
 
 <style scoped>
@@ -145,6 +171,18 @@ const excludeFeatures = EXCLUDE_FEATURES
   background-color: var(--color-danger-container);
   border-color: var(--color-danger-container);
   color: var(--color-on-danger-container);
+}
+
+.filter-chip.include-chip.is-active {
+  background-color: #e8f5e9;
+  border-color: #c8e6c9;
+  color: #2e7d32;
+}
+
+[var-theme="dark"] .filter-chip.include-chip.is-active {
+  background-color: #1b5e20;
+  border-color: #2e7d32;
+  color: #a5d6a7;
 }
 
 .chip-icon-mask {
