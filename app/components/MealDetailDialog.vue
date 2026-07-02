@@ -35,6 +35,7 @@
                 :images="carouselImages"
                 :content-description="meal.title"
                 badge-position="bottom-right"
+                :item-border-radius-px="isMobile ? 28 : 32"
               />
               <div v-else-if="meal.images && meal.images.length === 1" class="single-image-wrapper">
                 <MealImage
@@ -204,10 +205,7 @@ const showStudentPrice = computed(() => filterStore.showStudentPrices && !!meal.
 
 const carouselImages = computed(() => {
   if (!meal.value?.images) return []
-  return meal.value.images.map((img, idx) => ({
-    ...img,
-    aiSuggested: idx === 0 ? true : img.aiSuggested,
-  }))
+  return meal.value.images
 })
 
 const cleanedTitle = computed(() => {

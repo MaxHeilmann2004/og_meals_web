@@ -30,11 +30,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-
-interface MealImageDto {
-  url: string
-  aiSuggested: boolean
-}
+import type { MealImageDto } from '~/types/meals'
 
 const props = withDefaults(
   defineProps<{

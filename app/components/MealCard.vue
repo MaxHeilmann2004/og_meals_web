@@ -15,6 +15,8 @@
         v-if="meal.images && meal.images.length > 1"
         :images="carouselImages"
         :content-description="meal.title"
+        :item-border-radius-px="28"
+        :collapsed-pill-width-px="44"
       />
       <div v-else-if="meal.images && meal.images.length === 1" class="single-image-wrapper">
         <MealImage
@@ -96,13 +98,9 @@ const starClass = (i: number) => {
   return 'star-empty'
 }
 
-// Test simulation setting first image of sliders as AI suggested (matches native app logic)
 const carouselImages = computed(() => {
   if (!props.meal.images) return []
-  return props.meal.images.map((img, idx) => ({
-    ...img,
-    aiSuggested: idx === 0 ? true : img.aiSuggested
-  }))
+  return props.meal.images
 })
 
 // Clean up title by removing multiple lines and extra spaces

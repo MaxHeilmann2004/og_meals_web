@@ -15,7 +15,8 @@
       }"
       :style="{
         flex: getFlexForIndex(index),
-        transition: isInteracting ? 'none' : 'flex 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
+        borderRadius: `${itemBorderRadiusPx}px`,
+        transition: isInteracting || !hasMeasuredLayout || isLayoutResizing ? 'none' : 'flex 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)'
       }"
       @click="onItemClick($event, index)"
     >
@@ -39,27 +40,27 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-
-interface MealImageDto {
-  url: string
-  aiSuggested: boolean
-}
+import type { MealImageDto } from '~/types/meals'
 
 const props = defineProps<{
   images: MealImageDto[]
   contentDescription: string
   badgePosition?: 'top-right' | 'bottom-right'
+  itemBorderRadiusPx?: number
+  collapsedPillWidthPx?: number
 }>()
 
 const badgePosition = computed(() => props.badgePosition ?? 'top-right')
+const itemBorderRadiusPx = computed(() => props.itemBorderRadiusPx ?? 28)
+const collapsedPillWidthPx = computed(() => props.collapsedPillWidthPx)
 
 const activeIndex = ref(0)
 const containerRef = ref<HTMLElement | null>(null)
 const containerWidth = ref(0)
+const hasMeasuredLayout = ref(false)
+const isLayoutResizing = ref(true)
 
 const CAROUSEL_GAP_PX = 8
-const CAROUSEL_BORDER_RADIUS_PX = 28
-const COLLAPSED_PILL_WIDTH_PX = 44
 
 // Interaction states
 const isInteracting = ref(false)
@@ -129,6 +130,29 @@ const onTouchEnd = () => {
 let accumulatedDelta = 0
 let wheelTimeout: ReturnType<typeof setTimeout> | null = null
 let resizeObserver: ResizeObserver | null = null
+let layoutReadyRaf: number | null = null
+let resizeSettleTimeout: ReturnType<typeof setTimeout> | null = null
+
+const markLayoutReady = () => {
+  if (hasMeasuredLayout.value || layoutReadyRaf != null) return
+  layoutReadyRaf = window.requestAnimationFrame(() => {
+    hasMeasuredLayout.value = true
+    layoutReadyRaf = null
+  })
+}
+
+const markLayoutResizing = () => {
+  isLayoutResizing.value = true
+
+  if (resizeSettleTimeout) {
+    clearTimeout(resizeSettleTimeout)
+  }
+
+  resizeSettleTimeout = setTimeout(() => {
+    isLayoutResizing.value = false
+    resizeSettleTimeout = null
+  }, 140)
+}
 
 const onWheel = (e: WheelEvent) => {
   // Only capture horizontal scrolling
@@ -182,7 +206,9 @@ const getBaseFlexValues = () => {
   }
 
   const availableWidth = Math.max(width - CAROUSEL_GAP_PX * (imageCount - 1), 1)
-  const pillWidth = Math.min(COLLAPSED_PILL_WIDTH_PX, availableWidth / imageCount)
+  const derivedPillWidth = Math.max(itemBorderRadiusPx.value * 2, 1)
+  const configuredPillWidth = collapsedPillWidthPx.value ?? derivedPillWidth
+  const pillWidth = Math.min(Math.max(configuredPillWidth, 1), availableWidth / imageCount)
   const activeWidth = Math.max(availableWidth - pillWidth * (imageCount - 1), pillWidth)
 
   return {
@@ -251,11 +277,15 @@ const onItemClick = (event: MouseEvent, index: number) => {
 onMounted(() => {
   if (containerRef.value) {
     containerWidth.value = containerRef.value.clientWidth
+    markLayoutResizing()
+    markLayoutReady()
 
     resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0]
       if (!entry) return
       containerWidth.value = entry.contentRect.width
+      markLayoutResizing()
+      markLayoutReady()
     })
 
     resizeObserver.observe(containerRef.value)
@@ -273,6 +303,16 @@ onUnmounted(() => {
   if (resizeObserver) {
     resizeObserver.disconnect()
     resizeObserver = null
+  }
+
+  if (layoutReadyRaf != null) {
+    window.cancelAnimationFrame(layoutReadyRaf)
+    layoutReadyRaf = null
+  }
+
+  if (resizeSettleTimeout) {
+    clearTimeout(resizeSettleTimeout)
+    resizeSettleTimeout = null
   }
 })
 </script>
@@ -298,7 +338,7 @@ onUnmounted(() => {
 
 .carousel-item {
   height: 100%;
-  border-radius: 28px; /* Keep in sync with CAROUSEL_BORDER_RADIUS_PX in script */
+  border-radius: 28px;
   overflow: hidden;
   cursor: pointer;
   position: relative;
