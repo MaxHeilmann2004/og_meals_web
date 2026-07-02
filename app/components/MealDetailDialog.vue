@@ -108,6 +108,33 @@
                     @stats-updated="updateReviewStats"
                   />
                 </var-collapse-item>
+
+                <var-collapse-item
+                  v-if="isAdmin"
+                  name="admin-tools"
+                  title="Admin Tools"
+                >
+                  <div class="admin-tools-panel">
+                    <p class="admin-tools-note">
+                      This section is reserved for admin-only actions.
+                    </p>
+                    <p v-if="adminToken" class="admin-tools-token-state">Admin token is active.</p>
+                    <var-button
+                      type="primary"
+                      block
+                      @click="openRawJsonInNewTab"
+                    >
+                      Open Raw JSON in New Tab
+                    </var-button>
+                    <var-button
+                      type="info"
+                      block
+                      @click="openDetailedApiJsonInNewTab"
+                    >
+                      Open Detailed API JSON in New Tab
+                    </var-button>
+                  </div>
+                </var-collapse-item>
               </var-collapse>
             </div>
           </div>
@@ -141,6 +168,8 @@ const props = defineProps<{
   meal: Meal | null
   canteen: Canteen | null
   isMobile: boolean
+  isAdmin: boolean
+  adminToken: string
 }>()
 
 const emit = defineEmits<{
@@ -168,6 +197,8 @@ watch(() => props.canteen, (newCanteen) => {
 
 const meal = computed(() => localMeal.value)
 const canteen = computed(() => localCanteen.value)
+const isAdmin = computed(() => props.isAdmin)
+const adminToken = computed(() => props.adminToken)
 
 const showStudentPrice = computed(() => filterStore.showStudentPrices && !!meal.value?.studentPrice)
 
@@ -233,6 +264,37 @@ const updateReviewStats = (stats: MealReviewStats) => {
   if (localMeal.value) {
     localMeal.value.reviewStats = stats
   }
+}
+
+const openRawJsonInNewTab = () => {
+  if (!meal.value || typeof window === 'undefined') return
+
+  const rawJson = JSON.stringify(meal.value, null, 2)
+  const blob = new Blob([rawJson], { type: 'application/json' })
+  const objectUrl = URL.createObjectURL(blob)
+  window.open(objectUrl, '_blank', 'noopener,noreferrer')
+  window.setTimeout(() => {
+    URL.revokeObjectURL(objectUrl)
+  }, 10000)
+}
+
+const buildDetailedMealEndpoint = () => {
+  if (!meal.value) return null
+
+  const endpoint = new URL(`https://3b-meals.mh-home.net/meals/${meal.value.id}`)
+  if (adminToken.value) {
+    endpoint.searchParams.set('adminToken', adminToken.value)
+  }
+
+  return endpoint.toString()
+}
+
+const openDetailedApiJsonInNewTab = () => {
+  if (typeof window === 'undefined') return
+
+  const endpoint = buildDetailedMealEndpoint()
+  if (!endpoint) return
+  window.open(endpoint, '_blank', 'noopener,noreferrer')
 }
 
 const onClosed = () => {
@@ -588,6 +650,19 @@ onUnmounted(() => {
 
 :deep(.detail-collapse .var-collapse-item__content) {
   padding: 0 0 20px 0 !important;
+}
+
+.admin-tools-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-tools-note,
+.admin-tools-token-state {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-on-surface-variant);
 }
 
 @media (max-width: 767px) {

@@ -66,6 +66,8 @@
         :meal="selectedMeal"
         :canteen="selectedMealCanteen"
         :is-mobile="isMobile"
+        :is-admin="isAdmin"
+        :admin-token="adminToken"
         @update:show="isMealDialogOpen = $event"
       />
     </ClientOnly>
@@ -114,6 +116,15 @@ const formatDate = (date: Date) => {
 const weekDates = getWeekDates()
 const startOfWeekStr = formatDate(weekDates[0]!)
 const endOfWeekStr = formatDate(weekDates[4]!)
+const route = useRoute()
+
+const adminToken = computed(() => {
+  const rawToken = route.query.adminToken
+  const token = Array.isArray(rawToken) ? rawToken[0] : rawToken
+  return typeof token === 'string' ? token.trim() : ''
+})
+
+const isAdmin = computed(() => adminToken.value.length > 0)
 
 const getInitialDayIndex = () => {
   const day = new Date().getDay()
