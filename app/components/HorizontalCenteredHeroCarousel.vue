@@ -55,6 +55,11 @@ const badgePosition = computed(() => props.badgePosition ?? 'top-right')
 
 const activeIndex = ref(0)
 const containerRef = ref<HTMLElement | null>(null)
+const containerWidth = ref(0)
+
+const CAROUSEL_GAP_PX = 8
+const CAROUSEL_BORDER_RADIUS_PX = 28
+const COLLAPSED_PILL_WIDTH_PX = 44
 
 // Interaction states
 const isInteracting = ref(false)
@@ -123,6 +128,7 @@ const onTouchEnd = () => {
 // Trackpad/Mouse Wheel scrolling state
 let accumulatedDelta = 0
 let wheelTimeout: ReturnType<typeof setTimeout> | null = null
+let resizeObserver: ResizeObserver | null = null
 
 const onWheel = (e: WheelEvent) => {
   // Only capture horizontal scrolling
@@ -164,45 +170,69 @@ const onWheel = (e: WheelEvent) => {
 }
 
 // Custom flex width calculations during active drag/swipe
+const getBaseFlexValues = () => {
+  const imageCount = props.images.length
+  if (imageCount <= 1) {
+    return { active: 1, pill: 1 }
+  }
+
+  const width = containerWidth.value
+  if (width <= 0) {
+    return { active: 7.5, pill: 1 }
+  }
+
+  const availableWidth = Math.max(width - CAROUSEL_GAP_PX * (imageCount - 1), 1)
+  const pillWidth = Math.min(COLLAPSED_PILL_WIDTH_PX, availableWidth / imageCount)
+  const activeWidth = Math.max(availableWidth - pillWidth * (imageCount - 1), pillWidth)
+
+  return {
+    active: activeWidth / pillWidth,
+    pill: 1,
+  }
+}
+
 const getFlexForIndex = (index: number) => {
   if (props.images.length <= 1) return 1
+
+  const { active, pill } = getBaseFlexValues()
+  const delta = active - pill
 
   const current = activeIndex.value
   const p = liveProgress.value
 
   if (p === 0) {
-    return index === current ? 7.5 : 1
+    return index === current ? active : pill
   }
 
   if (p > 0) {
     // Transitioning forward (next slide)
     const target = Math.min(current + 1, props.images.length - 1)
     if (target === current) {
-      return index === current ? 7.5 : 1
+      return index === current ? active : pill
     }
 
     if (index === current) {
-      return 7.5 - p * 6.5
+      return active - p * delta
     }
     if (index === target) {
-      return 1.0 + p * 6.5
+      return pill + p * delta
     }
-    return 1
+    return pill
   } else {
     // Transitioning backward (previous slide)
     const target = Math.max(current - 1, 0)
     if (target === current) {
-      return index === current ? 7.5 : 1
+      return index === current ? active : pill
     }
 
     const absP = Math.abs(p)
     if (index === current) {
-      return 7.5 - absP * 6.5
+      return active - absP * delta
     }
     if (index === target) {
-      return 1.0 + absP * 6.5
+      return pill + absP * delta
     }
-    return 1
+    return pill
   }
 }
 
@@ -220,6 +250,15 @@ const onItemClick = (event: MouseEvent, index: number) => {
 
 onMounted(() => {
   if (containerRef.value) {
+    containerWidth.value = containerRef.value.clientWidth
+
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0]
+      if (!entry) return
+      containerWidth.value = entry.contentRect.width
+    })
+
+    resizeObserver.observe(containerRef.value)
     containerRef.value.addEventListener('wheel', onWheel, { passive: false })
     containerRef.value.addEventListener('touchmove', onTouchMove, { passive: false })
   }
@@ -229,6 +268,11 @@ onUnmounted(() => {
   if (containerRef.value) {
     containerRef.value.removeEventListener('wheel', onWheel)
     containerRef.value.removeEventListener('touchmove', onTouchMove)
+  }
+
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
   }
 })
 </script>
@@ -254,7 +298,7 @@ onUnmounted(() => {
 
 .carousel-item {
   height: 100%;
-  border-radius: 28px; /* Material 3 extraLarge / pill radius */
+  border-radius: 28px; /* Keep in sync with CAROUSEL_BORDER_RADIUS_PX in script */
   overflow: hidden;
   cursor: pointer;
   position: relative;
