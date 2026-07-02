@@ -120,6 +120,34 @@
                       This section is reserved for admin-only actions.
                     </p>
                     <p v-if="adminToken" class="admin-tools-token-state">Admin token is active.</p>
+                    <div v-if="adminToken" class="admin-image-actions">
+                      <p class="admin-image-actions-title">Delete cached images:</p>
+                      <div
+                        v-for="(image, index) in adminImages"
+                        :key="`${image.url}-${index}`"
+                        class="admin-image-row"
+                      >
+                        <img
+                          :src="resolveMealImageUrl(image.url)"
+                          :alt="`Image preview ${index + 1}`"
+                          class="admin-image-preview"
+                          loading="lazy"
+                        />
+                        <span class="admin-image-url" :title="image.url">{{ image.url }}</span>
+                        <var-button
+                          type="danger"
+                          size="small"
+                          :loading="deletingImageIndex === index"
+                          :disabled="deletingImageIndex !== null"
+                          @click="deleteMealImage(index, image.url)"
+                        >
+                          Delete
+                        </var-button>
+                      </div>
+                      <p v-if="adminImages.length === 0" class="admin-image-empty">No images available for this meal.</p>
+                    </div>
+                    <p v-if="imageDeleteError" class="admin-image-error">{{ imageDeleteError }}</p>
+                    <p v-if="imageDeleteSuccess" class="admin-image-success">{{ imageDeleteSuccess }}</p>
                     <var-button
                       type="primary"
                       block
@@ -157,7 +185,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onUnmounted } from 'vue'
-import type { Canteen, Meal, MealReviewStats } from '~/types/meals'
+import type { Canteen, Meal, MealImageDto, MealReviewStats } from '~/types/meals'
 import { useFilterStore } from '~/stores/filters'
 import MealNutritionTable from './MealNutritionTable.vue'
 import MealAllergensList from './MealAllergensList.vue'
@@ -200,6 +228,11 @@ const meal = computed(() => localMeal.value)
 const canteen = computed(() => localCanteen.value)
 const isAdmin = computed(() => props.isAdmin)
 const adminToken = computed(() => props.adminToken)
+const adminImages = computed<MealImageDto[]>(() => meal.value?.images ?? [])
+
+const deletingImageIndex = ref<number | null>(null)
+const imageDeleteError = ref<string | null>(null)
+const imageDeleteSuccess = ref<string | null>(null)
 
 const showStudentPrice = computed(() => filterStore.showStudentPrices && !!meal.value?.studentPrice)
 
@@ -295,10 +328,102 @@ const openDetailedApiJsonInNewTab = () => {
   window.open(endpoint, '_blank', 'noopener,noreferrer')
 }
 
+const resolveMealImageUrl = (url: string) => {
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  return `https://3b-meals.mh-home.net${url}`
+}
+
+const extractImageHashFromUrl = (imageUrl: string) => {
+  const stripFileExtension = (value: string) => value.replace(/\.[a-zA-Z0-9]+$/, '')
+
+  try {
+    const parsed = new URL(imageUrl, 'https://3b-meals.mh-home.net')
+    const pathParts = parsed.pathname.split('/').filter(Boolean)
+    const imgSegmentIndex = pathParts.indexOf('img')
+    const hashParts = imgSegmentIndex >= 0 ? pathParts.slice(imgSegmentIndex + 1) : pathParts
+
+    if (hashParts.length === 0) return null
+
+    if (hashParts.length === 1) {
+      const hash = stripFileExtension(hashParts[0] ?? '')
+      return hash || null
+    }
+
+    const firstHash = hashParts[0] ?? ''
+    const secondHash = stripFileExtension(hashParts[1] ?? '')
+    if (!firstHash || !secondHash) return null
+
+    return secondHash.startsWith(firstHash) ? secondHash : `${firstHash}${secondHash}`
+  } catch {
+    return null
+  }
+}
+
+const deleteMealImage = async (imageIndex: number, imageUrl: string) => {
+  if (!adminToken.value || deletingImageIndex.value !== null) return
+
+  imageDeleteError.value = null
+  imageDeleteSuccess.value = null
+
+  const imageHash = extractImageHashFromUrl(imageUrl)
+  if (!imageHash) {
+    imageDeleteError.value = 'Could not derive image hash from URL.'
+    return
+  }
+
+  if (typeof window !== 'undefined') {
+    const confirmed = window.confirm(`Delete image ${imageHash}? This cannot be undone.`)
+    if (!confirmed) return
+  }
+
+  deletingImageIndex.value = imageIndex
+
+  try {
+    const response = await $fetch<{ success?: boolean; data?: { linkedMealsDeleted?: number } }>(
+      `https://3b-meals.mh-home.net/img/admin/${encodeURIComponent(imageHash)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: adminToken.value,
+        },
+      }
+    )
+
+    const targetMeal = localMeal.value
+    if (targetMeal?.images) {
+      const imageAtIndex = targetMeal.images[imageIndex]
+      if (imageAtIndex?.url === imageUrl) {
+        targetMeal.images.splice(imageIndex, 1)
+      } else {
+        const fallbackIndex = targetMeal.images.findIndex(img => img.url === imageUrl)
+        if (fallbackIndex >= 0) {
+          targetMeal.images.splice(fallbackIndex, 1)
+        }
+      }
+    }
+
+    const linkedCount = response?.data?.linkedMealsDeleted
+    imageDeleteSuccess.value =
+      typeof linkedCount === 'number'
+        ? `Image deleted (${linkedCount} linked meal references removed).`
+        : 'Image deleted successfully.'
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Image deletion failed.'
+    imageDeleteError.value = message
+  } finally {
+    deletingImageIndex.value = null
+  }
+}
+
 const onClosed = () => {
   localMeal.value = null
   localCanteen.value = null
   openSections.value = []
+  deletingImageIndex.value = null
+  imageDeleteError.value = null
+  imageDeleteSuccess.value = null
 }
 
 const handlePopState = (event: PopStateEvent) => {
@@ -661,6 +786,69 @@ onUnmounted(() => {
   margin: 0;
   font-size: 0.9rem;
   color: var(--color-on-surface-variant);
+}
+
+.admin-image-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-image-actions-title {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-on-surface);
+  font-weight: 600;
+}
+
+.admin-image-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 10px;
+  background: var(--color-surface-container-low);
+}
+
+.admin-image-preview {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--color-outline-variant);
+  flex-shrink: 0;
+  background: var(--color-surface-container-high);
+}
+
+.admin-image-url {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-image-empty,
+.admin-image-error,
+.admin-image-success {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.admin-image-empty {
+  color: var(--color-on-surface-variant);
+}
+
+.admin-image-error {
+  color: var(--color-error);
+}
+
+.admin-image-success {
+  color: var(--color-primary);
 }
 
 @media (max-width: 767px) {
