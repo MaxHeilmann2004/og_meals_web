@@ -32,7 +32,7 @@
       </div>
     </Transition>
 
-    <!-- ── Tablet Dialog (768–1200px) ── -->
+    <!-- ── Dialog (>=768px, until there is enough room for a non-overlapping side panel) ── -->
     <Transition name="dialog-pop">
       <div v-if="isFilterOpen && mode === 'dialog'" class="filter-dialog">
         <div class="panel-header">
@@ -45,7 +45,7 @@
       </div>
     </Transition>
 
-    <!-- ── Desktop Side Panel (≥1200px) ── -->
+    <!-- ── Desktop Side Panel (only on very wide viewports) ── -->
     <!--
       position:fixed — completely out of document flow, so the meals
       layout never shifts. Stays anchored to the viewport while scrolling.
@@ -83,9 +83,21 @@ const filterStore = useFilterStore()
 const { width } = useWindowSize()
 const isFilterOpen = computed(() => filterStore.isFilterOpen)
 
+const MOBILE_BREAKPOINT_PX = 768
+const MEALS_CONTENT_MAX_WIDTH_PX = 1300
+const SIDE_PANEL_WIDTH_PX = 320
+const SIDE_PANEL_RIGHT_OFFSET_PX = 24
+const CONTENT_TO_PANEL_GAP_PX = 16
+
+// Keep side mode only when the centered meals content can stay fully visible
+// without being covered by the fixed panel on the right.
+const SIDE_MODE_MIN_VIEWPORT_WIDTH_PX =
+  MEALS_CONTENT_MAX_WIDTH_PX +
+  2 * (SIDE_PANEL_WIDTH_PX + SIDE_PANEL_RIGHT_OFFSET_PX + CONTENT_TO_PANEL_GAP_PX)
+
 const mode = computed<'sheet' | 'dialog' | 'side'>(() => {
-  if (width.value < 768) return 'sheet'
-  if (width.value < 1200) return 'dialog'
+  if (width.value < MOBILE_BREAKPOINT_PX) return 'sheet'
+  if (width.value < SIDE_MODE_MIN_VIEWPORT_WIDTH_PX) return 'dialog'
   return 'side'
 })
 </script>

@@ -76,11 +76,31 @@
         <div class="toggle-thumb"></div>
       </div>
     </div>
+
+    <template v-if="isAdmin">
+      <div class="filter-divider"></div>
+
+      <h3 class="filter-section-title">Admin Tools</h3>
+      <p class="filter-section-hint">Nur sichtbar mit adminToken</p>
+      <div class="admin-sync-row">
+        <var-button
+          type="warning"
+          size="small"
+          :loading="isManualSyncing"
+          :disabled="isManualSyncing"
+          @click="triggerManualSync"
+        >
+          Manual Sync
+        </var-button>
+        <span v-if="manualSyncError" class="admin-sync-message admin-sync-error">{{ manualSyncError }}</span>
+        <span v-else-if="manualSyncSuccess" class="admin-sync-message admin-sync-success">{{ manualSyncSuccess }}</span>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useFilterStore, EXCLUDE_FEATURES, INCLUDE_FEATURES } from '~/stores/filters'
 
 interface Canteen {
@@ -105,6 +125,48 @@ const sortedCanteens = computed(() => {
 const filterStore = useFilterStore()
 const excludeFeatures = EXCLUDE_FEATURES
 const includeFeatures = INCLUDE_FEATURES
+const route = useRoute()
+
+const adminToken = computed(() => {
+  const rawToken = route.query.adminToken
+  const token = Array.isArray(rawToken) ? rawToken[0] : rawToken
+  return typeof token === 'string' ? token.trim() : ''
+})
+
+const isAdmin = computed(() => adminToken.value.length > 0)
+const isManualSyncing = ref(false)
+const manualSyncError = ref<string | null>(null)
+const manualSyncSuccess = ref<string | null>(null)
+
+const triggerManualSync = async () => {
+  if (!adminToken.value || isManualSyncing.value) return
+
+  manualSyncError.value = null
+  manualSyncSuccess.value = null
+  isManualSyncing.value = true
+
+  try {
+    await $fetch('https://3b-meals.mh-home.net/meals/sync-now', {
+      method: 'POST',
+      headers: {
+        Authorization: adminToken.value,
+      },
+    })
+
+    manualSyncSuccess.value = 'Manual sync triggered. Reloading meals...'
+    await refreshNuxtData('meals-week')
+    manualSyncSuccess.value = 'Manual sync triggered successfully.'
+  } catch (error: any) {
+    const apiErrorMessage =
+      error?.data?.error?.message ||
+      error?.data?.message ||
+      error?.message ||
+      'Manual sync failed.'
+    manualSyncError.value = String(apiErrorMessage)
+  } finally {
+    isManualSyncing.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -259,5 +321,25 @@ const includeFeatures = INCLUDE_FEATURES
 .toggle-track.is-on .toggle-thumb {
   transform: translateX(20px);
   background-color: var(--color-on-primary);
+}
+
+.admin-sync-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.admin-sync-message {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.admin-sync-error {
+  color: var(--color-error);
+}
+
+.admin-sync-success {
+  color: var(--color-primary);
 }
 </style>
