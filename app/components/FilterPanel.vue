@@ -9,16 +9,38 @@
         :class="{ 'is-active': filterStore.isCanteenEnabled(canteen.id) }"
         @click="filterStore.toggleCanteen(canteen.id)"
       >
-        <span class="chip-label">{{ canteen.displayName || canteen.name }}</span>
-        <span v-if="filterStore.isCanteenEnabled(canteen.id)" class="chip-check">✓</span>
+        <span class="chip-label">{{
+          canteen.displayName || canteen.name
+        }}</span>
+        <span v-if="filterStore.isCanteenEnabled(canteen.id)" class="chip-check"
+          >✓</span
+        >
       </button>
     </div>
 
     <div class="filter-divider"></div>
 
     <h3 class="filter-section-title">Ausblenden</h3>
-    <p class="filter-section-hint">Gerichte mit diesen Merkmalen werden versteckt</p>
+    <p class="filter-section-hint">
+      Gerichte mit diesen Merkmalen werden versteckt
+    </p>
     <div class="filter-chips-grid">
+      <button
+        class="filter-chip exclude-chip"
+        :class="{ 'is-active': filterStore.isSaladExcluded }"
+        @click="filterStore.toggleSaladExclusion()"
+      >
+        <div
+          class="chip-icon-mask"
+          :style="{
+            maskImage: `url(/icons/ic_mf_vegetarian.svg)`,
+            webkitMaskImage: `url(/icons/ic_mf_vegetarian.svg)`,
+          }"
+        ></div>
+        <span class="chip-label">Salate</span>
+        <span v-if="filterStore.isSaladExcluded" class="chip-check">✕</span>
+      </button>
+
       <button
         v-for="feature in excludeFeatures"
         :key="feature.id"
@@ -31,18 +53,24 @@
           class="chip-icon-mask"
           :style="{
             maskImage: `url(${feature.icon})`,
-            webkitMaskImage: `url(${feature.icon})`
+            webkitMaskImage: `url(${feature.icon})`,
           }"
         ></div>
         <span class="chip-label">{{ feature.name }}</span>
-        <span v-if="filterStore.isFeatureExcluded(feature.id)" class="chip-check">✕</span>
+        <span
+          v-if="filterStore.isFeatureExcluded(feature.id)"
+          class="chip-check"
+          >✕</span
+        >
       </button>
     </div>
 
     <div class="filter-divider"></div>
 
     <h3 class="filter-section-title">Ernährung</h3>
-    <p class="filter-section-hint">Nur Gerichte mit diesen Merkmalen anzeigen</p>
+    <p class="filter-section-hint">
+      Nur Gerichte mit diesen Merkmalen anzeigen
+    </p>
     <div class="filter-chips-grid">
       <button
         v-for="feature in includeFeatures"
@@ -56,11 +84,15 @@
           class="chip-icon-mask"
           :style="{
             maskImage: `url(${feature.icon})`,
-            webkitMaskImage: `url(${feature.icon})`
+            webkitMaskImage: `url(${feature.icon})`,
           }"
         ></div>
         <span class="chip-label">{{ feature.name }}</span>
-        <span v-if="filterStore.isFeatureIncluded(feature.id)" class="chip-check">✓</span>
+        <span
+          v-if="filterStore.isFeatureIncluded(feature.id)"
+          class="chip-check"
+          >✓</span
+        >
       </button>
     </div>
 
@@ -92,81 +124,93 @@
         >
           Manual Sync
         </var-button>
-        <span v-if="manualSyncError" class="admin-sync-message admin-sync-error">{{ manualSyncError }}</span>
-        <span v-else-if="manualSyncSuccess" class="admin-sync-message admin-sync-success">{{ manualSyncSuccess }}</span>
+        <span
+          v-if="manualSyncError"
+          class="admin-sync-message admin-sync-error"
+          >{{ manualSyncError }}</span
+        >
+        <span
+          v-else-if="manualSyncSuccess"
+          class="admin-sync-message admin-sync-success"
+          >{{ manualSyncSuccess }}</span
+        >
       </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useFilterStore, EXCLUDE_FEATURES, INCLUDE_FEATURES } from '~/stores/filters'
+import { computed, ref } from "vue";
+import {
+  EXCLUDE_FEATURES,
+  INCLUDE_FEATURES,
+  useFilterStore,
+} from "~/stores/filters";
 
 interface Canteen {
-  id: number
-  name: string
-  displayName: string
-  orderInApp: number
+  id: number;
+  name: string;
+  displayName: string;
+  orderInApp: number;
 }
 
 const props = defineProps<{
-  canteens: Canteen[]
-}>()
+  canteens: Canteen[];
+}>();
 
 const sortedCanteens = computed(() => {
   return [...props.canteens].sort((a, b) => {
-    const aOrder = a.orderInApp ?? Number.MAX_SAFE_INTEGER
-    const bOrder = b.orderInApp ?? Number.MAX_SAFE_INTEGER
-    return aOrder - bOrder
-  })
-})
+    const aOrder = a.orderInApp ?? Number.MAX_SAFE_INTEGER;
+    const bOrder = b.orderInApp ?? Number.MAX_SAFE_INTEGER;
+    return aOrder - bOrder;
+  });
+});
 
-const filterStore = useFilterStore()
-const excludeFeatures = EXCLUDE_FEATURES
-const includeFeatures = INCLUDE_FEATURES
-const route = useRoute()
+const filterStore = useFilterStore();
+const excludeFeatures = EXCLUDE_FEATURES;
+const includeFeatures = INCLUDE_FEATURES;
+const route = useRoute();
 
 const adminToken = computed(() => {
-  const rawToken = route.query.adminToken
-  const token = Array.isArray(rawToken) ? rawToken[0] : rawToken
-  return typeof token === 'string' ? token.trim() : ''
-})
+  const rawToken = route.query.adminToken;
+  const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
+  return typeof token === "string" ? token.trim() : "";
+});
 
-const isAdmin = computed(() => adminToken.value.length > 0)
-const isManualSyncing = ref(false)
-const manualSyncError = ref<string | null>(null)
-const manualSyncSuccess = ref<string | null>(null)
+const isAdmin = computed(() => adminToken.value.length > 0);
+const isManualSyncing = ref(false);
+const manualSyncError = ref<string | null>(null);
+const manualSyncSuccess = ref<string | null>(null);
 
 const triggerManualSync = async () => {
-  if (!adminToken.value || isManualSyncing.value) return
+  if (!adminToken.value || isManualSyncing.value) return;
 
-  manualSyncError.value = null
-  manualSyncSuccess.value = null
-  isManualSyncing.value = true
+  manualSyncError.value = null;
+  manualSyncSuccess.value = null;
+  isManualSyncing.value = true;
 
   try {
-    await $fetch('https://3b-meals.mh-home.net/meals/sync-now', {
-      method: 'POST',
+    await $fetch("https://3b-meals.mh-home.net/meals/sync-now", {
+      method: "POST",
       headers: {
         Authorization: adminToken.value,
       },
-    })
+    });
 
-    manualSyncSuccess.value = 'Manual sync triggered. Reloading meals...'
-    await refreshNuxtData('meals-week')
-    manualSyncSuccess.value = 'Manual sync triggered successfully.'
+    manualSyncSuccess.value = "Manual sync triggered. Reloading meals...";
+    await refreshNuxtData("meals-week");
+    manualSyncSuccess.value = "Manual sync triggered successfully.";
   } catch (error: any) {
     const apiErrorMessage =
       error?.data?.error?.message ||
       error?.data?.message ||
       error?.message ||
-      'Manual sync failed.'
-    manualSyncError.value = String(apiErrorMessage)
+      "Manual sync failed.";
+    manualSyncError.value = String(apiErrorMessage);
   } finally {
-    isManualSyncing.value = false
+    isManualSyncing.value = false;
   }
-}
+};
 </script>
 
 <style scoped>
@@ -315,7 +359,7 @@ const triggerManualSync = async () => {
   top: 3px;
   left: 3px;
   transition: transform 0.25s ease;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-track.is-on .toggle-thumb {

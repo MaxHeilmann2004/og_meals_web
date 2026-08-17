@@ -78,7 +78,7 @@
 import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type { Canteen, Meal, MealsApiResponse } from '~/types/meals'
-import { useFilterStore } from '~/stores/filters'
+import { SALAD_CATEGORY_IDS, useFilterStore } from '~/stores/filters'
 
 const filterStore = useFilterStore()
 const setLayoutCanteens = inject<(c: Pick<Canteen, 'id' | 'name' | 'displayName' | 'orderInApp'>[]) => void>('setLayoutCanteens')
@@ -171,6 +171,7 @@ const filteredCanteens = computed(() => {
         if (meal.date.split('T')[0] !== selectedDayDateStr.value) return false
 
         // Exclusions
+        if (filterStore.isSaladExcluded && SALAD_CATEGORY_IDS.has(Number(meal.category?.id))) return false
         if (meal.features?.some(f => filterStore.isFeatureExcluded(f.id))) return false
 
         // Inclusions

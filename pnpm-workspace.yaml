@@ -1,0 +1,4 @@
+allowBuilds:
+  '@varlet/nuxt': true
+  esbuild: true
+  sharp: true
