@@ -79,6 +79,7 @@ import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type { Canteen, Meal, MealsApiResponse } from '~/types/meals'
 import { SALAD_CATEGORY_IDS, useFilterStore } from '~/stores/filters'
+import { compareCanteens } from '~/utils/canteenOrder'
 
 const filterStore = useFilterStore()
 const setLayoutCanteens = inject<(c: Pick<Canteen, 'id' | 'name' | 'displayName' | 'orderInApp'>[]) => void>('setLayoutCanteens')
@@ -147,11 +148,7 @@ const { data, pending, error, refresh } = await useAsyncData<MealsApiResponse>(
 
 const rawCanteens = computed(() => {
   const canteens = data.value?.canteens ?? []
-  return [...canteens].sort((a, b) => {
-    const aOrder = a.orderInApp ?? Number.MAX_SAFE_INTEGER
-    const bOrder = b.orderInApp ?? Number.MAX_SAFE_INTEGER
-    return aOrder - bOrder
-  })
+  return [...canteens].sort(compareCanteens)
 })
 const rawMeals = computed(() => data.value?.meals ?? [])
 

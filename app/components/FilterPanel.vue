@@ -146,6 +146,7 @@ import {
   INCLUDE_FEATURES,
   useFilterStore,
 } from "~/stores/filters";
+import { compareCanteens } from "~/utils/canteenOrder";
 
 interface Canteen {
   id: number;
@@ -159,11 +160,7 @@ const props = defineProps<{
 }>();
 
 const sortedCanteens = computed(() => {
-  return [...props.canteens].sort((a, b) => {
-    const aOrder = a.orderInApp ?? Number.MAX_SAFE_INTEGER;
-    const bOrder = b.orderInApp ?? Number.MAX_SAFE_INTEGER;
-    return aOrder - bOrder;
-  });
+  return [...props.canteens].sort(compareCanteens);
 });
 
 const filterStore = useFilterStore();
