@@ -4,4 +4,5 @@ packages:
 allowBuilds:
   "@varlet/nuxt": true
   esbuild: true
+  maplibre-gl: true
   sharp: true

@@ -114,6 +114,23 @@
 
       <h3 class="filter-section-title">Admin Tools</h3>
       <p class="filter-section-hint">Nur sichtbar mit adminToken</p>
+
+      <div
+        class="filter-switch-row admin-theme-row"
+        role="switch"
+        tabindex="0"
+        :aria-checked="isDark"
+        aria-label="Dunkles Design für Debugging aktivieren"
+        @click="toggleAdminTheme"
+        @keydown.enter.prevent="toggleAdminTheme"
+        @keydown.space.prevent="toggleAdminTheme"
+      >
+        <span class="switch-label">Dunkles Design (Debug)</span>
+        <div class="toggle-track" :class="{ 'is-on': isDark }" aria-hidden="true">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
       <div class="admin-sync-row">
         <var-button
           type="warning"
@@ -141,6 +158,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useDark } from "@vueuse/core";
 import {
   EXCLUDE_FEATURES,
   INCLUDE_FEATURES,
@@ -175,6 +193,16 @@ const adminToken = computed(() => {
 });
 
 const isAdmin = computed(() => adminToken.value.length > 0);
+const isDark = useDark({
+  selector: "html",
+  attribute: "var-theme",
+  valueDark: "dark",
+  valueLight: "light",
+});
+const toggleAdminTheme = () => {
+  if (!isAdmin.value) return;
+  isDark.value = !isDark.value;
+};
 const isManualSyncing = ref(false);
 const manualSyncError = ref<string | null>(null);
 const manualSyncSuccess = ref<string | null>(null);
@@ -362,6 +390,16 @@ const triggerManualSync = async () => {
 .toggle-track.is-on .toggle-thumb {
   transform: translateX(20px);
   background-color: var(--color-on-primary);
+}
+
+.admin-theme-row {
+  margin-top: 2px;
+}
+
+.admin-theme-row:focus-visible {
+  outline: 3px solid var(--color-primary-container);
+  outline-offset: 3px;
+  border-radius: 8px;
 }
 
 .admin-sync-row {

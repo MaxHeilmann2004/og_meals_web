@@ -39,7 +39,16 @@
           class="canteen-section"
         >
           <!-- Canteen Header -->
-          <h2 class="canteen-header">{{ canteen.displayName || canteen.name }}</h2>
+          <div class="canteen-header-row">
+            <h2 class="canteen-header">{{ canteen.displayName || canteen.name }}</h2>
+            <CanteenCapacityBadge
+              :capacity="selectedDayIsToday ? capacityForCanteen(canteen.id) : null"
+              :expected="selectedDayIsToday ? null : expectedCapacityForCanteen(canteen.id)"
+              :is-today="selectedDayIsToday"
+              :loading="selectedDayIsToday ? capacityPending : expectationPending"
+              @click="openCapacityDetails(canteen)"
+            />
+          </div>
 
           <!-- Meals Grid -->
           <div class="meals-grid">
@@ -70,6 +79,20 @@
         :admin-token="adminToken"
         @update:show="isMealDialogOpen = $event"
       />
+      <CanteenCapacityDialog
+        :show="isCapacityDialogOpen"
+        :canteen="selectedCapacityCanteen"
+        :current-capacity="selectedCapacityIsToday ? selectedCapacity : null"
+        :expected-capacity="selectedExpectedCapacity"
+        :selected-date="selectedCapacityDate"
+        :is-today="selectedCapacityIsToday"
+        :timeline="selectedCapacityTimeline"
+        :timeline-loading="capacityTimelinePending"
+        :timeline-error="capacityTimelineError"
+        :is-mobile="isMobile"
+        @update:show="isCapacityDialogOpen = $event"
+        @retry="retryCapacityTimeline"
+      />
     </ClientOnly>
   </div>
 </template>
@@ -77,7 +100,20 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
-import type { Canteen, Meal, MealsApiResponse } from '~/types/meals'
+import type {
+  Canteen,
+  CanteenCapacity,
+  CanteenCapacityApiResponse,
+  CanteenCapacityPredictionPoint,
+  CanteenCapacityTimeline,
+  CanteenCapacityTimelineApiResponse,
+  Meal,
+  MealsApiResponse,
+} from '~/types/meals'
+import {
+  getNearestPredictionPoint,
+  getTodayCalendarDate,
+} from '~/utils/canteenCapacity'
 import { SALAD_CATEGORY_IDS, useFilterStore } from '~/stores/filters'
 import { compareCanteens } from '~/utils/canteenOrder'
 
@@ -140,17 +176,77 @@ const isMealDialogOpen = ref(false)
 const selectedMeal = ref<Meal | null>(null)
 const selectedMealCanteen = ref<Canteen | null>(null)
 
+const todayDate = getTodayCalendarDate()
+const isCapacityDialogOpen = ref(false)
+const selectedCapacityCanteen = ref<Canteen | null>(null)
+const selectedCapacityDate = ref(todayDate)
+const selectedCapacityTimeline = ref<CanteenCapacityTimeline | null>(null)
+const capacityTimelinePending = ref(false)
+const capacityTimelineError = ref<Error | null>(null)
+const expectationPending = ref(false)
+const capacityTimelineCache = new Map<string, CanteenCapacityTimeline>()
+const capacityTimelineCacheTimes = new Map<string, number>()
+const capacityTimelineVersion = ref(0)
+let capacityTimelineRequestId = 0
+let expectationRequestId = 0
+
 // Server-side data fetch — pre-rendered and sent to the client
 const { data, pending, error, refresh } = await useAsyncData<MealsApiResponse>(
   'meals-week',
   () => $fetch(`https://3b-meals.mh-home.net/meals?start=${startOfWeekStr}&end=${endOfWeekStr}`)
 )
 
+// Capacity is intentionally fetched separately so a capacity outage does not hide meals.
+const {
+  data: capacityData,
+  pending: capacityPending,
+} = await useAsyncData<CanteenCapacityApiResponse>(
+  'canteen-capacity',
+  () => $fetch('https://3b-meals.mh-home.net/capacity/current')
+)
+
+const capacityByCanteenId = computed(() => {
+  const result = new Map<number, CanteenCapacity | null>()
+  for (const entry of capacityData.value?.data ?? []) {
+    result.set(entry.canteen.id, entry.capacity)
+  }
+  return result
+})
+
+const capacityForCanteen = (canteenId: number) => capacityByCanteenId.value.get(canteenId) ?? null
+const selectedCapacity = computed(() => selectedCapacityCanteen.value
+  ? capacityForCanteen(selectedCapacityCanteen.value.id)
+  : null)
+
 const rawCanteens = computed(() => {
   const canteens = data.value?.canteens ?? []
   return [...canteens].sort(compareCanteens)
 })
 const rawMeals = computed(() => data.value?.meals ?? [])
+const selectedDayIsToday = computed(() => selectedDayDateStr.value === todayDate)
+const selectedCapacityIsToday = computed(() => selectedCapacityDate.value === todayDate)
+
+const expectedCapacityByCanteenId = computed(() => {
+  // The cache is intentionally non-reactive; this version ref invalidates the computed map after requests finish.
+  capacityTimelineVersion.value
+  const result = new Map<number, CanteenCapacityPredictionPoint | null>()
+  if (selectedDayIsToday.value) return result
+
+  for (const canteen of rawCanteens.value) {
+    const timeline = capacityTimelineCache.get(capacityTimelineKey(canteen.id, selectedDayDateStr.value))
+    result.set(
+      canteen.id,
+      timeline?.prediction ? getNearestPredictionPoint(selectedDayDateStr.value, timeline.prediction.points) : null,
+    )
+  }
+  return result
+})
+
+const expectedCapacityForCanteen = (canteenId: number) => expectedCapacityByCanteenId.value.get(canteenId) ?? null
+const selectedExpectedCapacity = computed(() => {
+  if (selectedCapacityIsToday.value || !selectedCapacityTimeline.value?.prediction) return null
+  return getNearestPredictionPoint(selectedCapacityDate.value, selectedCapacityTimeline.value.prediction.points)
+})
 
 // Sync canteen list to filter store and layout whenever data arrives
 watch(rawCanteens, (canteens) => {
@@ -204,6 +300,70 @@ const openMealDetails = (meal: Meal, canteen: Canteen) => {
   isMealDialogOpen.value = true
 }
 
+const capacityTimelineKey = (canteenId: number, date: string) => `${canteenId}:${date}`
+
+const fetchCapacityTimeline = async (canteen: Canteen, date: string, force = false) => {
+  const key = capacityTimelineKey(canteen.id, date)
+  const cachedAt = capacityTimelineCacheTimes.get(key) ?? 0
+  const cached = capacityTimelineCache.get(key)
+  if (!force && cached && Date.now() - cachedAt < 5 * 60 * 1000) {
+    capacityTimelineVersion.value++
+    return cached
+  }
+
+  const response = await $fetch<CanteenCapacityTimelineApiResponse>(
+    `https://3b-meals.mh-home.net/capacity/timeline?canteenId=${canteen.id}&date=${date}`,
+  )
+  capacityTimelineCache.set(key, response.data)
+  capacityTimelineCacheTimes.set(key, Date.now())
+  capacityTimelineVersion.value++
+  return response.data
+}
+
+const preloadExpectations = async (date: string) => {
+  const requestId = ++expectationRequestId
+  const canteens = rawCanteens.value
+  if (date === todayDate || canteens.length === 0) {
+    expectationPending.value = false
+    return
+  }
+
+  expectationPending.value = true
+  await Promise.allSettled(canteens.map((canteen) => fetchCapacityTimeline(canteen, date)))
+  if (requestId === expectationRequestId) expectationPending.value = false
+}
+
+const loadCapacityTimeline = async (canteen: Canteen, date: string, force = false) => {
+  const requestId = ++capacityTimelineRequestId
+  capacityTimelinePending.value = true
+  capacityTimelineError.value = null
+  try {
+    selectedCapacityTimeline.value = await fetchCapacityTimeline(canteen, date, force)
+  } catch (error) {
+    if (requestId !== capacityTimelineRequestId) return
+    capacityTimelineError.value = error instanceof Error
+      ? error
+      : new Error('Der Auslastungsverlauf konnte nicht geladen werden.')
+    selectedCapacityTimeline.value = null
+  } finally {
+    if (requestId === capacityTimelineRequestId) capacityTimelinePending.value = false
+  }
+}
+
+const openCapacityDetails = (canteen: Canteen) => {
+  selectedCapacityCanteen.value = canteen
+  selectedCapacityDate.value = selectedDayDateStr.value
+  selectedCapacityTimeline.value = null
+  capacityTimelineError.value = null
+  isCapacityDialogOpen.value = true
+  void loadCapacityTimeline(canteen, selectedCapacityDate.value)
+}
+
+const retryCapacityTimeline = () => {
+  if (!selectedCapacityCanteen.value) return
+  void loadCapacityTimeline(selectedCapacityCanteen.value, selectedCapacityDate.value, true)
+}
+
 const scrollSelectedChipIntoView = (smooth = true) => {
   nextTick(() => {
     document.querySelector('.day-chip.is-selected')?.scrollIntoView({
@@ -214,12 +374,26 @@ const scrollSelectedChipIntoView = (smooth = true) => {
   })
 }
 
+watch([selectedDayDateStr, rawCanteens], ([date]) => {
+  void preloadExpectations(date)
+}, { immediate: true })
+
 watch(selectedDayIndex, () => scrollSelectedChipIntoView(true))
 
 watch(isMealDialogOpen, (isOpen) => {
   if (!isOpen) {
     selectedMeal.value = null
     selectedMealCanteen.value = null
+  }
+})
+
+watch(isCapacityDialogOpen, (isOpen) => {
+  if (!isOpen) {
+    capacityTimelineRequestId++
+    selectedCapacityCanteen.value = null
+    selectedCapacityTimeline.value = null
+    capacityTimelineError.value = null
+    capacityTimelinePending.value = false
   }
 })
 
@@ -319,11 +493,23 @@ onMounted(() => scrollSelectedChipIntoView(false))
   margin-top: 12px;
 }
 
+.canteen-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  min-width: 0;
+  margin: 12px 12px 16px;
+}
+
 .canteen-header {
+  min-width: 0;
+  flex: 0 1 auto;
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-on-surface);
-  margin: 12px 12px 16px;
+  line-height: 1.2;
 }
 
 /* Responsive grid layout */
@@ -341,8 +527,13 @@ onMounted(() => scrollSelectedChipIntoView(false))
   .canteens-list {
     padding: 8px 4px 24px;
   }
-  .canteen-header {
+  .canteen-header-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
     margin: 8px 4px 12px;
+  }
+
+  .canteen-header {
     font-size: 1.25rem;
   }
 }
