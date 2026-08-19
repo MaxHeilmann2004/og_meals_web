@@ -1,4 +1,7 @@
+packages:
+  - "."
+
 allowBuilds:
-  '@varlet/nuxt': true
+  "@varlet/nuxt": true
   esbuild: true
   sharp: true
