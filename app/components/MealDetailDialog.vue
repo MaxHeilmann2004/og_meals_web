@@ -137,11 +137,16 @@
                         <var-button
                           type="danger"
                           size="small"
-                          :loading="deletingImageIndex === index"
                           :disabled="deletingImageIndex !== null"
                           @click="deleteMealImage(index, image.url)"
                         >
-                          Delete
+                          <LoadingSpinner
+                            v-if="deletingImageIndex === index"
+                            size="18px"
+                            color="currentColor"
+                            label="Bild wird gelöscht"
+                          />
+                          <span v-else>Delete</span>
                         </var-button>
                       </div>
                       <p v-if="adminImages.length === 0" class="admin-image-empty">No images available for this meal.</p>

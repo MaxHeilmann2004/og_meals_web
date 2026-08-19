@@ -22,7 +22,7 @@
     <div class="content-viewport">
       <!-- Initial Loading State (only when no data at all yet) -->
       <div v-if="pending && !data" class="loading-overlay">
-        <var-loading type="cube" size="large" color="var(--color-primary)" description="Lade Speiseplan..." />
+        <LoadingSpinner size="72px" label="Lade Speiseplan..." />
       </div>
 
       <!-- Error State (shown as inline banner, doesn't remove content) -->
@@ -528,7 +528,7 @@ onMounted(() => scrollSelectedChipIntoView(false))
     padding: 8px 4px 24px;
   }
   .canteen-header-row {
-    align-items: flex-start;
+    align-items: center;
     flex-wrap: wrap;
     margin: 8px 4px 12px;
   }

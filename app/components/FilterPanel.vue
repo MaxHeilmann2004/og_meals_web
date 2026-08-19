@@ -135,11 +135,16 @@
         <var-button
           type="warning"
           size="small"
-          :loading="isManualSyncing"
           :disabled="isManualSyncing"
           @click="triggerManualSync"
         >
-          Manual Sync
+          <LoadingSpinner
+            v-if="isManualSyncing"
+            size="18px"
+            color="currentColor"
+            label="Manual Sync wird ausgeführt"
+          />
+          <span v-else>Manual Sync</span>
         </var-button>
         <span
           v-if="manualSyncError"

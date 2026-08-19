@@ -75,7 +75,7 @@
           </div>
 
           <div v-if="timelineLoading" class="capacity-chart-loading">
-            <var-loading type="cube" size="small" color="var(--color-primary)" description="Verlauf wird geladen..." />
+            <LoadingSpinner size="40px" label="Verlauf wird geladen..." />
           </div>
           <p v-else-if="timelineError" class="capacity-chart-error">
             Der Auslastungsverlauf konnte nicht geladen werden.
@@ -100,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+import { onUnmounted, watch } from 'vue'
 import type {
   Canteen,
   CanteenCapacity,
@@ -147,6 +148,28 @@ const predictionDescription = computed(() => {
   const dates = props.timeline?.prediction?.basedOnDates ?? []
   if (dates.length === 0) return null
   return `Erwartung berechnet aus ${dates.length} vergangenen ${dates.length === 1 ? 'Tag' : 'Tagen'} mit vergleichbarem Wochentag.`
+})
+
+const handlePopState = () => {
+  emit('update:show', false)
+}
+
+watch(() => props.show, (show) => {
+  if (typeof window === 'undefined') return
+
+  if (show && props.canteen) {
+    window.addEventListener('popstate', handlePopState)
+    window.history.pushState({ capacityDialogOpen: true }, '')
+  } else {
+    window.removeEventListener('popstate', handlePopState)
+    if (window.history.state?.capacityDialogOpen) window.history.back()
+  }
+})
+
+onUnmounted(() => {
+  if (typeof window === 'undefined') return
+  window.removeEventListener('popstate', handlePopState)
+  if (window.history.state?.capacityDialogOpen) window.history.back()
 })
 </script>
 

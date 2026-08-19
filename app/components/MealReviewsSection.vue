@@ -32,8 +32,14 @@
           <div class="review-form-actions">
             <var-button type="primary"
               :disabled="isSubmitting || newReview.star === 0 || !newReview.comment.trim() || !turnstileToken"
-              :loading="isSubmitting" block class="submit-review-btn" @click="submitReview">
-              Bewertung senden
+              block class="submit-review-btn" @click="submitReview">
+              <LoadingSpinner
+                v-if="isSubmitting"
+                size="18px"
+                color="currentColor"
+                label="Bewertung wird gesendet"
+              />
+              <span v-else>Bewertung senden</span>
             </var-button>
           </div>
 
@@ -51,7 +57,7 @@
     <div class="reviews-list-container">
       <div :class="{ 'reviews-list-body': !isMobile }">
         <div v-if="isReviewsLoading" class="reviews-loading">
-          <var-loading type="circle" size="small" description="Lade Bewertungen..." />
+          <LoadingSpinner size="32px" label="Lade Bewertungen..." />
         </div>
 
         <div v-else-if="reviewsError" class="reviews-error-box">

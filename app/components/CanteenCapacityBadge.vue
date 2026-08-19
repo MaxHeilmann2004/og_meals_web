@@ -10,7 +10,13 @@
     :title="ariaLabel"
     @click="emit('click')"
   >
-    <span class="capacity-badge-dot" aria-hidden="true"></span>
+    <span v-if="!loading" class="capacity-badge-dot" aria-hidden="true"></span>
+    <LoadingSpinner
+      v-if="loading"
+      size="16px"
+      color="currentColor"
+      :label="isToday ? 'Kapazität wird geladen' : 'Erwartung wird geladen'"
+    />
     <span v-if="loading" class="capacity-badge-text">
       {{ isToday ? 'Kapazität wird geladen' : 'Erwartung wird geladen' }}
     </span>
