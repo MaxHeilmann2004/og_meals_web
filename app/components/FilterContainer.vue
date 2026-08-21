@@ -18,15 +18,28 @@
 
     <!-- ── Mobile Bottom Sheet (<768px) ── -->
     <Transition name="slide-up">
-      <div v-if="isFilterOpen && mode === 'sheet'" class="filter-bottom-sheet">
-        <div class="sheet-handle-area" @click="filterStore.closeFilters()">
+      <div
+        v-if="isFilterOpen && mode === 'sheet'"
+        ref="sheetRef"
+        class="filter-bottom-sheet"
+        :class="{
+          'is-dragging': isDragging,
+          'is-returning': isReturning,
+        }"
+        :style="sheetStyle"
+        @touchstart.capture="onTouchStart"
+        @touchmove.capture="onTouchMove"
+        @touchend.capture="onTouchEnd"
+        @touchcancel.capture="onTouchCancel"
+      >
+        <div class="sheet-handle-area" @click="onHandleClick">
           <div class="sheet-handle"></div>
         </div>
         <div class="panel-header">
           <h2 class="panel-title">Filter</h2>
           <button class="close-btn" aria-label="Filter schließen" @click="filterStore.closeFilters()">✕</button>
         </div>
-        <div class="panel-scroll">
+        <div ref="panelScrollRef" class="panel-scroll">
           <FilterPanel :canteens="canteens" />
         </div>
       </div>
@@ -66,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useWindowSize } from '@vueuse/core'
 import { useFilterStore } from '~/stores/filters'
 
@@ -82,6 +95,139 @@ defineProps<{ canteens: Canteen[] }>()
 const filterStore = useFilterStore()
 const { width } = useWindowSize()
 const isFilterOpen = computed(() => filterStore.isFilterOpen)
+
+const panelScrollRef = ref<HTMLElement | null>(null)
+const dragOffset = ref(0)
+const isDragging = ref(false)
+const isReturning = ref(false)
+const sheetStyle = computed(() => ({
+  '--sheet-drag-offset': `${dragOffset.value}px`,
+}))
+
+let touchActive = false
+let touchStartY = 0
+let touchLastY = 0
+let touchStartTime = 0
+let hasDragged = false
+let returnAnimationTimeout: ReturnType<typeof setTimeout> | null = null
+
+const DRAG_START_THRESHOLD_PX = 4
+const DISMISS_THRESHOLD_PX = 100
+const DISMISS_VELOCITY_PX_PER_MS = 0.6
+
+const resetReturnAnimation = () => {
+  if (returnAnimationTimeout) {
+    clearTimeout(returnAnimationTimeout)
+    returnAnimationTimeout = null
+  }
+}
+
+const onTouchStart = (event: TouchEvent) => {
+  const touch = event.touches[0]
+  if (!touch) return
+
+  touchActive = true
+  touchStartY = touch.clientY
+  touchLastY = touch.clientY
+  touchStartTime = performance.now()
+  hasDragged = false
+  const startsOnHandle = event.target instanceof Element && event.target.closest('.sheet-handle-area') !== null
+  isDragging.value = startsOnHandle
+  isReturning.value = false
+  resetReturnAnimation()
+}
+
+const onTouchMove = (event: TouchEvent) => {
+  if (!touchActive) return
+  const touch = event.touches[0]
+  if (!touch) return
+
+  const deltaY = touch.clientY - touchStartY
+
+  if (!isDragging.value) {
+    if (Math.abs(deltaY) <= DRAG_START_THRESHOLD_PX) return
+
+    hasDragged = true
+    const targetIsInScrollArea =
+      event.target instanceof Node && panelScrollRef.value?.contains(event.target)
+    const canStartSheetDrag =
+      !targetIsInScrollArea || (panelScrollRef.value?.scrollTop ?? 0) <= 0
+
+    // Let the scroll container handle upward movement and downward movement
+    // while it still has content above the viewport.
+    if (deltaY <= 0 || !canStartSheetDrag) return
+
+    // Transfer the gesture to the sheet without including the distance used
+    // to scroll the filter list back to its top edge.
+    touchStartY = touch.clientY
+    touchLastY = touch.clientY
+    touchStartTime = performance.now()
+    dragOffset.value = 0
+    isDragging.value = true
+  }
+
+  const positiveDeltaY = Math.max(0, touch.clientY - touchStartY)
+  if (positiveDeltaY > DRAG_START_THRESHOLD_PX) hasDragged = true
+
+  dragOffset.value = positiveDeltaY
+  touchLastY = touch.clientY
+  if (event.cancelable) event.preventDefault()
+}
+
+const finishTouchGesture = (event: TouchEvent | null, allowDismiss = true) => {
+  if (!touchActive) return
+
+  const touch = event?.changedTouches[0]
+  if (touch && isDragging.value) {
+    dragOffset.value = Math.max(0, touch.clientY - touchStartY)
+    touchLastY = touch.clientY
+  }
+
+  const elapsed = Math.max(performance.now() - touchStartTime, 1)
+  const velocity = (touchLastY - touchStartY) / elapsed
+  const shouldDismiss = allowDismiss && (
+    dragOffset.value >= DISMISS_THRESHOLD_PX ||
+    (dragOffset.value > DRAG_START_THRESHOLD_PX && velocity >= DISMISS_VELOCITY_PX_PER_MS)
+  )
+
+  touchActive = false
+  isDragging.value = false
+
+  if (shouldDismiss) {
+    // Keep the current offset while Vue applies the leave transition. The
+    // transition then carries the sheet the rest of the way off-screen.
+    filterStore.closeFilters()
+    return
+  }
+
+  isReturning.value = dragOffset.value > 0
+  dragOffset.value = 0
+  if (isReturning.value) {
+    resetReturnAnimation()
+    returnAnimationTimeout = setTimeout(() => {
+      isReturning.value = false
+      returnAnimationTimeout = null
+    }, 250)
+  }
+}
+
+const onTouchEnd = (event: TouchEvent) => finishTouchGesture(event)
+const onTouchCancel = (event: TouchEvent) => finishTouchGesture(event, false)
+
+const onHandleClick = () => {
+  // A pointer drag also produces a click on some mobile browsers; do not
+  // close a sheet that was merely dragged back into place.
+  if (hasDragged) {
+    hasDragged = false
+    return
+  }
+  filterStore.closeFilters()
+}
+
+onUnmounted(() => {
+  resetReturnAnimation()
+  unlockBodyScroll()
+})
 
 const MOBILE_BREAKPOINT_PX = 768
 const MEALS_CONTENT_MAX_WIDTH_PX = 1300
@@ -99,6 +245,70 @@ const mode = computed<'sheet' | 'dialog' | 'side'>(() => {
   if (width.value < MOBILE_BREAKPOINT_PX) return 'sheet'
   if (width.value < SIDE_MODE_MIN_VIEWPORT_WIDTH_PX) return 'dialog'
   return 'side'
+})
+
+interface BodyScrollLockState {
+  bodyOverflow: string
+  bodyPaddingRight: string
+  bodyOverscrollBehavior: string
+  htmlOverflow: string
+  htmlOverscrollBehavior: string
+}
+
+let bodyScrollLockState: BodyScrollLockState | null = null
+
+const lockBodyScroll = () => {
+  if (typeof document === 'undefined' || bodyScrollLockState) return
+
+  const body = document.body
+  const html = document.documentElement
+  bodyScrollLockState = {
+    bodyOverflow: body.style.overflow,
+    bodyPaddingRight: body.style.paddingRight,
+    bodyOverscrollBehavior: body.style.overscrollBehavior,
+    htmlOverflow: html.style.overflow,
+    htmlOverscrollBehavior: html.style.overscrollBehavior,
+  }
+
+  const scrollbarWidth = window.innerWidth - html.clientWidth
+  body.style.overflow = 'hidden'
+  body.style.overscrollBehavior = 'none'
+  if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`
+  html.style.overflow = 'hidden'
+  html.style.overscrollBehavior = 'none'
+}
+
+const unlockBodyScroll = () => {
+  if (typeof document === 'undefined' || !bodyScrollLockState) return
+
+  const body = document.body
+  const html = document.documentElement
+  const savedState = bodyScrollLockState
+  bodyScrollLockState = null
+
+  body.style.overflow = savedState.bodyOverflow
+  body.style.paddingRight = savedState.bodyPaddingRight
+  body.style.overscrollBehavior = savedState.bodyOverscrollBehavior
+  html.style.overflow = savedState.htmlOverflow
+  html.style.overscrollBehavior = savedState.htmlOverscrollBehavior
+}
+
+// A dismissed sheet keeps its drag offset until the leave transition finishes.
+// Clear it before the next opening so a newly rendered sheet starts at its base position.
+watch([isFilterOpen, mode], ([isOpen, currentMode]) => {
+  if (isOpen && currentMode !== 'side') lockBodyScroll()
+  else unlockBodyScroll()
+
+  if (!isOpen || currentMode !== 'sheet') return
+
+  dragOffset.value = 0
+  isDragging.value = false
+  isReturning.value = false
+  hasDragged = false
+}, { immediate: true })
+
+onMounted(() => {
+  if (isFilterOpen.value && mode.value !== 'side') lockBodyScroll()
 })
 </script>
 
@@ -153,6 +363,7 @@ const mode = computed<'sheet' | 'dialog' | 'side'>(() => {
 .panel-scroll {
   overflow-y: auto;
   flex: 1;
+  touch-action: pan-y;
   overscroll-behavior: contain;
 }
 
@@ -169,13 +380,28 @@ const mode = computed<'sheet' | 'dialog' | 'side'>(() => {
   display: flex;
   flex-direction: column;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
+  transform: translateY(var(--sheet-drag-offset, 0px));
+}
+
+.filter-bottom-sheet.is-dragging {
+  transition: none;
+}
+
+.filter-bottom-sheet.is-returning {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .sheet-handle-area {
   display: flex;
   justify-content: center;
   padding: 12px 0 0;
-  cursor: pointer;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.sheet-handle-area:active {
+  cursor: grabbing;
 }
 
 .sheet-handle {
