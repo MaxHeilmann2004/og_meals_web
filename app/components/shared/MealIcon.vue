@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { getFeatureColor, getFeatureIconUrl } from '~/utils/mealFeatures'
+import { getFeatureColor, getFeatureIconUrl } from '~/utils/meal/features'
 
 interface MealFeature {
   id: number

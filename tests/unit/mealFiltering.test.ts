@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Meal } from '~/types'
-import { filterMealsForDay, matchesMealFilters } from '~/utils/mealFiltering'
+import { filterMealsForDay, matchesMealFilters } from '~/utils/meal/filtering'
 
 const meal = (overrides: Partial<Meal>): Meal => ({
   id: 1,

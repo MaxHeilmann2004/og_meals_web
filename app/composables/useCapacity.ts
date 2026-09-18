@@ -6,7 +6,7 @@ import type {
   CanteenCapacityPredictionPoint,
   CanteenCapacityTimeline,
 } from '~/types'
-import { getNearestPredictionPoint } from '~/utils/canteenCapacity'
+import { getNearestPredictionPoint } from '~/utils/capacity/capacity'
 import { capacityApi } from '~/services/capacityApi'
 
 export const useCapacity = (

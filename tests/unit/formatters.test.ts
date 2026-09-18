@@ -7,7 +7,7 @@ import {
   formatRelativeDate,
   formatReviewStats,
   getMealCategoryName,
-} from '~/utils/formatters'
+} from '~/utils/meal/formatters'
 
 describe('presentation formatters', () => {
   it('formats shared meal presentation values', () => {

@@ -67,7 +67,7 @@ import { computed } from 'vue'
 import type { Meal, Canteen } from '~/types'
 import MealMedia from '../shared/MealMedia.vue'
 import { useFilterStore } from '~/stores/filters'
-import { cleanMealTitle, formatPrice, getMealCategoryName } from '~/utils/formatters'
+import { cleanMealTitle, formatPrice, getMealCategoryName } from '~/utils/meal/formatters'
 
 const props = defineProps<{
   meal: Meal

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getInitialDayIndex, getWeekDates, getWorkDayScopedToday } from '~/utils/mealWeek'
+import { getInitialDayIndex, getWeekDates, getWorkDayScopedToday } from '~/utils/meal/week'
 
 describe('meal week utilities', () => {
   it('moves weekend dates to the following Monday', () => {

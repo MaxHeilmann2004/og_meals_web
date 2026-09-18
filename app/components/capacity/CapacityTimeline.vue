@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { CanteenCapacityTimeline } from '~/types'
-import { formatCapacityCalendarDate } from '~/utils/canteenCapacity'
+import { formatCapacityCalendarDate } from '~/utils/capacity/capacity'
 import CanteenCapacityChart from './CanteenCapacityChart.vue'
 
 const props = defineProps<{

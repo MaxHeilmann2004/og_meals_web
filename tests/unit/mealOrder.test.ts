@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compareMealsByCategory } from '~/utils/mealOrder'
+import { compareMealsByCategory } from '~/utils/meal/order'
 
 describe('compareMealsByCategory', () => {
   it('keeps the configured category order', () => {

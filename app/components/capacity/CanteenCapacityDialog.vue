@@ -61,7 +61,7 @@ import type {
   CanteenCapacityPredictionPoint,
   CanteenCapacityTimeline,
 } from '~/types'
-import { formatCapacityCalendarDate } from '~/utils/canteenCapacity'
+import { formatCapacityCalendarDate } from '~/utils/capacity/capacity'
 import { useDialogHistory } from '~/composables/useDialogHistory'
 import CapacitySummary from './CapacitySummary.vue'
 import CapacityTimeline from './CapacityTimeline.vue'

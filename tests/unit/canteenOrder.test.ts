@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { compareCanteens } from '~/utils/canteenOrder'
+import { compareCanteens } from '~/utils/canteen/order'
 
 describe('compareCanteens', () => {
   it('uses the application priority for known canteens', () => {

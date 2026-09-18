@@ -3,11 +3,11 @@ import type { Canteen, Meal, MealsApiResponse } from '~/types'
 import { useFilterStore } from '~/stores/filters'
 import { useCanteenStore } from '~/stores/canteens'
 import { mealsApi } from '~/services/mealsApi'
-import { formatCalendarDate } from '~/utils/canteenCapacity'
-import { compareCanteens } from '~/utils/canteenOrder'
-import { compareMealsByCategory } from '~/utils/mealOrder'
-import { filterMealsForDay, type MealFilterOptions } from '~/utils/mealFiltering'
-import { getInitialDayIndex, getWeekDates } from '~/utils/mealWeek'
+import { formatCalendarDate } from '~/utils/capacity/capacity'
+import { compareCanteens } from '~/utils/canteen/order'
+import { compareMealsByCategory } from '~/utils/meal/order'
+import { filterMealsForDay, type MealFilterOptions } from '~/utils/meal/filtering'
+import { getInitialDayIndex, getWeekDates } from '~/utils/meal/week'
 
 export const useMealPlan = async () => {
   const filterStore = useFilterStore()

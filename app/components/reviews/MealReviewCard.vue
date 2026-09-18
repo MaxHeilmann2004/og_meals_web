@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import type { MealReviewItem } from '~/types'
-import { formatRelativeDate } from '~/utils/formatters'
+import { formatRelativeDate } from '~/utils/meal/formatters'
 
 defineProps<{
   review: MealReviewItem

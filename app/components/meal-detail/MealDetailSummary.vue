@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import type { Canteen, Meal } from '~/types'
-import { cleanMealTitle, formatPrice, getMealCategoryName } from '~/utils/formatters'
+import { cleanMealTitle, formatPrice, getMealCategoryName } from '~/utils/meal/formatters'
 
 const props = defineProps<{
   meal: Meal

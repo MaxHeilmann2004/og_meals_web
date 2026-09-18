@@ -117,7 +117,7 @@
 import { computed } from "vue";
 import { useFilterStore } from "~/stores/filters";
 import { EXCLUDE_FEATURES, INCLUDE_FEATURES } from "~/config/featureCatalog";
-import { compareCanteens } from "~/utils/canteenOrder";
+import { compareCanteens } from "~/utils/canteen/order";
 import type { CanteenSummary } from "~/types";
 import AdminFilterTools from './AdminFilterTools.vue'
 

@@ -66,7 +66,7 @@
 import { ref, onMounted, watch, nextTick } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type { Canteen, CanteenCapacityApiResponse, Meal } from '~/types'
-import { getTodayCalendarDate } from '~/utils/canteenCapacity'
+import { getTodayCalendarDate } from '~/utils/capacity/capacity'
 import { useAdminAccess } from '~/composables/useAdminAccess'
 import { useCapacity } from '~/composables/useCapacity'
 import DaySelector from '~/components/meal-plan/DaySelector.vue'

@@ -41,7 +41,7 @@ import {
   getCapacityStatus,
   getCapacityStatusLabel,
   isCapacityStale,
-} from '~/utils/canteenCapacity'
+} from '~/utils/capacity/capacity'
 import type { CanteenCapacityPredictionPoint } from '~/types'
 
 const props = defineProps<{

@@ -68,7 +68,7 @@ import {
   actualPointToChartPoint,
   predictionPointToChartPoint,
   type CapacityChartPoint,
-} from '~/utils/canteenCapacity'
+} from '~/utils/capacity/capacity'
 
 // Unovis receives one data series per line while the container shares the x/y domains.
 type ChartDatum = {

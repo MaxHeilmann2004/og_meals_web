@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getFeatureColor, getFeatureIconUrl } from '~/utils/mealFeatures'
+import { getFeatureColor, getFeatureIconUrl } from '~/utils/meal/features'
 
 describe('meal feature presentation', () => {
   it('maps known features to their icons and colors', () => {

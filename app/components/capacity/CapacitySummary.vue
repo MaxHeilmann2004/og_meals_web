@@ -26,7 +26,7 @@ import {
   formatCapacityTime,
   isCapacityStale,
   predictionPointToDate,
-} from '~/utils/canteenCapacity'
+} from '~/utils/capacity/capacity'
 
 const props = defineProps<{
   currentCapacity: CanteenCapacity | null
