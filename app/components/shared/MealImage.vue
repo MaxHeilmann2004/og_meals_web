@@ -45,14 +45,14 @@ const props = withDefaults(
   }
 )
 
-const BASE_URL = 'https://3b-meals.mh-home.net'
+const apiBaseUrl = useRuntimeConfig().public.apiBaseUrl
 
 const fullImageUrl = computed(() => {
   const url = props.mealImage.url
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url
   }
-  return `${BASE_URL}${url}`
+  return `${apiBaseUrl}${url}`
 })
 
 const imgRef = ref<HTMLImageElement | null>(null)

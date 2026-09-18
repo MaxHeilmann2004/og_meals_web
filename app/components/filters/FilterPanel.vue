@@ -164,23 +164,15 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { useDark } from "@vueuse/core";
-import {
-  EXCLUDE_FEATURES,
-  INCLUDE_FEATURES,
-  useFilterStore,
-} from "~/stores/filters";
+import { useFilterStore } from "~/stores/filters";
+import { EXCLUDE_FEATURES, INCLUDE_FEATURES } from "~/config/featureCatalog";
 import { compareCanteens } from "~/utils/canteenOrder";
+import type { CanteenSummary } from "~/types";
 import { useAdminAccess } from "~/composables/useAdminAccess";
-
-interface Canteen {
-  id: number;
-  name: string;
-  displayName: string;
-  orderInApp: number;
-}
+import { adminApi } from "~/services/adminApi";
 
 const props = defineProps<{
-  canteens: Canteen[];
+  canteens: CanteenSummary[];
 }>();
 
 const sortedCanteens = computed(() => {
@@ -213,12 +205,7 @@ const triggerManualSync = async () => {
   isManualSyncing.value = true;
 
   try {
-    await $fetch("https://3b-meals.mh-home.net/meals/sync-now", {
-      method: "POST",
-      headers: {
-        Authorization: adminToken.value,
-      },
-    });
+    await adminApi.syncMeals(adminToken.value);
 
     manualSyncSuccess.value = "Manual sync triggered. Reloading meals...";
     await refreshNuxtData("meals-week");

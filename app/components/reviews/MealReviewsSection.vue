@@ -22,6 +22,7 @@ import { ref, watch } from 'vue'
 import type { MealReviewItem, MealReviewStats, PaginatedMealReviewsResponse } from '~/types'
 import MealReviewForm from './MealReviewForm.vue'
 import MealReviewList from './MealReviewList.vue'
+import { reviewsApi } from '~/services/reviewsApi'
 
 const props = defineProps<{
   mealId: number
@@ -41,9 +42,7 @@ const fetchReviews = async (id: number) => {
   isReviewsLoading.value = true
   reviewsError.value = null
   try {
-    const response = await $fetch<{ success: boolean; data: PaginatedMealReviewsResponse }>(
-      `https://3b-meals.mh-home.net/meals/${id}/reviews?page=1&limit=50`,
-    )
+    const response = await reviewsApi.getForMeal(id)
     if (response.success && response.data) {
       reviews.value = response.data.reviews
       emit('stats-updated', response.data.stats)

@@ -1,5 +1,5 @@
 import type { Meal } from '~/types'
-import { SALAD_CATEGORY_IDS } from '~/stores/filters'
+import { SALAD_CATEGORY_IDS } from '~/config/featureCatalog'
 
 export interface MealFilterOptions {
   isSaladExcluded: boolean

@@ -73,6 +73,7 @@
 
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
+import { reviewsApi } from '~/services/reviewsApi'
 
 const props = defineProps<{
   mealId: number
@@ -144,17 +145,11 @@ const submitReview = async () => {
   submitSuccess.value = false
 
   try {
-    const response = await $fetch<{ success: boolean }>(
-      `https://3b-meals.mh-home.net/meals/${props.mealId}/reviews`,
-      {
-        method: 'POST',
-        body: {
-          star: newReview.value.star,
-          comment: newReview.value.comment.trim(),
-          turnstileToken: turnstileToken.value,
-        },
-      },
-    )
+    const response = await reviewsApi.submit(props.mealId, {
+      star: newReview.value.star,
+      comment: newReview.value.comment.trim(),
+      turnstileToken: turnstileToken.value,
+    })
 
     if (!response.success) return
 

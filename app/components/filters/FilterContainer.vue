@@ -82,16 +82,10 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useWindowSize } from '@vueuse/core'
 import { useFilterStore } from '~/stores/filters'
+import type { CanteenSummary } from '~/types'
 import { useBottomSheetDrag } from '~/composables/useBottomSheetDrag'
 
-interface Canteen {
-  id: number
-  name: string
-  displayName: string
-  orderInApp: number
-}
-
-defineProps<{ canteens: Canteen[] }>()
+defineProps<{ canteens: CanteenSummary[] }>()
 
 const filterStore = useFilterStore()
 const { width } = useWindowSize()

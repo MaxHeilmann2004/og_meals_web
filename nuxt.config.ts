@@ -8,6 +8,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
+      apiBaseUrl: 'https://3b-meals.mh-home.net',
       turnstileSiteKey: '0x4AAAAAADqKcwY5vdT51caz' // Default sitekey, overridden by NUXT_PUBLIC_TURNSTILE_SITE_KEY env variable at runtime
     }
   },

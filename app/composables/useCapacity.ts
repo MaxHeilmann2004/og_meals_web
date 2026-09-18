@@ -5,11 +5,9 @@ import type {
   CanteenCapacityApiResponse,
   CanteenCapacityPredictionPoint,
   CanteenCapacityTimeline,
-  CanteenCapacityTimelineApiResponse,
 } from '~/types'
-import {
-  getNearestPredictionPoint,
-} from '~/utils/canteenCapacity'
+import { getNearestPredictionPoint } from '~/utils/canteenCapacity'
+import { capacityApi } from '~/services/capacityApi'
 
 export const useCapacity = (
   rawCanteens: ComputedRef<Canteen[]>,
@@ -78,9 +76,7 @@ export const useCapacity = (
       return cached
     }
 
-    const response = await $fetch<CanteenCapacityTimelineApiResponse>(
-      `https://3b-meals.mh-home.net/capacity/timeline?canteenId=${canteen.id}&date=${date}`,
-    )
+    const response = await capacityApi.getTimeline(canteen.id, date)
     capacityTimelineCache.set(key, response.data)
     capacityTimelineCacheTimes.set(key, Date.now())
     capacityTimelineVersion.value++

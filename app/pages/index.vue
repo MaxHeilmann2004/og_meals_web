@@ -98,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick, inject } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type {
   Canteen,
@@ -112,15 +112,18 @@ import {
   getTodayCalendarDate,
 } from '~/utils/canteenCapacity'
 import { useFilterStore } from '~/stores/filters'
+import { useCanteenStore } from '~/stores/canteens'
 import { compareCanteens } from '~/utils/canteenOrder'
 import { compareMealsByCategory } from '~/utils/mealOrder'
 import { filterMealsForDay, type MealFilterOptions } from '~/utils/mealFiltering'
 import { getInitialDayIndex, getWeekDates } from '~/utils/mealWeek'
 import { useAdminAccess } from '~/composables/useAdminAccess'
 import { useCapacity } from '~/composables/useCapacity'
+import { capacityApi } from '~/services/capacityApi'
+import { mealsApi } from '~/services/mealsApi'
 
 const filterStore = useFilterStore()
-const setLayoutCanteens = inject<(c: Pick<Canteen, 'id' | 'name' | 'displayName' | 'orderInApp'>[]) => void>('setLayoutCanteens')
+const canteenStore = useCanteenStore()
 
 const dayNames = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']
 
@@ -141,7 +144,7 @@ const todayDate = getTodayCalendarDate()
 // Server-side data fetch — pre-rendered and sent to the client
 const { data, pending, error, refresh } = await useAsyncData<MealsApiResponse>(
   'meals-week',
-  () => $fetch(`https://3b-meals.mh-home.net/meals?start=${startOfWeekStr}&end=${endOfWeekStr}`)
+  () => mealsApi.getWeek(startOfWeekStr, endOfWeekStr)
 )
 
 // Capacity is intentionally fetched separately so a capacity outage does not hide meals.
@@ -150,7 +153,7 @@ const {
   pending: capacityPending,
 } = await useAsyncData<CanteenCapacityApiResponse>(
   'canteen-capacity',
-  () => $fetch('https://3b-meals.mh-home.net/capacity/current')
+  () => capacityApi.getCurrent()
 )
 
 const rawCanteens = computed(() => {
@@ -180,7 +183,7 @@ const {
 // Sync canteen list to filter store and layout whenever data arrives
 watch(rawCanteens, (canteens) => {
   filterStore.initFromCanteens(canteens)
-  setLayoutCanteens?.(canteens.map(c => ({ id: c.id, name: c.name, displayName: c.displayName, orderInApp: c.orderInApp })))
+  canteenStore.setCanteens(canteens)
 }, { immediate: true })
 
 const mealFilterOptions = computed<MealFilterOptions>(() => ({

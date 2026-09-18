@@ -40,26 +40,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, provide } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useFilterStore } from '~/stores/filters'
+import { useCanteenStore } from '~/stores/canteens'
 
 const filterStore = useFilterStore()
 const isImprintOpen = ref(false)
 
-interface Canteen {
-  id: number
-  name: string
-  displayName: string
-  orderInApp: number
-}
-
-const canteens = ref<Canteen[]>([])
-
-// Provide a setter so the page can push canteen data up to the layout
-const setCanteens = (c: Canteen[]) => {
-  canteens.value = c
-}
-provide('setLayoutCanteens', setCanteens)
+const canteenStore = useCanteenStore()
+const canteens = computed(() => canteenStore.canteens)
 
 onMounted(async () => {
   // Initialize Varlet Touch Emulator for desktop browser mouse events

@@ -49,6 +49,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import type { Meal, MealImageDto } from '~/types'
+import { adminApi } from '~/services/adminApi'
+import { mealsApi } from '~/services/mealsApi'
 
 const props = defineProps<{
   meal: Meal
@@ -76,21 +78,19 @@ const openRawJsonInNewTab = () => {
 const openDetailedApiJsonInNewTab = () => {
   if (typeof window === 'undefined') return
 
-  const endpoint = new URL(`https://3b-meals.mh-home.net/meals/${props.meal.id}`)
-  if (props.adminToken) endpoint.searchParams.set('adminToken', props.adminToken)
-  window.open(endpoint.toString(), '_blank', 'noopener,noreferrer')
+  window.open(mealsApi.getDetailsUrl(props.meal.id, props.adminToken), '_blank', 'noopener,noreferrer')
 }
 
 const resolveMealImageUrl = (url: string) =>
   url.startsWith('http://') || url.startsWith('https://')
     ? url
-    : `https://3b-meals.mh-home.net${url}`
+    : adminApi.imageUrl(url)
 
 const extractImageHashFromUrl = (imageUrl: string) => {
   const stripFileExtension = (value: string) => value.replace(/\.[a-zA-Z0-9]+$/, '')
 
   try {
-    const parsed = new URL(imageUrl, 'https://3b-meals.mh-home.net')
+    const parsed = new URL(imageUrl, adminApi.imageUrl('/'))
     const pathParts = parsed.pathname.split('/').filter(Boolean)
     const imgSegmentIndex = pathParts.indexOf('img')
     const hashParts = imgSegmentIndex >= 0 ? pathParts.slice(imgSegmentIndex + 1) : pathParts
@@ -123,10 +123,7 @@ const deleteMealImage = async (imageIndex: number, imageUrl: string) => {
 
   deletingImageIndex.value = imageIndex
   try {
-    const response = await $fetch<{ success?: boolean; data?: { linkedMealsDeleted?: number } }>(
-      `https://3b-meals.mh-home.net/img/admin/${encodeURIComponent(imageHash)}`,
-      { method: 'DELETE', headers: { Authorization: props.adminToken } },
-    )
+    const response = await adminApi.deleteImage(imageHash, props.adminToken)
 
     emit('images-updated', props.meal.images.filter((_, index) => index !== imageIndex))
     const linkedCount = response?.data?.linkedMealsDeleted
