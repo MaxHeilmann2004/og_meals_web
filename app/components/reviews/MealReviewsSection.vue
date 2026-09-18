@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import type { MealReviewItem, MealReviewStats, PaginatedMealReviewsResponse } from '~/types/meals'
+import type { MealReviewItem, MealReviewStats, PaginatedMealReviewsResponse } from '~/types'
 import MealReviewForm from './MealReviewForm.vue'
 import MealReviewList from './MealReviewList.vue'
 

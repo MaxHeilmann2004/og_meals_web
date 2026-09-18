@@ -105,7 +105,7 @@ import type {
   CanteenCapacityApiResponse,
   Meal,
   MealsApiResponse,
-} from '~/types/meals'
+} from '~/types'
 import {
   formatCalendarDate,
   getNearestPredictionPoint,

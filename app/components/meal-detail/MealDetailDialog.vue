@@ -139,9 +139,9 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onUnmounted } from 'vue'
-import type { Canteen, Meal, MealImageDto, MealReviewStats } from '~/types/meals'
+import type { Canteen, Meal, MealImageDto, MealReviewStats } from '~/types'
 import { useFilterStore } from '~/stores/filters'
-import MealMedia from './MealMedia.vue'
+import MealMedia from '../shared/MealMedia.vue'
 import MealAdminTools from './MealAdminTools.vue'
 import {
   cleanMealTitle,
@@ -153,7 +153,7 @@ import {
 import MealNutritionTable from './MealNutritionTable.vue'
 import MealAllergensList from './MealAllergensList.vue'
 import MealFeaturesList from './MealFeaturesList.vue'
-import MealReviewsSection from './MealReviewsSection.vue'
+import MealReviewsSection from '../reviews/MealReviewsSection.vue'
 
 const props = defineProps<{
   show: boolean

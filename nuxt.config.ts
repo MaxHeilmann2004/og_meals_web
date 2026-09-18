@@ -16,6 +16,10 @@ export default defineNuxtConfig({
     compatibilityVersion: 4
   },
 
+  components: [
+    { path: '~/components', pathPrefix: false },
+  ],
+
   modules: [
     '@varlet/nuxt',
     '@pinia/nuxt',

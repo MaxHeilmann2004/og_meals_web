@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MealAllergen } from '~/types/meals'
+import type { MealAllergen } from '~/types'
 
 defineProps<{
   allergens: MealAllergen[] | null | undefined

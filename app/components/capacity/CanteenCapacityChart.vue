@@ -63,7 +63,7 @@
 
 <script setup lang="ts">
 import { VisAxis, VisLine, VisXYContainer } from '@unovis/vue'
-import type { CanteenCapacityTimeline } from '~/types/meals'
+import type { CanteenCapacityTimeline } from '~/types'
 import {
   actualPointToChartPoint,
   predictionPointToChartPoint,

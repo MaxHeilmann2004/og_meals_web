@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Meal, MealImageDto } from '~/types/meals'
+import type { Meal, MealImageDto } from '~/types'
 
 const props = defineProps<{
   meal: Meal

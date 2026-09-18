@@ -64,8 +64,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Meal, Canteen } from '~/types/meals'
-import MealMedia from './MealMedia.vue'
+import type { Meal, Canteen } from '~/types'
+import MealMedia from '../shared/MealMedia.vue'
 import { useFilterStore } from '~/stores/filters'
 import { cleanMealTitle, formatPrice, getMealCategoryName } from '~/utils/formatters'
 

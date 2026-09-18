@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { MealImageDto } from '~/types/meals'
+import type { MealImageDto } from '~/types'
 
 const props = defineProps<{
   images: MealImageDto[]

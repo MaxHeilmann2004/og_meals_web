@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { MealNutritionalInfo } from '~/types/meals'
+import type { MealNutritionalInfo } from '~/types'
 import { formatNumber } from '~/utils/formatters'
 
 const props = defineProps<{

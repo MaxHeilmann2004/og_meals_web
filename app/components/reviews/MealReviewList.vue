@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MealReviewItem } from '~/types/meals'
+import type { MealReviewItem } from '~/types'
 import MealReviewCard from './MealReviewCard.vue'
 
 withDefaults(defineProps<{

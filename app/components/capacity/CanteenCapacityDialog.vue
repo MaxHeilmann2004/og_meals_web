@@ -106,7 +106,7 @@ import type {
   CanteenCapacity,
   CanteenCapacityPredictionPoint,
   CanteenCapacityTimeline,
-} from '~/types/meals'
+} from '~/types'
 import {
   formatCapacityCalendarDate,
   formatCapacityPercent,

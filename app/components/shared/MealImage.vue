@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import type { MealImageDto } from '~/types/meals'
+import type { MealImageDto } from '~/types'
 
 const props = withDefaults(
   defineProps<{

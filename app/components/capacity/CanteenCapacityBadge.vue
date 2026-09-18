@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import type { CanteenCapacity } from '~/types/meals'
+import type { CanteenCapacity } from '~/types'
 import {
   formatCapacityPercent,
   formatCapacityTime,
@@ -42,7 +42,7 @@ import {
   getCapacityStatusLabel,
   isCapacityStale,
 } from '~/utils/canteenCapacity'
-import type { CanteenCapacityPredictionPoint } from '~/types/meals'
+import type { CanteenCapacityPredictionPoint } from '~/types'
 
 const props = defineProps<{
   capacity: CanteenCapacity | null

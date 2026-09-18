@@ -1,4 +1,4 @@
-import type { Meal } from '~/types/meals'
+import type { Meal } from '~/types'
 import { SALAD_CATEGORY_IDS } from '~/stores/filters'
 
 export interface MealFilterOptions {

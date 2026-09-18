@@ -6,7 +6,7 @@ import type {
   MealReviewItem,
   MealsApiResponse,
   PaginatedMealReviewsResponse,
-} from '~/types/meals'
+} from '~/types'
 import type { Page, Route } from '@playwright/test'
 
 const apiOrigin = 'https://3b-meals.mh-home.net'

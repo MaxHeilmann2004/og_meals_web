@@ -1,7 +1,7 @@
 import type {
   CanteenCapacityPoint,
   CanteenCapacityPredictionPoint,
-} from '~/types/meals'
+} from '~/types'
 
 export type CapacityStatus = 'quiet' | 'moderate' | 'busy'
 

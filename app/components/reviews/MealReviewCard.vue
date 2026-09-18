@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MealReviewItem } from '~/types/meals'
+import type { MealReviewItem } from '~/types'
 import { formatRelativeDate } from '~/utils/formatters'
 
 defineProps<{

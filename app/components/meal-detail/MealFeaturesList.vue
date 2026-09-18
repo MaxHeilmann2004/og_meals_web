@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { MealFeature } from '~/types/meals'
+import type { MealFeature } from '~/types'
 import { getFeatureColor, getFeatureIconUrl } from '~/utils/mealFeatures'
 
 const props = defineProps<{

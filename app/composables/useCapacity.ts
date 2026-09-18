@@ -6,7 +6,7 @@ import type {
   CanteenCapacityPredictionPoint,
   CanteenCapacityTimeline,
   CanteenCapacityTimelineApiResponse,
-} from '~/types/meals'
+} from '~/types'
 import {
   getNearestPredictionPoint,
 } from '~/utils/canteenCapacity'

@@ -1,4 +1,4 @@
-import type { MealReviewStats } from '~/types/meals'
+import type { MealReviewStats } from '~/types'
 
 const currencyFormatter = new Intl.NumberFormat('de-DE', {
   style: 'currency',

@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import type { MealImageDto } from '~/types/meals'
+import type { MealImageDto } from '~/types'
 
 withDefaults(defineProps<{
   images: MealImageDto[]
