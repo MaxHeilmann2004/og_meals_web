@@ -1,22 +1,10 @@
 <template>
   <div class="page-container">
-    <!-- Day Chips Navigation -->
-    <div class="day-chips-scroll">
-      <div class="day-chips-row">
-        <var-chip
-          v-for="(dayName, index) in dayNames"
-          :key="index"
-          class="day-chip"
-          :class="{ 'is-selected': index === selectedDayIndex }"
-          :plain="index !== selectedDayIndex"
-          :round="false"
-          type="primary"
-          @click="selectedDayIndex = index"
-        >
-          {{ dayName }}
-        </var-chip>
-      </div>
-    </div>
+    <DaySelector
+      :day-names="dayNames"
+      :selected-day-index="selectedDayIndex"
+      @select="selectedDayIndex = $event"
+    />
 
     <!-- Main List / Grid -->
     <div class="content-viewport">
@@ -31,42 +19,19 @@
         <var-button type="primary" size="small" @click="() => refresh()">Erneut versuchen</var-button>
       </div>
 
-      <!-- Meals Content — always rendered once data exists, never torn down -->
-      <div v-if="data" class="canteens-list">
-        <div 
-          v-for="canteen in filteredCanteens" 
-          :key="canteen.id" 
-          class="canteen-section"
-        >
-          <!-- Canteen Header -->
-          <div class="canteen-header-row">
-            <h2 class="canteen-header">{{ canteen.displayName || canteen.name }}</h2>
-            <CanteenCapacityBadge
-              :capacity="selectedDayIsToday ? capacityForCanteen(canteen.id) : null"
-              :expected="selectedDayIsToday ? null : expectedCapacityForCanteen(canteen.id)"
-              :is-today="selectedDayIsToday"
-              :loading="selectedDayIsToday ? capacityPending : expectationPending"
-              @click="openCapacityDetails(canteen)"
-            />
-          </div>
-
-          <!-- Meals Grid -->
-          <div class="meals-grid">
-            <MealCard
-              v-for="meal in canteen.mealsForSelectedDay"
-              :key="meal.id"
-              :meal="meal"
-              :canteen="canteen"
-              @select="openMealDetails(meal, canteen)"
-            />
-          </div>
-        </div>
-
-        <!-- No Meals State -->
-        <div v-if="totalMealsForSelectedDay === 0 && !pending" class="no-meals-state">
-          <p>Keine Gerichte für diesen Tag verfügbar.</p>
-        </div>
-      </div>
+      <MealPlanContent
+        v-if="data"
+        :filtered-canteens="filteredCanteens"
+        :total-meals-for-selected-day="totalMealsForSelectedDay"
+        :pending="pending"
+        :selected-day-is-today="selectedDayIsToday"
+        :capacity-pending="capacityPending"
+        :expectation-pending="expectationPending"
+        :capacity-for-canteen="capacityForCanteen"
+        :expected-capacity-for-canteen="expectedCapacityForCanteen"
+        @select-meal="openMealDetails"
+        @capacity-details="openCapacityDetails"
+      />
     </div>
 
     <ClientOnly>
@@ -104,6 +69,8 @@ import type { Canteen, CanteenCapacityApiResponse, Meal } from '~/types'
 import { getTodayCalendarDate } from '~/utils/canteenCapacity'
 import { useAdminAccess } from '~/composables/useAdminAccess'
 import { useCapacity } from '~/composables/useCapacity'
+import DaySelector from '~/components/meal-plan/DaySelector.vue'
+import MealPlanContent from '~/components/meal-plan/MealPlanContent.vue'
 import { useMealPlan } from '~/composables/useMealPlan'
 import { capacityApi } from '~/services/capacityApi'
 
