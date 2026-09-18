@@ -24,11 +24,17 @@ const CATEGORY_ORDER_GROUPS: readonly (readonly number[])[] = [
   [242], // Pasta
   [243], // Pizza
 
-  // Soups and salad counters
+  // Soups
   [233, 248, 1582, 1606],
-  [235, 247],
 
-  // Individual salads, ordered 1 through 4 across locations
+  // Salad and bistro toppings appear before their salads
+  [1585, 1658, 1674],
+  [1589, 1659, 1675],
+  [1591],
+  [1593],
+
+  // Salad counters and individual salads
+  [235, 247],
   [1650, 1654, 1670, 1682],
   [1651, 1655, 1671, 1683],
   [1652, 1656, 1672, 1684],
@@ -38,11 +44,6 @@ const CATEGORY_ORDER_GROUPS: readonly (readonly number[])[] = [
   [1586],
   [1587],
 
-  // Salad and bistro toppings
-  [1585, 1658, 1674],
-  [1589, 1659, 1675],
-  [1591],
-  [1593],
   // Dressings
   [1958],
   [1959],

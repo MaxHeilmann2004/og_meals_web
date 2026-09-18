@@ -55,7 +55,11 @@
             <div class="dialog-content">
               <div class="meal-heading">
                 <h2 class="meal-title">{{ cleanedTitle }}</h2>
-                <p class="canteen-name">{{ canteen.displayName || canteen.name }}</p>
+                <p class="meal-context">
+                  <span>{{ canteen.displayName || canteen.name }}</span>
+                  <span v-if="categoryName" class="meal-context-separator" aria-hidden="true">·</span>
+                  <span v-if="categoryName">{{ categoryName }}</span>
+                </p>
               </div>
 
               <div class="price-display">
@@ -255,6 +259,12 @@ const cleanedTitle = computed(() => {
     .filter(Boolean)
     .join(', ')
 })
+
+const categoryName = computed(() =>
+  meal.value?.category?.unifiedName?.trim()
+  || meal.value?.category?.name?.trim()
+  || '',
+)
 
 const shortDateStr = computed(() => {
   if (!meal.value?.date) return ''
@@ -719,11 +729,19 @@ onUnmounted(() => {
   color: var(--color-on-surface);
 }
 
-.canteen-name {
+.meal-context {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4em;
+  margin: 4px 0 0;
   font-size: 1rem;
   color: var(--color-primary);
   font-weight: 500;
-  margin: 4px 0 0 0;
+}
+
+.meal-context-separator {
+  color: var(--color-outline);
 }
 
 .price-display {

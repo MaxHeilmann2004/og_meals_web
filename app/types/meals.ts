@@ -40,6 +40,7 @@ export interface MealNutritionalInfo {
 export interface MealCategory {
   id: number
   name?: string | null
+  unifiedName?: string | null
 }
 
 export interface MealReviewStats {

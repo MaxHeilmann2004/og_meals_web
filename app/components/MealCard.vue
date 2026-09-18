@@ -60,9 +60,9 @@
       <span class="rating-count">{{ meal.reviewStats.averageStars.toFixed(1) }} ({{ meal.reviewStats.totalReviews }})</span>
     </div>
 
-    <!-- Footer: canteen name + feature icons -->
+    <!-- Footer: unified category name + feature icons -->
     <div class="meal-footer-row">
-      <span class="canteen-name">{{ canteen.name }}</span>
+      <span class="category-name">{{ categoryName }}</span>
       <div class="feature-icons">
         <MealIcon
           v-for="feature in visibleFeatures"
@@ -90,6 +90,11 @@ const emit = defineEmits<{
 
 const filterStore = useFilterStore()
 const showStudentPrice = computed(() => filterStore.showStudentPrices && !!props.meal.studentPrice)
+const categoryName = computed(() =>
+  props.meal.category?.unifiedName?.trim()
+  || props.meal.category?.name?.trim()
+  || props.canteen.name,
+)
 
 const starClass = (i: number) => {
   const avg = props.meal.reviewStats.averageStars
@@ -292,7 +297,7 @@ const formatPrice = (price: number | null | undefined) => {
   gap: 12px;
 }
 
-.canteen-name {
+.category-name {
   font-size: 0.875rem;
   color: var(--color-on-secondary-container);
   font-weight: 500;
