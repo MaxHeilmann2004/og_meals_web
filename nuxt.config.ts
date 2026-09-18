@@ -39,16 +39,16 @@ export default defineNuxtConfig({
       ],
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
-        { name: 'description', content: 'OG Meals application rebuilt in Nuxt 4' },
+        { name: 'description', content: 'Der inoffizielle Speiseplan für die Otto Group Kantinen.' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
         { name: 'apple-mobile-web-app-title', content: 'OG Meals' },
         { name: 'mobile-web-app-capable', content: 'yes' }
       ],
       link: [
-        { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
-        { rel: 'icon', href: '/icon.svg', sizes: 'any', type: 'image/svg+xml' },
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png' }
+        { rel: 'icon', href: '/favicon.ico?v=2', sizes: '48x48' },
+        { rel: 'icon', href: '/icon.svg?v=2', sizes: 'any', type: 'image/svg+xml' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png?v=2' }
       ]
     }
   },
@@ -58,8 +58,8 @@ export default defineNuxtConfig({
     manifest: {
       name: 'OG Meals',
       short_name: 'OG Meals',
-      description: 'Browse and filter OG canteen meals as a native-feeling app.',
-      lang: 'en',
+      description: 'Der inoffizielle Speiseplan für die Otto Group Kantinen.',
+      lang: 'de',
       theme_color: '#EE0020',
       background_color: '#201A19',
       display: 'standalone',
@@ -67,10 +67,10 @@ export default defineNuxtConfig({
       start_url: '/',
       scope: '/',
       icons: [
-        { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
-        { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
-        { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-        { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+        { src: 'pwa-64x64.png?v=2', sizes: '64x64', type: 'image/png' },
+        { src: 'pwa-192x192.png?v=2', sizes: '192x192', type: 'image/png' },
+        { src: 'pwa-512x512.png?v=2', sizes: '512x512', type: 'image/png' },
+        { src: 'maskable-icon-512x512.png?v=2', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
       ]
     },
     workbox: {
