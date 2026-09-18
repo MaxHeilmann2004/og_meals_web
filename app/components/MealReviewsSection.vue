@@ -26,7 +26,10 @@
 
           <!-- Turnstile Widget -->
           <div class="turnstile-outer-wrapper">
-            <div :id="turnstileContainerId"></div>
+            <div class="turnstile-widget-slot">
+              <div class="turnstile-shimmer-placeholder" aria-hidden="true"></div>
+              <div :id="turnstileContainerId" class="turnstile-container"></div>
+            </div>
           </div>
 
           <div class="review-form-actions">
@@ -423,25 +426,66 @@ onUnmounted(() => {
 }
 
 .turnstile-outer-wrapper {
+  /* Turnstile renders a 69px-high slot in the browser despite its nominal 65px height. */
+  min-height: 69px;
   display: flex;
+  align-items: center;
   justify-content: center;
   width: 100%;
-  transition: min-height 0.2s ease, height 0.2s ease;
+  margin: 12px 0;
 }
 
-.turnstile-outer-wrapper:not(:has(iframe)) {
-  min-height: 65px;
+.turnstile-widget-slot {
+  position: relative;
+  width: min(300px, 100%);
+  min-height: 69px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.turnstile-outer-wrapper:has(iframe[height="0"]),
-.turnstile-outer-wrapper:has(iframe[style*="display: none"]),
-.turnstile-outer-wrapper:has(iframe[style*="visibility: hidden"]) {
-  min-height: 0 !important;
-  height: 0 !important;
-  overflow: hidden;
-  margin: 0 !important;
-  padding: 0 !important;
-  display: none !important;
+.turnstile-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 69px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Shimmer placeholder shown until Turnstile inserts its visible iframe. */
+.turnstile-shimmer-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 65px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-container-highest) 25%,
+    var(--color-outline-variant) 37%,
+    var(--color-surface-container-highest) 63%
+  );
+  background-size: 200% 100%;
+  animation: turnstile-shimmer 1.5s infinite linear;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.turnstile-widget-slot:has(iframe:not([height="0"]):not([style*="display: none"]):not([style*="visibility: hidden"])) .turnstile-shimmer-placeholder {
+  opacity: 0;
+  animation: none;
+}
+
+@keyframes turnstile-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .submit-review-btn {
