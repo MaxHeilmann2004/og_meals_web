@@ -56,45 +56,20 @@
       </Transition>
     </div>
 
-    <!-- Reviews list -->
-    <div class="reviews-list-container">
-      <div :class="{ 'reviews-list-body': !isMobile }">
-        <div v-if="isReviewsLoading" class="reviews-loading">
-          <LoadingSpinner size="32px" label="Lade Bewertungen..." />
-        </div>
-
-        <div v-else-if="reviewsError" class="reviews-error-box">
-          <p>{{ reviewsError }}</p>
-          <var-button type="primary" size="small" @click="fetchReviews(mealId)">Erneut versuchen</var-button>
-        </div>
-
-        <div v-else-if="reviews.length === 0" class="no-reviews-box">
-          <p class="empty-copy">Noch keine Bewertungen vorhanden. Schreibe die erste!</p>
-        </div>
-
-        <div v-else class="reviews-cards-list">
-          <div v-for="rev in reviews" :key="rev.id" class="review-card">
-            <div class="review-card-header">
-              <var-rate readonly :model-value="rev.star" size="18" color="var(--color-primary)"
-                empty-color="var(--color-outline-variant)" />
-              <span class="review-card-date">{{ formatRelativeDate(rev.createdAt) }}</span>
-            </div>
-            <p class="review-card-comment">{{ rev.comment }}</p>
-            <span v-if="!rev.isFromOriginalMeal && rev.matchType === 'similarity'" class="propagated-tag">
-              <AiBadge :inline="true" />
-              Ähnliches Gericht
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <MealReviewList
+      :reviews="reviews"
+      :is-loading="isReviewsLoading"
+      :error="reviewsError"
+      :is-mobile="isMobile"
+      @retry="fetchReviews(mealId)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import type { MealReviewItem, MealReviewStats, PaginatedMealReviewsResponse } from '~/types/meals'
-import { formatRelativeDate } from '~/utils/formatters'
+import MealReviewList from './MealReviewList.vue'
 
 const props = defineProps<{
   mealId: number
@@ -490,116 +465,6 @@ onUnmounted(() => {
   font-size: 0.85rem;
   font-weight: 600;
   text-align: center;
-}
-
-.reviews-list-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.reviews-list-body {
-  margin-top: 16px;
-}
-
-.reviews-loading,
-.reviews-error-box,
-.no-reviews-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 32px 16px;
-  background: var(--color-surface-container-low);
-  border-radius: 16px;
-  border: 1px dashed var(--color-outline-variant);
-}
-
-.is-mobile .reviews-loading,
-.is-mobile .reviews-error-box,
-.is-mobile .no-reviews-box {
-  background: var(--color-surface-container-high);
-}
-
-.reviews-loading p,
-.reviews-error-box p,
-.no-reviews-box p {
-  margin: 0 0 12px 0;
-  font-size: 0.95rem;
-  color: var(--color-on-surface-variant);
-}
-
-.reviews-cards-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.review-card {
-  background: var(--color-surface-container-low);
-  border-radius: 20px;
-  padding: 16px;
-  border: 1px solid var(--color-outline-variant);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.is-mobile .review-card {
-  box-shadow: none;
-  border-radius: 16px;
-  background: var(--color-surface-container-high);
-}
-
-.review-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.review-card-header :deep(.var-rate__content) {
-  cursor: default !important;
-  padding: 0 1px !important;
-  background: transparent !important;
-}
-
-.review-card-header :deep(.var-rate__content .var-hover-overlay),
-.review-card-header :deep(.var-rate__content .var-ripple) {
-  display: none !important;
-}
-
-.review-card-date {
-  font-size: 0.8rem;
-  color: var(--color-on-surface-variant);
-  opacity: 0.75;
-  white-space: nowrap;
-  flex-shrink: 0;
-  margin-left: 8px;
-}
-
-.review-card-comment {
-  margin: 0;
-  font-size: 0.92rem;
-  line-height: 1.45;
-  color: var(--color-on-surface);
-  word-break: break-word;
-  white-space: pre-wrap;
-}
-
-.propagated-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.72rem;
-  color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
-  padding: 2px 8px;
-  border-radius: 99px;
-  align-self: flex-start;
-  font-weight: 600;
 }
 
 .fade-enter-active,
