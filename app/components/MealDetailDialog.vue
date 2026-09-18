@@ -561,7 +561,31 @@ onUnmounted(() => {
   gap: 16px;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  /* Let the meal card's shadow escape above and below the layout. */
+  overflow: visible;
+}
+
+@media (min-width: 768px) {
+  /* Keep the card surface and its shadow in a dedicated paint layer. */
+  .meal-detail-dialog::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(57% - 8px);
+    height: 100%;
+    border-radius: 32px;
+    background: var(--color-surface-container-low);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* The popup shell must not clip the card shadow. */
+  :global(.var-popup:has(.meal-detail-dialog)),
+  :global(.var-popup__content:has(.meal-detail-dialog)) {
+    overflow: visible !important;
+  }
 }
 
 @media (max-width: 767px) {
@@ -584,9 +608,11 @@ onUnmounted(() => {
   overflow: hidden;
   background: var(--color-surface-container-low);
   border-radius: 32px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  /* The desktop shadow is painted by the sibling pseudo-element above. */
+  box-shadow: none;
   border: 1px solid var(--color-outline-variant);
   position: relative;
+  z-index: 1;
   transform: translateZ(0); /* For corner clipping */
 }
 
@@ -630,6 +656,20 @@ onUnmounted(() => {
   overflow-y: auto;
   overflow-y: overlay; /* Floating scrollbar */
   background: transparent;
+}
+
+@media (min-width: 768px) {
+  /* A scrolling element necessarily clips descendant box shadows. Paint one
+     shadow from the composited review surfaces instead; filter output can
+     escape the scroll viewport without moving or narrowing the cards. */
+  .dialog-right-col {
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.16));
+  }
+
+  .dialog-right-col :deep(.add-review-container),
+  .dialog-right-col :deep(.review-card) {
+    box-shadow: none;
+  }
 }
 
 @media (max-width: 767px) {

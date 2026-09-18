@@ -4,9 +4,16 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
+    "check": "pnpm typecheck && pnpm typecheck:tests && pnpm test && pnpm build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:update": "playwright test --update-snapshots",
+    "test:watch": "vitest",
+    "typecheck": "vue-tsc --noEmit",
+    "typecheck:tests": "tsc -p tests/tsconfig.json --noEmit",
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
@@ -24,9 +31,15 @@
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.1",
     "@vite-pwa/assets-generator": "^1.0.2",
     "@vite-pwa/nuxt": "^1.1.1",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "@vue/test-utils": "^2.5.1",
+    "happy-dom": "^20.14.5",
     "typescript": "^5.9.3",
+    "vitest": "^5.0.1",
     "vue-tsc": "^3.3.5"
   },
   "engines": {

@@ -1,7 +1,10 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  // Browser tests disable SSR so Playwright can intercept the deterministic API fixtures.
+  // Normal development and production builds keep SSR enabled.
+  ssr: process.env.NUXT_TEST_MODE !== 'true',
+  devtools: { enabled: process.env.NUXT_TEST_MODE !== 'true' },
 
   runtimeConfig: {
     public: {
