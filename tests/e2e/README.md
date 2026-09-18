@@ -1,6 +1,6 @@
 # Browser baseline tests
 
-These tests are the behavior and visual baseline for the current application. API requests are intercepted with deterministic fixtures so the tests do not depend on live meal data or external image services.
+These tests are the behavior and visual baseline for the current application. API requests are intercepted with deterministic fixtures so the tests do not depend on live meal data or external image services. Playwright runs against a built test app with four workers, avoiding Nuxt/Vite HMR contention.
 
 Run the functional and visual tests with:
 
