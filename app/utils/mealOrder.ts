@@ -12,13 +12,14 @@ type MealCategoryOrderData = {
  * irrelevant. Unknown categories deliberately retain their API order.
  */
 const CATEGORY_ORDER_GROUPS: readonly (readonly number[])[] = [
+  // Grill is the first category at both Elbe and bonprix.
+  [204, 1676],
+  [1535, 1681],
+
   // Main courses: house classics and daily specials
   [201, 1490, 259], // The Original, Heimatküche, Spezial des Tages
   // Plant-focused main courses
   [1483, 249], // F&T Vegan Elbe, bonprix Vital
-  // Grill main courses, with the vegan grill option directly afterwards
-  [204, 1676],
-  [1535, 1681],
   // Other main-course counters
   [250], // Live Counter
   [242], // Pasta
