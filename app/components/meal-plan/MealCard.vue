@@ -1,0 +1,240 @@
+<template>
+  <article
+    v-ripple="{ color: 'rgba(120, 32, 28, 0.14)' }"
+    class="meal-card"
+    role="button"
+    tabindex="0"
+    :aria-label="`${cleanedTitle}, Details anzeigen`"
+    @click="emit('select')"
+    @keydown.enter.prevent="emit('select')"
+    @keydown.space.prevent="emit('select')"
+  >
+    <!-- Image Section -->
+    <div class="meal-image-container">
+      <MealMedia
+        :images="meal.images"
+        :content-description="meal.title"
+        variant="card"
+        :item-border-radius-px="28"
+        :collapsed-pill-width-px="44"
+      />
+    </div>
+
+    <!-- Title and Price Row -->
+    <div class="meal-info-row">
+      <h3 class="meal-title" :title="cleanedTitle">
+        {{ cleanedTitle }}
+      </h3>
+      <div class="meal-prices">
+        <!-- Original Price -->
+        <span 
+          class="price-regular" 
+          :class="{ 'has-student-price': showStudentPrice }"
+        >
+          {{ formatPrice(meal.price) }}
+        </span>
+        <!-- Student Price -->
+        <span v-if="showStudentPrice" class="price-student">
+          {{ formatPrice(props.meal.studentPrice) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Rating -->
+    <div v-if="meal.reviewStats.totalReviews > 0" class="meal-rating-row">
+      <span class="rating-stars" :aria-label="`${meal.reviewStats.averageStars} von 5 Sternen`">
+        <span v-for="i in 5" :key="i" class="star" :class="starClass(i)">&#9733;</span>
+      </span>
+      <span class="rating-count">{{ meal.reviewStats.averageStars.toFixed(1) }} ({{ meal.reviewStats.totalReviews }})</span>
+    </div>
+
+    <!-- Footer: unified category name + feature icons -->
+    <div class="meal-footer-row">
+      <span class="category-name">{{ categoryName }}</span>
+      <div class="feature-icons">
+        <MealIcon
+          v-for="feature in visibleFeatures"
+          :key="feature.id"
+          :feature="feature"
+        />
+      </div>
+    </div>
+  </article>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+import type { Meal, Canteen } from '~/types'
+import MealMedia from '../shared/MealMedia.vue'
+import { useFilterStore } from '~/stores/filters'
+import { cleanMealTitle, formatPrice, getMealCategoryName } from '~/utils/meal/formatters'
+
+const props = defineProps<{
+  meal: Meal
+  canteen: Canteen
+}>()
+
+const emit = defineEmits<{
+  select: []
+}>()
+
+const filterStore = useFilterStore()
+const showStudentPrice = computed(() => filterStore.showStudentPrices && !!props.meal.studentPrice)
+const categoryName = computed(() => getMealCategoryName(props.meal, props.canteen.name))
+
+const starClass = (i: number) => {
+  const avg = props.meal.reviewStats.averageStars
+  if (i <= Math.floor(avg)) return 'star-full'
+  if (i === Math.ceil(avg) && avg % 1 >= 0.5) return 'star-half'
+  return 'star-empty'
+}
+
+const cleanedTitle = computed(() => cleanMealTitle(props.meal.title))
+
+// Show features that appear on the card overview (matches Compose app behaviour)
+const visibleFeatures = computed(() => {
+  if (!props.meal.features) return []
+  return props.meal.features.filter(f => f.showInOverview === true)
+})
+
+
+</script>
+
+<style scoped>
+.meal-card {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  border-radius: 28px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  outline: none;
+  transition: background-color 0.2s ease, outline 0.2s ease;
+}
+
+.meal-card:hover,
+.meal-card:focus-visible {
+  background-color: hsla(var(--hsl-primary), 0.06);
+}
+
+.meal-card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.meal-image-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  position: relative;
+}
+
+.meal-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 12px;
+  gap: 16px;
+}
+
+.meal-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+  word-break: break-word;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meal-prices {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.price-regular {
+  color: var(--color-on-surface);
+}
+
+.price-regular.has-student-price {
+  text-decoration: line-through;
+  opacity: 0.7;
+  margin-right: 8px;
+  font-weight: 400;
+}
+
+.price-student {
+  color: var(--color-on-surface);
+  font-weight: 700;
+}
+
+.meal-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 1px;
+}
+
+.star {
+  font-size: 0.9rem;
+}
+
+.star-full {
+  color: var(--color-primary);
+}
+
+.star-half {
+  color: var(--color-primary);
+  opacity: 0.6;
+}
+
+.star-empty {
+  color: var(--color-on-surface-variant);
+  opacity: 0.3;
+}
+
+.rating-count {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  font-weight: 500;
+}
+
+.meal-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  gap: 12px;
+}
+
+.category-name {
+  font-size: 0.875rem;
+  color: var(--color-on-secondary-container);
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+}
+
+.feature-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+</style>

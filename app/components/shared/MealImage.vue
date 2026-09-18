@@ -1,0 +1,158 @@
+<template>
+  <div class="meal-image-wrapper">
+    <!-- Main Image -->
+    <img
+      ref="imgRef"
+      v-show="!isError"
+      :src="fullImageUrl"
+      :alt="contentDescription"
+      class="meal-image"
+      @load="onImageLoad"
+      @error="onImageError"
+    />
+
+    <!-- Shimmer Loader -->
+    <div class="shimmer-placeholder" :class="{ 'shimmer-hidden': !isLoading || isError }"></div>
+
+    <!-- Error State -->
+    <div class="error-placeholder" :class="{ 'error-hidden': !isError }">
+      <span>Fehler beim Laden des Bildes</span>
+    </div>
+
+    <!-- AI Suggested Badge -->
+    <AiBadge
+      v-if="mealImage.aiSuggested && showAiBadge"
+      :absolute="true"
+      :position="badgePosition"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import type { MealImageDto } from '~/types'
+
+const props = withDefaults(
+  defineProps<{
+    mealImage: MealImageDto
+    contentDescription: string
+    showAiBadge?: boolean
+    badgePosition?: 'top-right' | 'bottom-right'
+  }>(),
+  {
+    showAiBadge: true,
+    badgePosition: 'top-right'
+  }
+)
+
+const apiBaseUrl = useRuntimeConfig().public.apiBaseUrl
+
+const fullImageUrl = computed(() => {
+  const url = props.mealImage.url
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  return `${apiBaseUrl}${url}`
+})
+
+const imgRef = ref<HTMLImageElement | null>(null)
+const isLoading = ref(true)
+const isError = ref(false)
+
+const onImageLoad = () => {
+  isLoading.value = false
+}
+
+const onImageError = () => {
+  isLoading.value = false
+  isError.value = true
+}
+
+onMounted(() => {
+  if (imgRef.value && imgRef.value.complete) {
+    if (imgRef.value.naturalWidth === 0) {
+      onImageError()
+    } else {
+      onImageLoad()
+    }
+  }
+})
+</script>
+
+<style scoped>
+.meal-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: var(--color-surface-container-highest);
+}
+
+.meal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Shimmer Keyframe Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-container-highest) 25%,
+    var(--color-outline-variant) 37%,
+    var(--color-surface-container-highest) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.shimmer-hidden {
+  opacity: 0;
+  pointer-events: none;
+  animation: none; /* Stop animating when hidden to save GPU */
+}
+
+.error-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-tertiary-container);
+  color: var(--color-on-tertiary-container);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 12px;
+  text-align: center;
+  transition: opacity 0.15s ease;
+}
+
+.error-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+</style>

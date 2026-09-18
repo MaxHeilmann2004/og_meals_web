@@ -11,9 +11,8 @@ export default defineConfig({
   },
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // Nuxt's dev server and Vite optimizer are shared by all browser contexts.
-  // A single worker keeps the baseline deterministic and avoids concurrent HMR races.
-  workers: 1,
+  // Use the built test app below so browser workers do not contend on Nuxt/Vite HMR.
+  workers: process.env.CI ? 2 : 4,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL: 'http://127.0.0.1:4173',
@@ -46,7 +45,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'NUXT_TEST_MODE=true pnpm dev --host 127.0.0.1 --port 4173',
+    command: 'pnpm build:test && HOST=127.0.0.1 PORT=4173 node .output/server/index.mjs',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: false,
     timeout: 120_000,

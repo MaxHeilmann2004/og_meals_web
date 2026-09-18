@@ -9,7 +9,7 @@ import {
   getNearestPredictionPoint,
   isCapacityStale,
   predictionPointToDate,
-} from '~/utils/canteenCapacity'
+} from '~/utils/capacity/capacity'
 
 describe('canteen capacity utilities', () => {
   it('formats percentages and person counts for the German UI', () => {

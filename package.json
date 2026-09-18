@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
+    "build:test": "NUXT_TEST_MODE=true nuxt build",
     "check": "pnpm typecheck && pnpm typecheck:tests && pnpm test && pnpm build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
@@ -19,6 +20,7 @@
   "dependencies": {
     "@nuxtjs/plausible": "^4.0.0",
     "@pinia/nuxt": "^0.11.3",
+    "@plausible-analytics/tracker": "^0.4.6",
     "@unovis/vue": "^1.6.7",
     "@varlet/nuxt": "^0.1.5",
     "@varlet/touch-emulator": "^3.18.2",

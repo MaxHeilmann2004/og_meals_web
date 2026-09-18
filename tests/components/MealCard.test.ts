@@ -3,8 +3,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 // The standalone test TypeScript project does not process Vue SFCs; Vitest does via the Vue Vite plugin.
 // @ts-expect-error Vue SFC import
-import MealCard from '~/components/MealCard.vue'
-import type { Canteen, Meal } from '~/types/meals'
+import MealCard from '~/components/meal-plan/MealCard.vue'
+import type { Canteen, Meal } from '~/types'
 import { useFilterStore } from '~/stores/filters'
 
 const canteen: Canteen = {
@@ -39,6 +39,7 @@ describe('MealCard', () => {
     props: { meal, canteen },
     global: {
       stubs: {
+        MealMedia: true,
         HorizontalCenteredHeroCarousel: true,
         MealImage: true,
         MealIcon: true,
