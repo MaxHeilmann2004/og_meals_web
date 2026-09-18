@@ -38,16 +38,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { MealNutritionalInfo } from '~/types/meals'
+import { formatNumber } from '~/utils/formatters'
 
 const props = defineProps<{
   nutritionalInfo: MealNutritionalInfo | null | undefined
 }>()
-
-const formatNumber = (value: number, digits = 2) =>
-  new Intl.NumberFormat('de-DE', {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  }).format(value)
 
 const formatNutrient = (value: number | null | undefined, unit: string) => {
   if (value == null) return 'n. a.'

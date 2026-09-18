@@ -77,7 +77,7 @@
             <div class="review-card-header">
               <var-rate readonly :model-value="rev.star" size="18" color="var(--color-primary)"
                 empty-color="var(--color-outline-variant)" />
-              <span class="review-card-date">{{ formatDate(rev.createdAt) }}</span>
+              <span class="review-card-date">{{ formatRelativeDate(rev.createdAt) }}</span>
             </div>
             <p class="review-card-comment">{{ rev.comment }}</p>
             <span v-if="!rev.isFromOriginalMeal && rev.matchType === 'similarity'" class="propagated-tag">
@@ -94,6 +94,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
 import type { MealReviewItem, MealReviewStats, PaginatedMealReviewsResponse } from '~/types/meals'
+import { formatRelativeDate } from '~/utils/formatters'
 
 const props = defineProps<{
   mealId: number
@@ -239,27 +240,6 @@ const submitReview = async () => {
   } finally {
     isSubmitting.value = false
   }
-}
-
-const formatDate = (dateStr: string) => {
-  const d = new Date(dateStr)
-  const now = new Date()
-  const diffMs = now.getTime() - d.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return 'Gerade eben'
-  if (diffMins < 60) return `Vor ${diffMins} Min.`
-  if (diffHours < 24) return `Vor ${diffHours} Std.`
-  if (diffDays === 1) return 'Gestern'
-  if (diffDays < 7) return `Vor ${diffDays} Tagen`
-
-  return d.toLocaleDateString('de-DE', {
-    day: 'numeric',
-    month: 'short',
-    year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-  })
 }
 
 const resetForm = () => {

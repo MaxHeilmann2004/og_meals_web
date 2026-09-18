@@ -30,26 +30,12 @@
         <div class="dialog-left-col">
           <div class="dialog-left-col-scroll">
             <div class="hero-media">
-              <HorizontalCenteredHeroCarousel
-                v-if="meal.images && meal.images.length > 1"
-                :images="carouselImages"
+              <MealMedia
+                :images="meal.images"
                 :content-description="meal.title"
                 badge-position="bottom-right"
                 :item-border-radius-px="isMobile ? 28 : 32"
               />
-              <div v-else-if="meal.images && meal.images.length === 1" class="single-image-wrapper">
-                <MealImage
-                  :meal-image="meal.images[0]!"
-                  :content-description="meal.title"
-                  badge-position="bottom-right"
-                />
-              </div>
-              <div v-else class="empty-image-placeholder">
-                <img src="/meal_placeholder.png" alt="No image" class="placeholder-bg" />
-                <div class="placeholder-overlay">
-                  <span>Kein Bild verfügbar</span>
-                </div>
-              </div>
             </div>
 
             <div class="dialog-content">
@@ -203,6 +189,14 @@
 import { computed, ref, watch, onUnmounted } from 'vue'
 import type { Canteen, Meal, MealImageDto, MealReviewStats } from '~/types/meals'
 import { useFilterStore } from '~/stores/filters'
+import MealMedia from './MealMedia.vue'
+import {
+  cleanMealTitle,
+  formatMealShortDate,
+  formatPrice,
+  formatReviewStats,
+  getMealCategoryName,
+} from '~/utils/formatters'
 import MealNutritionTable from './MealNutritionTable.vue'
 import MealAllergensList from './MealAllergensList.vue'
 import MealFeaturesList from './MealFeaturesList.vue'
@@ -252,36 +246,11 @@ const imageDeleteSuccess = ref<string | null>(null)
 
 const showStudentPrice = computed(() => filterStore.showStudentPrices && !!meal.value?.studentPrice)
 
-const carouselImages = computed(() => {
-  if (!meal.value?.images) return []
-  return meal.value.images
-})
+const cleanedTitle = computed(() => cleanMealTitle(meal.value?.title))
 
-const cleanedTitle = computed(() => {
-  if (!meal.value?.title) return ''
-  return meal.value.title
-    .trim()
-    .split('\n')
-    .map(line => line.trim())
-    .filter(Boolean)
-    .join(', ')
-})
+const categoryName = computed(() => getMealCategoryName(meal.value ?? {}))
 
-const categoryName = computed(() =>
-  meal.value?.category?.unifiedName?.trim()
-  || meal.value?.category?.name?.trim()
-  || '',
-)
-
-const shortDateStr = computed(() => {
-  if (!meal.value?.date) return ''
-  const d = new Date(meal.value.date)
-  const weekdays = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
-  const weekday = weekdays[d.getDay()]
-  const day = d.getDate()
-  const month = d.getMonth() + 1
-  return `${weekday} ${day}.${month}`
-})
+const shortDateStr = computed(() => formatMealShortDate(meal.value?.date))
 
 const sustainabilityTextShort = computed(() => {
   const co2 = meal.value?.sustainabilityCo2
@@ -293,25 +262,7 @@ const sustainabilityTextShort = computed(() => {
   }
 })
 
-const reviewStatsSummary = computed(() => {
-  const stats = localMeal.value?.reviewStats
-  if (!stats || stats.totalReviews === 0) return 'Keine Bewertungen'
-  return `${formatNumber(stats.averageStars, 1)} (${stats.totalReviews})`
-})
-
-const formatPrice = (price: number | null | undefined) => {
-  if (price == null) return ''
-  return new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(price)
-}
-
-const formatNumber = (value: number, digits = 2) =>
-  new Intl.NumberFormat('de-DE', {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  }).format(value)
+const reviewStatsSummary = computed(() => formatReviewStats(localMeal.value?.reviewStats))
 
 const updateReviewStats = (stats: MealReviewStats) => {
   if (localMeal.value) {
@@ -706,11 +657,6 @@ onUnmounted(() => {
   border-top-right-radius: 0;
 }
 
-/* Single-image wrapper fills the hero-media */
-.single-image-wrapper :deep(.meal-image-wrapper) {
-  border-radius: 0;
-}
-
 @media (max-width: 767px) {
   .hero-media {
     border-top-left-radius: 0;
@@ -722,33 +668,6 @@ onUnmounted(() => {
   .hero-media :deep(.carousel-item:last-child) {
     border-radius: 28px;
   }
-}
-
-.single-image-wrapper,
-.empty-image-placeholder {
-  position: absolute;
-  inset: 0;
-}
-
-.placeholder-bg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.placeholder-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(26, 17, 16, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.placeholder-overlay span {
-  color: var(--color-on-surface-variant);
-  font-size: 0.95rem;
-  font-weight: 600;
 }
 
 .dialog-close-btn {

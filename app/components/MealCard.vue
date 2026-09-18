@@ -11,25 +11,13 @@
   >
     <!-- Image Section -->
     <div class="meal-image-container">
-      <HorizontalCenteredHeroCarousel
-        v-if="meal.images && meal.images.length > 1"
-        :images="carouselImages"
+      <MealMedia
+        :images="meal.images"
         :content-description="meal.title"
+        variant="card"
         :item-border-radius-px="28"
         :collapsed-pill-width-px="44"
       />
-      <div v-else-if="meal.images && meal.images.length === 1" class="single-image-wrapper">
-        <MealImage
-          :meal-image="meal.images[0]!"
-          :content-description="meal.title"
-        />
-      </div>
-      <div v-else class="empty-image-placeholder">
-        <img src="/meal_placeholder.png" alt="No image" class="placeholder-bg" />
-        <div class="placeholder-overlay">
-          <span>Kein Bild verfügbar</span>
-        </div>
-      </div>
     </div>
 
     <!-- Title and Price Row -->
@@ -77,7 +65,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Meal, Canteen } from '~/types/meals'
+import MealMedia from './MealMedia.vue'
 import { useFilterStore } from '~/stores/filters'
+import { cleanMealTitle, formatPrice, getMealCategoryName } from '~/utils/formatters'
 
 const props = defineProps<{
   meal: Meal
@@ -90,11 +80,7 @@ const emit = defineEmits<{
 
 const filterStore = useFilterStore()
 const showStudentPrice = computed(() => filterStore.showStudentPrices && !!props.meal.studentPrice)
-const categoryName = computed(() =>
-  props.meal.category?.unifiedName?.trim()
-  || props.meal.category?.name?.trim()
-  || props.canteen.name,
-)
+const categoryName = computed(() => getMealCategoryName(props.meal, props.canteen.name))
 
 const starClass = (i: number) => {
   const avg = props.meal.reviewStats.averageStars
@@ -103,21 +89,7 @@ const starClass = (i: number) => {
   return 'star-empty'
 }
 
-const carouselImages = computed(() => {
-  if (!props.meal.images) return []
-  return props.meal.images
-})
-
-// Clean up title by removing multiple lines and extra spaces
-const cleanedTitle = computed(() => {
-  if (!props.meal.title) return ''
-  return props.meal.title
-    .trim()
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0)
-    .join(', ')
-})
+const cleanedTitle = computed(() => cleanMealTitle(props.meal.title))
 
 // Show features that appear on the card overview (matches Compose app behaviour)
 const visibleFeatures = computed(() => {
@@ -125,14 +97,7 @@ const visibleFeatures = computed(() => {
   return props.meal.features.filter(f => f.showInOverview === true)
 })
 
-// Format prices into Euro currency string
-const formatPrice = (price: number | null | undefined) => {
-  if (price == null) return ''
-  return new Intl.NumberFormat('de-DE', {
-    style: 'currency',
-    currency: 'EUR'
-  }).format(price)
-}
+
 </script>
 
 <style scoped>
@@ -164,45 +129,6 @@ const formatPrice = (price: number | null | undefined) => {
   width: 100%;
   aspect-ratio: 16 / 9;
   position: relative;
-}
-
-.single-image-wrapper {
-  position: absolute;
-  inset: 0;
-  border-radius: 28px;
-  overflow: hidden;
-}
-
-.empty-image-placeholder {
-  position: absolute;
-  inset: 0;
-  background-color: var(--color-surface-container-highest);
-  border-radius: 28px;
-  overflow: hidden;
-}
-
-.placeholder-bg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.placeholder-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(26, 17, 16, 0.7); /* Match surfaceContainer with opacity */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.placeholder-overlay span {
-  color: var(--color-on-surface-variant);
-  font-size: 0.875rem;
-  font-weight: 500;
 }
 
 .meal-info-row {

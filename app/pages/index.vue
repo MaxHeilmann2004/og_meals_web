@@ -111,49 +111,24 @@ import type {
   MealsApiResponse,
 } from '~/types/meals'
 import {
+  formatCalendarDate,
   getNearestPredictionPoint,
   getTodayCalendarDate,
 } from '~/utils/canteenCapacity'
-import { SALAD_CATEGORY_IDS, useFilterStore } from '~/stores/filters'
+import { useFilterStore } from '~/stores/filters'
 import { compareCanteens } from '~/utils/canteenOrder'
 import { compareMealsByCategory } from '~/utils/mealOrder'
+import { filterMealsForDay, type MealFilterOptions } from '~/utils/mealFiltering'
+import { getInitialDayIndex, getWeekDates } from '~/utils/mealWeek'
 
 const filterStore = useFilterStore()
 const setLayoutCanteens = inject<(c: Pick<Canteen, 'id' | 'name' | 'displayName' | 'orderInApp'>[]) => void>('setLayoutCanteens')
 
 const dayNames = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']
 
-// Date helpers
-const getWorkDayScopedToday = () => {
-  const today = new Date()
-  const day = today.getDay()
-  if (day === 6) today.setDate(today.getDate() + 2) // Saturday -> Monday
-  else if (day === 0) today.setDate(today.getDate() + 1) // Sunday -> Monday
-  return today
-}
-
-const getWeekDates = () => {
-  const today = getWorkDayScopedToday()
-  const isoDayNumber = today.getDay() === 0 ? 7 : today.getDay()
-  const startOfWeek = new Date(today)
-  startOfWeek.setDate(today.getDate() - (isoDayNumber - 1))
-  return Array.from({ length: 5 }, (_, i) => {
-    const d = new Date(startOfWeek)
-    d.setDate(startOfWeek.getDate() + i)
-    return d
-  })
-}
-
-const formatDate = (date: Date) => {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
 const weekDates = getWeekDates()
-const startOfWeekStr = formatDate(weekDates[0]!)
-const endOfWeekStr = formatDate(weekDates[4]!)
+const startOfWeekStr = formatCalendarDate(weekDates[0]!)
+const endOfWeekStr = formatCalendarDate(weekDates[4]!)
 const route = useRoute()
 
 const adminToken = computed(() => {
@@ -164,14 +139,8 @@ const adminToken = computed(() => {
 
 const isAdmin = computed(() => adminToken.value.length > 0)
 
-const getInitialDayIndex = () => {
-  const day = new Date().getDay()
-  if (day === 0 || day === 6) return 0 // Weekend -> Monday
-  return day - 1 // Mon=0 … Fri=4
-}
-
 const selectedDayIndex = ref(getInitialDayIndex())
-const selectedDayDateStr = computed(() => formatDate(weekDates[selectedDayIndex.value]!))
+const selectedDayDateStr = computed(() => formatCalendarDate(weekDates[selectedDayIndex.value]!))
 const isMobile = useMediaQuery('(max-width: 767px)')
 const isMealDialogOpen = ref(false)
 const selectedMeal = ref<Meal | null>(null)
@@ -255,43 +224,31 @@ watch(rawCanteens, (canteens) => {
   setLayoutCanteens?.(canteens.map(c => ({ id: c.id, name: c.name, displayName: c.displayName, orderInApp: c.orderInApp })))
 }, { immediate: true })
 
-// Group meals by canteen for the selected day, applying active filters
-const filteredCanteens = computed(() => {
-  return rawCanteens.value
-    .filter(c => filterStore.isCanteenEnabled(c.id))
-    .map(c => {
-      const mealsForSelectedDay = rawMeals.value
-        .filter(meal => {
-          if (Number(meal.canteenId) !== c.id) return false
-          if (meal.date.split('T')[0] !== selectedDayDateStr.value) return false
+const mealFilterOptions = computed<MealFilterOptions>(() => ({
+  isSaladExcluded: filterStore.isSaladExcluded,
+  excludedFeatureIds: new Set(
+    Object.entries(filterStore.excludedFeatures)
+      .filter(([, enabled]) => enabled)
+      .map(([id]) => Number(id)),
+  ),
+  includedFeatureIds: Object.entries(filterStore.includedFeatures)
+    .filter(([, enabled]) => enabled)
+    .map(([id]) => Number(id)),
+}))
 
-          // Exclusions
-          if (filterStore.isSaladExcluded && SALAD_CATEGORY_IDS.has(Number(meal.category?.id))) return false
-          if (meal.features?.some(f => filterStore.isFeatureExcluded(f.id))) return false
-
-          // Inclusions
-          const activeIncludes = Object.keys(filterStore.includedFeatures)
-            .map(Number)
-            .filter(id => filterStore.isFeatureIncluded(id))
-
-          if (activeIncludes.length > 0) {
-            const satisfiesAll = activeIncludes.every(incId => {
-              if (incId === 25) {
-                // Vegetarian includes both vegetarian and vegan dishes
-                return meal.features?.some(f => f.id === 25 || f.id === 11)
-              }
-              return meal.features?.some(f => f.id === incId)
-            })
-            if (!satisfiesAll) return false
-          }
-
-          return true
-        })
-        .sort(compareMealsByCategory)
-      return { ...c, mealsForSelectedDay }
-    })
-    .filter(c => c.mealsForSelectedDay.length > 0)
-})
+// Group meals by canteen for the selected day, applying active filters.
+const filteredCanteens = computed(() => rawCanteens.value
+  .filter(c => filterStore.isCanteenEnabled(c.id))
+  .map(c => {
+    const mealsForSelectedDay = filterMealsForDay(
+      rawMeals.value,
+      c.id,
+      selectedDayDateStr.value,
+      mealFilterOptions.value,
+    ).sort(compareMealsByCategory)
+    return { ...c, mealsForSelectedDay }
+  })
+  .filter(c => c.mealsForSelectedDay.length > 0))
 
 const totalMealsForSelectedDay = computed(() =>
   filteredCanteens.value.reduce((acc, c) => acc + c.mealsForSelectedDay.length, 0)

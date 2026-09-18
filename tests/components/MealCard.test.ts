@@ -39,6 +39,7 @@ describe('MealCard', () => {
     props: { meal, canteen },
     global: {
       stubs: {
+        MealMedia: true,
         HorizontalCenteredHeroCarousel: true,
         MealImage: true,
         MealIcon: true,
