@@ -16,8 +16,13 @@ export default defineNuxtConfig({
   modules: [
     '@varlet/nuxt',
     '@pinia/nuxt',
-    '@vite-pwa/nuxt'
+    '@vite-pwa/nuxt',
+    '@nuxtjs/plausible'
   ],
+
+  plausible: {
+    apiHost: 'https://insights.matix-media.net'
+  },
 
   css: [
     '~/assets/css/theme.css'

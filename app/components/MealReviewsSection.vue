@@ -212,6 +212,12 @@ const submitReview = async () => {
 
     if (res.success) {
       submitSuccess.value = true
+      useTrackEvent('Review Submitted', {
+        props: {
+          meal_id: String(props.mealId),
+          rating: String(newReview.value.star),
+        },
+      })
       newReview.value.star = 0
       newReview.value.comment = ''
       turnstileToken.value = ''

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@nuxtjs/plausible':
+        specifier: ^4.0.0
+        version: 4.0.0(magic-string@1.2.0)(magicast@0.5.4)(rolldown@1.2.4)(unplugin@3.3.0(esbuild@0.25.12)(rolldown@1.2.4)(rollup@3.30.0)(vite@8.2.1(esbuild@0.25.12)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0)))
       '@pinia/nuxt':
         specifier: ^0.11.3
         version: 0.11.3(magic-string@1.2.0)(magicast@0.5.4)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.41(typescript@5.9.3)))(rolldown@1.2.4)(unplugin@3.3.0(esbuild@0.25.12)(rolldown@1.2.4)(rollup@3.30.0)(vite@8.2.1(esbuild@0.25.12)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0)))
@@ -1310,6 +1313,9 @@ packages:
       rollup-plugin-visualizer:
         optional: true
 
+  '@nuxtjs/plausible@4.0.0':
+    resolution: {integrity: sha512-R2G9BktBVSCG0nDNBSVlC8jDbsYBgrbqmn8wWisiIF9lKfRq99NwIvtw/DLuwexJT5pCYPvBflIof4NS4ZX8Xg==}
+
   '@oxc-project/types@0.144.0':
     resolution: {integrity: sha512-nuhZIOLuI6TFQ32I/WnUx+SCPY7SdSKwgnFHydAuoS1+Z4BRcaP+RRJmGzl9lw+0OFF7UmaESf7KQRXaNLHypg==}
 
@@ -1327,6 +1333,9 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
+
+  '@plausible-analytics/tracker@0.4.6':
+    resolution: {integrity: sha512-nbu6xGgSP6jeYuoVklZBzucUnIpo75tVu3Kr+R0EDycVKaMC/jF5Q/YCaM/8gR4fPZ1IDcXt6FdBJFZ1uZwEPA==}
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -2137,6 +2146,7 @@ packages:
   '@xmldom/xmldom@0.9.11':
     resolution: {integrity: sha512-tW8bcK3hsG0/uqSnNz6TK4BkcuZSezoU7DlnYssILmZDktPnSHHuDJJFM0AJv+13gz2r0iGdrj6qqKeUnxXEDg==}
     engines: {node: '>=14.6'}
+    deprecated: this version has critical issues, please update to the latest version
 
   abbrev@3.0.1:
     resolution: {integrity: sha512-AO2ac6pjRB3SJmGJo+v5/aK6Omggp6fsLrs6wN9bd35ulu4cCwaAU9+7ZhXjeqHVkaHThLuzH0nZr0YpCDhygg==}
@@ -7402,6 +7412,19 @@ snapshots:
       - webpack
       - yaml
 
+  '@nuxtjs/plausible@4.0.0(magic-string@1.2.0)(magicast@0.5.4)(rolldown@1.2.4)(unplugin@3.3.0(esbuild@0.25.12)(rolldown@1.2.4)(rollup@3.30.0)(vite@8.2.1(esbuild@0.25.12)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0)))':
+    dependencies:
+      '@nuxt/kit': 4.5.2(magic-string@1.2.0)(magicast@0.5.4)(rolldown@1.2.4)(unplugin@3.3.0(esbuild@0.25.12)(rolldown@1.2.4)(rollup@3.30.0)(vite@8.2.1(esbuild@0.25.12)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0)))
+      '@plausible-analytics/tracker': 0.4.6
+      defu: 6.1.7
+      ufo: 1.6.4
+    transitivePeerDependencies:
+      - magic-string
+      - magicast
+      - oxc-parser
+      - rolldown
+      - unplugin
+
   '@oxc-project/types@0.144.0': {}
 
   '@parcel/watcher-wasm@2.6.0':
@@ -7422,6 +7445,8 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
+
+  '@plausible-analytics/tracker@0.4.6': {}
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -8050,7 +8075,7 @@ snapshots:
       crypto-js: 4.2.0
       lodash: 4.17.21
       qs: 6.15.3
-      rattail: 1.8.3(debug@4.4.3(supports-color@10.2.2))(vue@3.5.41(typescript@5.9.3))
+      rattail: 1.8.3
       vue: 3.5.41(typescript@5.9.3)
     transitivePeerDependencies:
       - debug
@@ -11199,6 +11224,15 @@ snapshots:
 
   range-parser@1.3.0: {}
 
+  rattail@1.8.3:
+    dependencies:
+      '@configurajs/vite-plus': 0.2.2
+      '@varlet/axle': 1.0.2(debug@4.4.3(supports-color@10.2.2))(vue@3.5.41(typescript@5.9.3))
+      js-cookie: 3.0.5
+      mitt: 3.0.1
+      ruler-factory: 0.0.14
+      uuid: 13.0.0
+
   rattail@1.8.3(debug@4.4.3(supports-color@10.2.2))(vue@3.5.41(typescript@5.9.3)):
     dependencies:
       '@configurajs/vite-plus': 0.2.2
@@ -11447,6 +11481,10 @@ snapshots:
   rslog@1.3.2: {}
 
   rslog@2.3.0: {}
+
+  ruler-factory@0.0.14:
+    dependencies:
+      rattail: 1.8.3
 
   ruler-factory@0.0.14(debug@4.4.3(supports-color@10.2.2))(vue@3.5.41(typescript@5.9.3)):
     dependencies:
