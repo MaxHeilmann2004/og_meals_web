@@ -24,8 +24,18 @@
     <main class="app-content">
       <slot />
     </main>
-    <!-- FilterContainer teleports all modes to <body> — no layout impact -->
+
+    <footer class="app-footer">
+      <button type="button" class="imprint-link" @click="isImprintOpen = true">
+        Impressum
+      </button>
+    </footer>
+
+    <!-- Dialogs teleport to <body> — no layout impact -->
     <FilterContainer :canteens="canteens" />
+    <ClientOnly>
+      <ImprintDialog v-model:show="isImprintOpen" />
+    </ClientOnly>
   </div>
 </template>
 
@@ -34,6 +44,7 @@ import { ref, onMounted, provide } from 'vue'
 import { useFilterStore } from '~/stores/filters'
 
 const filterStore = useFilterStore()
+const isImprintOpen = ref(false)
 
 interface Canteen {
   id: number
@@ -164,5 +175,36 @@ onMounted(async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+.app-footer {
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  background-color: var(--color-body);
+}
+
+.imprint-link {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.imprint-link:hover {
+  background-color: var(--color-surface-container-high);
+  color: var(--color-on-surface);
+}
+
+.imprint-link:focus-visible {
+  outline: 3px solid var(--color-primary-container);
+  outline-offset: 2px;
 }
 </style>
