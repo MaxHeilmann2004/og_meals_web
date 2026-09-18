@@ -82,6 +82,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useWindowSize } from '@vueuse/core'
 import { useFilterStore } from '~/stores/filters'
+import { useBottomSheetDrag } from '~/composables/useBottomSheetDrag'
 
 interface Canteen {
   id: number
@@ -97,137 +98,19 @@ const { width } = useWindowSize()
 const isFilterOpen = computed(() => filterStore.isFilterOpen)
 
 const panelScrollRef = ref<HTMLElement | null>(null)
-const dragOffset = ref(0)
-const isDragging = ref(false)
-const isReturning = ref(false)
-const sheetStyle = computed(() => ({
-  '--sheet-drag-offset': `${dragOffset.value}px`,
-}))
+const {
+  dragOffset,
+  isDragging,
+  isReturning,
+  sheetStyle,
+  onTouchStart,
+  onTouchMove,
+  onTouchEnd,
+  onTouchCancel,
+  onHandleClick,
+  resetSheetState,
+} = useBottomSheetDrag(panelScrollRef, () => filterStore.closeFilters())
 
-let touchActive = false
-let touchStartY = 0
-let touchLastY = 0
-let touchStartTime = 0
-let hasDragged = false
-let returnAnimationTimeout: ReturnType<typeof setTimeout> | null = null
-
-const DRAG_START_THRESHOLD_PX = 4
-const DISMISS_THRESHOLD_PX = 100
-const DISMISS_VELOCITY_PX_PER_MS = 0.6
-
-const resetReturnAnimation = () => {
-  if (returnAnimationTimeout) {
-    clearTimeout(returnAnimationTimeout)
-    returnAnimationTimeout = null
-  }
-}
-
-const onTouchStart = (event: TouchEvent) => {
-  const touch = event.touches[0]
-  if (!touch) return
-
-  touchActive = true
-  touchStartY = touch.clientY
-  touchLastY = touch.clientY
-  touchStartTime = performance.now()
-  hasDragged = false
-  const startsOnHandle = event.target instanceof Element && event.target.closest('.sheet-handle-area') !== null
-  isDragging.value = startsOnHandle
-  isReturning.value = false
-  resetReturnAnimation()
-}
-
-const onTouchMove = (event: TouchEvent) => {
-  if (!touchActive) return
-  const touch = event.touches[0]
-  if (!touch) return
-
-  const deltaY = touch.clientY - touchStartY
-
-  if (!isDragging.value) {
-    if (Math.abs(deltaY) <= DRAG_START_THRESHOLD_PX) return
-
-    hasDragged = true
-    const targetIsInScrollArea =
-      event.target instanceof Node && panelScrollRef.value?.contains(event.target)
-    const canStartSheetDrag =
-      !targetIsInScrollArea || (panelScrollRef.value?.scrollTop ?? 0) <= 0
-
-    // Let the scroll container handle upward movement and downward movement
-    // while it still has content above the viewport.
-    if (deltaY <= 0 || !canStartSheetDrag) return
-
-    // Transfer the gesture to the sheet without including the distance used
-    // to scroll the filter list back to its top edge.
-    touchStartY = touch.clientY
-    touchLastY = touch.clientY
-    touchStartTime = performance.now()
-    dragOffset.value = 0
-    isDragging.value = true
-  }
-
-  const positiveDeltaY = Math.max(0, touch.clientY - touchStartY)
-  if (positiveDeltaY > DRAG_START_THRESHOLD_PX) hasDragged = true
-
-  dragOffset.value = positiveDeltaY
-  touchLastY = touch.clientY
-  if (event.cancelable) event.preventDefault()
-}
-
-const finishTouchGesture = (event: TouchEvent | null, allowDismiss = true) => {
-  if (!touchActive) return
-
-  const touch = event?.changedTouches[0]
-  if (touch && isDragging.value) {
-    dragOffset.value = Math.max(0, touch.clientY - touchStartY)
-    touchLastY = touch.clientY
-  }
-
-  const elapsed = Math.max(performance.now() - touchStartTime, 1)
-  const velocity = (touchLastY - touchStartY) / elapsed
-  const shouldDismiss = allowDismiss && (
-    dragOffset.value >= DISMISS_THRESHOLD_PX ||
-    (dragOffset.value > DRAG_START_THRESHOLD_PX && velocity >= DISMISS_VELOCITY_PX_PER_MS)
-  )
-
-  touchActive = false
-  isDragging.value = false
-
-  if (shouldDismiss) {
-    // Keep the current offset while Vue applies the leave transition. The
-    // transition then carries the sheet the rest of the way off-screen.
-    filterStore.closeFilters()
-    return
-  }
-
-  isReturning.value = dragOffset.value > 0
-  dragOffset.value = 0
-  if (isReturning.value) {
-    resetReturnAnimation()
-    returnAnimationTimeout = setTimeout(() => {
-      isReturning.value = false
-      returnAnimationTimeout = null
-    }, 250)
-  }
-}
-
-const onTouchEnd = (event: TouchEvent) => finishTouchGesture(event)
-const onTouchCancel = (event: TouchEvent) => finishTouchGesture(event, false)
-
-const onHandleClick = () => {
-  // A pointer drag also produces a click on some mobile browsers; do not
-  // close a sheet that was merely dragged back into place.
-  if (hasDragged) {
-    hasDragged = false
-    return
-  }
-  filterStore.closeFilters()
-}
-
-onUnmounted(() => {
-  resetReturnAnimation()
-  unlockBodyScroll()
-})
 
 const MOBILE_BREAKPOINT_PX = 768
 const MEALS_CONTENT_MAX_WIDTH_PX = 1300
@@ -293,6 +176,8 @@ const unlockBodyScroll = () => {
   html.style.overscrollBehavior = savedState.htmlOverscrollBehavior
 }
 
+onUnmounted(unlockBodyScroll)
+
 // A dismissed sheet keeps its drag offset until the leave transition finishes.
 // Clear it before the next opening so a newly rendered sheet starts at its base position.
 watch([isFilterOpen, mode], ([isOpen, currentMode]) => {
@@ -301,10 +186,7 @@ watch([isFilterOpen, mode], ([isOpen, currentMode]) => {
 
   if (!isOpen || currentMode !== 'sheet') return
 
-  dragOffset.value = 0
-  isDragging.value = false
-  isReturning.value = false
-  hasDragged = false
+  resetSheetState()
 }, { immediate: true })
 
 onMounted(() => {
