@@ -92,7 +92,14 @@
                 </div>
               </div>
 
-              <var-collapse v-model="openSections" :offset="false" :divider="false" :elevation="false" class="detail-collapse">
+              <var-collapse
+                v-model="openSections"
+                :offset="false"
+                :divider="false"
+                :elevation="false"
+                class="detail-collapse"
+                @click.capture="prepareCollapseClose"
+              >
                 <var-collapse-item name="nutrition" title="Nährwerte">
                   <MealNutritionTable :nutritional-info="meal.nutritionalInfo" />
                 </var-collapse-item>
@@ -310,6 +317,25 @@ const updateReviewStats = (stats: MealReviewStats) => {
   if (localMeal.value) {
     localMeal.value.reviewStats = stats
   }
+}
+
+const prepareCollapseClose = (event: MouseEvent) => {
+  const target = event.target
+  if (!(target instanceof Element)) return
+
+  const header = target.closest<HTMLElement>('.var-collapse-item__header[aria-expanded="true"]')
+  const collapse = event.currentTarget
+  if (!header || !(collapse instanceof HTMLElement) || !collapse.contains(header)) return
+
+  const content = header.nextElementSibling
+  if (!(content instanceof HTMLElement) || !content.classList.contains('var-collapse-item__content')) return
+
+  // Varlet changes the content from `height: auto` to a pixel height immediately
+  // before collapsing it. Firefox can batch both writes and skip the transition.
+  // Commit the pixel height before Varlet handles the click so the following
+  // change to zero always has a concrete starting point.
+  content.style.height = `${content.offsetHeight}px`
+  void content.offsetHeight
 }
 
 const openRawJsonInNewTab = () => {
@@ -811,6 +837,11 @@ onUnmounted(() => {
 }
 
 :deep(.detail-collapse .var-collapse-item__content) {
+  /* The animated element must not have padding: height: 0 would still leave it visible. */
+  padding: 0 !important;
+}
+
+:deep(.detail-collapse .var-collapse-item__content-wrap) {
   padding: 0 0 20px 0 !important;
 }
 
