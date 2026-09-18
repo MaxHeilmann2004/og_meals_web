@@ -20,6 +20,7 @@
   "dependencies": {
     "@nuxtjs/plausible": "^4.0.0",
     "@pinia/nuxt": "^0.11.3",
+    "@plausible-analytics/tracker": "^0.4.6",
     "@unovis/vue": "^1.6.7",
     "@varlet/nuxt": "^0.1.5",
     "@varlet/touch-emulator": "^3.18.2",
