@@ -116,6 +116,7 @@ import {
 } from '~/utils/canteenCapacity'
 import { SALAD_CATEGORY_IDS, useFilterStore } from '~/stores/filters'
 import { compareCanteens } from '~/utils/canteenOrder'
+import { compareMealsByCategory } from '~/utils/mealOrder'
 
 const filterStore = useFilterStore()
 const setLayoutCanteens = inject<(c: Pick<Canteen, 'id' | 'name' | 'displayName' | 'orderInApp'>[]) => void>('setLayoutCanteens')
@@ -259,32 +260,34 @@ const filteredCanteens = computed(() => {
   return rawCanteens.value
     .filter(c => filterStore.isCanteenEnabled(c.id))
     .map(c => {
-      const mealsForSelectedDay = rawMeals.value.filter(meal => {
-        if (Number(meal.canteenId) !== c.id) return false
-        if (meal.date.split('T')[0] !== selectedDayDateStr.value) return false
+      const mealsForSelectedDay = rawMeals.value
+        .filter(meal => {
+          if (Number(meal.canteenId) !== c.id) return false
+          if (meal.date.split('T')[0] !== selectedDayDateStr.value) return false
 
-        // Exclusions
-        if (filterStore.isSaladExcluded && SALAD_CATEGORY_IDS.has(Number(meal.category?.id))) return false
-        if (meal.features?.some(f => filterStore.isFeatureExcluded(f.id))) return false
+          // Exclusions
+          if (filterStore.isSaladExcluded && SALAD_CATEGORY_IDS.has(Number(meal.category?.id))) return false
+          if (meal.features?.some(f => filterStore.isFeatureExcluded(f.id))) return false
 
-        // Inclusions
-        const activeIncludes = Object.keys(filterStore.includedFeatures)
-          .map(Number)
-          .filter(id => filterStore.isFeatureIncluded(id))
+          // Inclusions
+          const activeIncludes = Object.keys(filterStore.includedFeatures)
+            .map(Number)
+            .filter(id => filterStore.isFeatureIncluded(id))
 
-        if (activeIncludes.length > 0) {
-          const satisfiesAll = activeIncludes.every(incId => {
-            if (incId === 25) {
-              // Vegetarian includes both vegetarian and vegan dishes
-              return meal.features?.some(f => f.id === 25 || f.id === 11)
-            }
-            return meal.features?.some(f => f.id === incId)
-          })
-          if (!satisfiesAll) return false
-        }
+          if (activeIncludes.length > 0) {
+            const satisfiesAll = activeIncludes.every(incId => {
+              if (incId === 25) {
+                // Vegetarian includes both vegetarian and vegan dishes
+                return meal.features?.some(f => f.id === 25 || f.id === 11)
+              }
+              return meal.features?.some(f => f.id === incId)
+            })
+            if (!satisfiesAll) return false
+          }
 
-        return true
-      })
+          return true
+        })
+        .sort(compareMealsByCategory)
       return { ...c, mealsForSelectedDay }
     })
     .filter(c => c.mealsForSelectedDay.length > 0)
