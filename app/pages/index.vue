@@ -120,6 +120,7 @@ import { compareCanteens } from '~/utils/canteenOrder'
 import { compareMealsByCategory } from '~/utils/mealOrder'
 import { filterMealsForDay, type MealFilterOptions } from '~/utils/mealFiltering'
 import { getInitialDayIndex, getWeekDates } from '~/utils/mealWeek'
+import { useAdminAccess } from '~/composables/useAdminAccess'
 
 const filterStore = useFilterStore()
 const setLayoutCanteens = inject<(c: Pick<Canteen, 'id' | 'name' | 'displayName' | 'orderInApp'>[]) => void>('setLayoutCanteens')
@@ -129,15 +130,7 @@ const dayNames = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']
 const weekDates = getWeekDates()
 const startOfWeekStr = formatCalendarDate(weekDates[0]!)
 const endOfWeekStr = formatCalendarDate(weekDates[4]!)
-const route = useRoute()
-
-const adminToken = computed(() => {
-  const rawToken = route.query.adminToken
-  const token = Array.isArray(rawToken) ? rawToken[0] : rawToken
-  return typeof token === 'string' ? token.trim() : ''
-})
-
-const isAdmin = computed(() => adminToken.value.length > 0)
+const { adminToken, isAdmin } = useAdminAccess()
 
 const selectedDayIndex = ref(getInitialDayIndex())
 const selectedDayDateStr = computed(() => formatCalendarDate(weekDates[selectedDayIndex.value]!))

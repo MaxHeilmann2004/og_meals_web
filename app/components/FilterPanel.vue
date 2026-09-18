@@ -170,6 +170,7 @@ import {
   useFilterStore,
 } from "~/stores/filters";
 import { compareCanteens } from "~/utils/canteenOrder";
+import { useAdminAccess } from "~/composables/useAdminAccess";
 
 interface Canteen {
   id: number;
@@ -189,15 +190,7 @@ const sortedCanteens = computed(() => {
 const filterStore = useFilterStore();
 const excludeFeatures = EXCLUDE_FEATURES;
 const includeFeatures = INCLUDE_FEATURES;
-const route = useRoute();
-
-const adminToken = computed(() => {
-  const rawToken = route.query.adminToken;
-  const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
-  return typeof token === "string" ? token.trim() : "";
-});
-
-const isAdmin = computed(() => adminToken.value.length > 0);
+const { adminToken, isAdmin } = useAdminAccess();
 const isDark = useDark({
   selector: "html",
   attribute: "var-theme",
