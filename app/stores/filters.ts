@@ -37,7 +37,8 @@ export const useFilterStore = defineStore(
     const enabledCanteens = ref<Record<number, boolean>>({});
     const excludedFeatures = ref<Record<number, boolean>>({});
     const includedFeatures = ref<Record<number, boolean>>({});
-    const excludeSalads = ref(false);
+    // Hide salads for new users; persisted preferences still override this default.
+    const excludeSalads = ref(true);
     const showStudentPrices = ref(false);
 
     // UI-only — not persisted
