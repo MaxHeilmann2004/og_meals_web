@@ -15,7 +15,7 @@
       :class="{ 'is-mobile': isMobile }"
       role="dialog"
       aria-modal="true"
-      :aria-label="`${cleanedTitle} Details`"
+      :aria-label="`${meal.title} Details`"
     >
       <!-- Circular Close Button overlaying the corner, outside scroll container -->
       <button class="dialog-close-btn" @click="emit('update:show', false)" aria-label="Schließen">
@@ -39,19 +39,11 @@
             </div>
 
             <div class="dialog-content">
-              <div class="meal-heading">
-                <h2 class="meal-title">{{ cleanedTitle }}</h2>
-                <p class="meal-context">
-                  <span>{{ canteen.displayName || canteen.name }}</span>
-                  <span v-if="categoryName" class="meal-context-separator" aria-hidden="true">·</span>
-                  <span v-if="categoryName">{{ categoryName }}</span>
-                </p>
-              </div>
-
-              <div class="price-display">
-                <span class="main-price">{{ formatPrice(showStudentPrice ? meal.studentPrice : meal.price) }}</span>
-                <span v-if="showStudentPrice" class="regular-price-muted">{{ formatPrice(meal.price) }}</span>
-              </div>
+              <MealDetailSummary
+                :meal="meal"
+                :canteen="canteen"
+                :show-student-price="showStudentPrice"
+              />
 
               <div class="info-meta-row">
                 <div class="info-meta-item">
@@ -138,18 +130,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onUnmounted } from 'vue'
+import { computed, ref, toRef, watch } from 'vue'
 import type { Canteen, Meal, MealImageDto, MealReviewStats } from '~/types'
 import { useFilterStore } from '~/stores/filters'
+import { useDialogHistory } from '~/composables/useDialogHistory'
 import MealMedia from '../shared/MealMedia.vue'
 import MealAdminTools from './MealAdminTools.vue'
-import {
-  cleanMealTitle,
-  formatMealShortDate,
-  formatPrice,
-  formatReviewStats,
-  getMealCategoryName,
-} from '~/utils/formatters'
+import MealDetailSummary from './MealDetailSummary.vue'
+import { formatMealShortDate } from '~/utils/formatters'
 import MealNutritionTable from './MealNutritionTable.vue'
 import MealAllergensList from './MealAllergensList.vue'
 import MealFeaturesList from './MealFeaturesList.vue'
@@ -194,10 +182,6 @@ const adminToken = computed(() => props.adminToken)
 
 const showStudentPrice = computed(() => filterStore.showStudentPrices && !!meal.value?.studentPrice)
 
-const cleanedTitle = computed(() => cleanMealTitle(meal.value?.title))
-
-const categoryName = computed(() => getMealCategoryName(meal.value ?? {}))
-
 const shortDateStr = computed(() => formatMealShortDate(meal.value?.date))
 
 const sustainabilityTextShort = computed(() => {
@@ -210,13 +194,22 @@ const sustainabilityTextShort = computed(() => {
   }
 })
 
-const reviewStatsSummary = computed(() => formatReviewStats(localMeal.value?.reviewStats))
+const reviewStatsSummary = computed(() => {
+  const stats = localMeal.value?.reviewStats
+  if (!stats || stats.totalReviews === 0) return 'Keine Bewertungen'
+  return `${new Intl.NumberFormat('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(stats.averageStars)} (${stats.totalReviews})`
+})
 
 const updateReviewStats = (stats: MealReviewStats) => {
-  if (localMeal.value) {
-    localMeal.value.reviewStats = stats
-  }
+  if (localMeal.value) localMeal.value.reviewStats = stats
 }
+
+useDialogHistory(
+  toRef(props, 'show'),
+  computed(() => !!props.meal && !!props.canteen),
+  'dialogOpen',
+  () => emit('update:show', false),
+)
 
 const prepareCollapseClose = (event: MouseEvent) => {
   const target = event.target
@@ -247,10 +240,6 @@ const onClosed = () => {
   openSections.value = []
 }
 
-const handlePopState = (event: PopStateEvent) => {
-  emit('update:show', false)
-}
-
 let previouslyOpenSections = new Set<string>()
 watch(() => [...openSections.value], (sections) => {
   for (const section of sections) {
@@ -268,29 +257,7 @@ watch(() => [...openSections.value], (sections) => {
 })
 
 watch(() => props.show, (show) => {
-  if (show && props.meal) {
-    if (typeof window !== 'undefined') {
-      window.addEventListener('popstate', handlePopState)
-      history.pushState({ dialogOpen: true }, '')
-    }
-    openSections.value = []
-  } else {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('popstate', handlePopState)
-      if (history.state?.dialogOpen) {
-        history.back()
-      }
-    }
-  }
-})
-
-onUnmounted(() => {
-  if (typeof window !== 'undefined') {
-    window.removeEventListener('popstate', handlePopState)
-    if (history.state?.dialogOpen) {
-      history.back()
-    }
-  }
+  if (show && props.meal) openSections.value = []
 })
 </script>
 

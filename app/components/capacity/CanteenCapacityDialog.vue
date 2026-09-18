@@ -100,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { onUnmounted, watch } from 'vue'
+import { computed, toRef } from 'vue'
 import type {
   Canteen,
   CanteenCapacity,
@@ -115,6 +115,7 @@ import {
   isCapacityStale,
   predictionPointToDate,
 } from '~/utils/canteenCapacity'
+import { useDialogHistory } from '~/composables/useDialogHistory'
 
 const props = defineProps<{
   show: boolean
@@ -150,27 +151,12 @@ const predictionDescription = computed(() => {
   return `Erwartung berechnet aus ${dates.length} vergangenen ${dates.length === 1 ? 'Tag' : 'Tagen'} mit vergleichbarem Wochentag.`
 })
 
-const handlePopState = () => {
-  emit('update:show', false)
-}
-
-watch(() => props.show, (show) => {
-  if (typeof window === 'undefined') return
-
-  if (show && props.canteen) {
-    window.addEventListener('popstate', handlePopState)
-    window.history.pushState({ capacityDialogOpen: true }, '')
-  } else {
-    window.removeEventListener('popstate', handlePopState)
-    if (window.history.state?.capacityDialogOpen) window.history.back()
-  }
-})
-
-onUnmounted(() => {
-  if (typeof window === 'undefined') return
-  window.removeEventListener('popstate', handlePopState)
-  if (window.history.state?.capacityDialogOpen) window.history.back()
-})
+useDialogHistory(
+  toRef(props, 'show'),
+  computed(() => !!props.canteen),
+  'capacityDialogOpen',
+  () => emit('update:show', false),
+)
 </script>
 
 <style scoped>

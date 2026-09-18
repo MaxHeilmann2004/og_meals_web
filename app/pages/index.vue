@@ -98,54 +98,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
-import type {
-  Canteen,
-  CanteenCapacityApiResponse,
-  Meal,
-  MealsApiResponse,
-} from '~/types'
-import {
-  formatCalendarDate,
-  getNearestPredictionPoint,
-  getTodayCalendarDate,
-} from '~/utils/canteenCapacity'
-import { useFilterStore } from '~/stores/filters'
-import { useCanteenStore } from '~/stores/canteens'
-import { compareCanteens } from '~/utils/canteenOrder'
-import { compareMealsByCategory } from '~/utils/mealOrder'
-import { filterMealsForDay, type MealFilterOptions } from '~/utils/mealFiltering'
-import { getInitialDayIndex, getWeekDates } from '~/utils/mealWeek'
+import type { Canteen, CanteenCapacityApiResponse, Meal } from '~/types'
+import { getTodayCalendarDate } from '~/utils/canteenCapacity'
 import { useAdminAccess } from '~/composables/useAdminAccess'
 import { useCapacity } from '~/composables/useCapacity'
+import { useMealPlan } from '~/composables/useMealPlan'
 import { capacityApi } from '~/services/capacityApi'
-import { mealsApi } from '~/services/mealsApi'
-
-const filterStore = useFilterStore()
-const canteenStore = useCanteenStore()
 
 const dayNames = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']
-
-const weekDates = getWeekDates()
-const startOfWeekStr = formatCalendarDate(weekDates[0]!)
-const endOfWeekStr = formatCalendarDate(weekDates[4]!)
 const { adminToken, isAdmin } = useAdminAccess()
-
-const selectedDayIndex = ref(getInitialDayIndex())
-const selectedDayDateStr = computed(() => formatCalendarDate(weekDates[selectedDayIndex.value]!))
+const {
+  data,
+  pending,
+  error,
+  refresh,
+  rawCanteens,
+  selectedDayIndex,
+  selectedDayDateStr,
+  filteredCanteens,
+  totalMealsForSelectedDay,
+} = await useMealPlan()
 const isMobile = useMediaQuery('(max-width: 767px)')
 const isMealDialogOpen = ref(false)
 const selectedMeal = ref<Meal | null>(null)
 const selectedMealCanteen = ref<Canteen | null>(null)
 
 const todayDate = getTodayCalendarDate()
-
-// Server-side data fetch — pre-rendered and sent to the client
-const { data, pending, error, refresh } = await useAsyncData<MealsApiResponse>(
-  'meals-week',
-  () => mealsApi.getWeek(startOfWeekStr, endOfWeekStr)
-)
 
 // Capacity is intentionally fetched separately so a capacity outage does not hide meals.
 const {
@@ -155,12 +135,6 @@ const {
   'canteen-capacity',
   () => capacityApi.getCurrent()
 )
-
-const rawCanteens = computed(() => {
-  const canteens = data.value?.canteens ?? []
-  return [...canteens].sort(compareCanteens)
-})
-const rawMeals = computed(() => data.value?.meals ?? [])
 
 const {
   capacityForCanteen,
@@ -179,42 +153,6 @@ const {
   openCapacityDetails,
   retryCapacityTimeline,
 } = useCapacity(rawCanteens, selectedDayDateStr, todayDate, capacityData, capacityPending)
-
-// Sync canteen list to filter store and layout whenever data arrives
-watch(rawCanteens, (canteens) => {
-  filterStore.initFromCanteens(canteens)
-  canteenStore.setCanteens(canteens)
-}, { immediate: true })
-
-const mealFilterOptions = computed<MealFilterOptions>(() => ({
-  isSaladExcluded: filterStore.isSaladExcluded,
-  excludedFeatureIds: new Set(
-    Object.entries(filterStore.excludedFeatures)
-      .filter(([, enabled]) => enabled)
-      .map(([id]) => Number(id)),
-  ),
-  includedFeatureIds: Object.entries(filterStore.includedFeatures)
-    .filter(([, enabled]) => enabled)
-    .map(([id]) => Number(id)),
-}))
-
-// Group meals by canteen for the selected day, applying active filters.
-const filteredCanteens = computed(() => rawCanteens.value
-  .filter(c => filterStore.isCanteenEnabled(c.id))
-  .map(c => {
-    const mealsForSelectedDay = filterMealsForDay(
-      rawMeals.value,
-      c.id,
-      selectedDayDateStr.value,
-      mealFilterOptions.value,
-    ).sort(compareMealsByCategory)
-    return { ...c, mealsForSelectedDay }
-  })
-  .filter(c => c.mealsForSelectedDay.length > 0))
-
-const totalMealsForSelectedDay = computed(() =>
-  filteredCanteens.value.reduce((acc, c) => acc + c.mealsForSelectedDay.length, 0)
-)
 
 const openMealDetails = (meal: Meal, canteen: Canteen) => {
   selectedMeal.value = meal

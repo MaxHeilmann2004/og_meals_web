@@ -18,11 +18,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import type { MealReviewItem, MealReviewStats, PaginatedMealReviewsResponse } from '~/types'
+import { toRef } from 'vue'
+import type { MealReviewStats } from '~/types'
+import { useReviews } from '~/composables/useReviews'
 import MealReviewForm from './MealReviewForm.vue'
 import MealReviewList from './MealReviewList.vue'
-import { reviewsApi } from '~/services/reviewsApi'
 
 const props = defineProps<{
   mealId: number
@@ -34,34 +34,11 @@ const emit = defineEmits<{
   'stats-updated': [stats: MealReviewStats]
 }>()
 
-const reviews = ref<MealReviewItem[]>([])
-const isReviewsLoading = ref(false)
-const reviewsError = ref<string | null>(null)
-
-const fetchReviews = async (id: number) => {
-  isReviewsLoading.value = true
-  reviewsError.value = null
-  try {
-    const response = await reviewsApi.getForMeal(id)
-    if (response.success && response.data) {
-      reviews.value = response.data.reviews
-      emit('stats-updated', response.data.stats)
-    }
-  } catch (error) {
-    console.error('Failed to fetch reviews:', error)
-    reviewsError.value = 'Fehler beim Laden der Bewertungen'
-  } finally {
-    isReviewsLoading.value = false
-  }
-}
-
-watch(() => props.mealId, (mealId) => {
-  if (mealId && props.show) void fetchReviews(mealId)
-})
-
-watch(() => props.show, (show) => {
-  if (show && props.mealId) void fetchReviews(props.mealId)
-}, { immediate: true })
+const { reviews, isLoading: isReviewsLoading, error: reviewsError, fetchReviews } = useReviews(
+  toRef(props, 'mealId'),
+  toRef(props, 'show'),
+  stats => emit('stats-updated', stats),
+)
 </script>
 
 <style scoped>

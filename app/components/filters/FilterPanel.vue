@@ -109,67 +109,17 @@
       </div>
     </div>
 
-    <template v-if="isAdmin">
-      <div class="filter-divider"></div>
-
-      <h3 class="filter-section-title">Admin Tools</h3>
-      <p class="filter-section-hint">Nur sichtbar mit adminToken</p>
-
-      <div
-        class="filter-switch-row admin-theme-row"
-        role="switch"
-        tabindex="0"
-        :aria-checked="isDark"
-        aria-label="Dunkles Design für Debugging aktivieren"
-        @click="toggleAdminTheme"
-        @keydown.enter.prevent="toggleAdminTheme"
-        @keydown.space.prevent="toggleAdminTheme"
-      >
-        <span class="switch-label">Dunkles Design (Debug)</span>
-        <div class="toggle-track" :class="{ 'is-on': isDark }" aria-hidden="true">
-          <div class="toggle-thumb"></div>
-        </div>
-      </div>
-
-      <div class="admin-sync-row">
-        <var-button
-          type="warning"
-          size="small"
-          :disabled="isManualSyncing"
-          @click="triggerManualSync"
-        >
-          <LoadingSpinner
-            v-if="isManualSyncing"
-            size="18px"
-            color="currentColor"
-            label="Manual Sync wird ausgeführt"
-          />
-          <span v-else>Manual Sync</span>
-        </var-button>
-        <span
-          v-if="manualSyncError"
-          class="admin-sync-message admin-sync-error"
-          >{{ manualSyncError }}</span
-        >
-        <span
-          v-else-if="manualSyncSuccess"
-          class="admin-sync-message admin-sync-success"
-          >{{ manualSyncSuccess }}</span
-        >
-      </div>
-    </template>
+    <AdminFilterTools />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useDark } from "@vueuse/core";
+import { computed } from "vue";
 import { useFilterStore } from "~/stores/filters";
 import { EXCLUDE_FEATURES, INCLUDE_FEATURES } from "~/config/featureCatalog";
 import { compareCanteens } from "~/utils/canteenOrder";
 import type { CanteenSummary } from "~/types";
-import { useAdminAccess } from "~/composables/useAdminAccess";
-import { adminApi } from "~/services/adminApi";
+import AdminFilterTools from './AdminFilterTools.vue'
 
 const props = defineProps<{
   canteens: CanteenSummary[];
@@ -182,45 +132,6 @@ const sortedCanteens = computed(() => {
 const filterStore = useFilterStore();
 const excludeFeatures = EXCLUDE_FEATURES;
 const includeFeatures = INCLUDE_FEATURES;
-const { adminToken, isAdmin } = useAdminAccess();
-const isDark = useDark({
-  selector: "html",
-  attribute: "var-theme",
-  valueDark: "dark",
-  valueLight: "light",
-});
-const toggleAdminTheme = () => {
-  if (!isAdmin.value) return;
-  isDark.value = !isDark.value;
-};
-const isManualSyncing = ref(false);
-const manualSyncError = ref<string | null>(null);
-const manualSyncSuccess = ref<string | null>(null);
-
-const triggerManualSync = async () => {
-  if (!adminToken.value || isManualSyncing.value) return;
-
-  manualSyncError.value = null;
-  manualSyncSuccess.value = null;
-  isManualSyncing.value = true;
-
-  try {
-    await adminApi.syncMeals(adminToken.value);
-
-    manualSyncSuccess.value = "Manual sync triggered. Reloading meals...";
-    await refreshNuxtData("meals-week");
-    manualSyncSuccess.value = "Manual sync triggered successfully.";
-  } catch (error: any) {
-    const apiErrorMessage =
-      error?.data?.error?.message ||
-      error?.data?.message ||
-      error?.message ||
-      "Manual sync failed.";
-    manualSyncError.value = String(apiErrorMessage);
-  } finally {
-    isManualSyncing.value = false;
-  }
-};
 </script>
 
 <style scoped>
@@ -377,33 +288,4 @@ const triggerManualSync = async () => {
   background-color: var(--color-on-primary);
 }
 
-.admin-theme-row {
-  margin-top: 2px;
-}
-
-.admin-theme-row:focus-visible {
-  outline: 3px solid var(--color-primary-container);
-  outline-offset: 3px;
-  border-radius: 8px;
-}
-
-.admin-sync-row {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.admin-sync-message {
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.admin-sync-error {
-  color: var(--color-error);
-}
-
-.admin-sync-success {
-  color: var(--color-primary);
-}
 </style>
