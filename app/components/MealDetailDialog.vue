@@ -435,6 +435,22 @@ const handlePopState = (event: PopStateEvent) => {
   emit('update:show', false)
 }
 
+let previouslyOpenSections = new Set<string>()
+watch(() => [...openSections.value], (sections) => {
+  for (const section of sections) {
+    if (previouslyOpenSections.has(section)) continue
+
+    useTrackEvent('Expandable Opened', {
+      props: {
+        section,
+        meal_id: String(meal.value?.id ?? ''),
+        layout: props.isMobile ? 'mobile' : 'desktop',
+      },
+    })
+  }
+  previouslyOpenSections = new Set(sections)
+})
+
 watch(() => props.show, (show) => {
   if (show && props.meal) {
     if (typeof window !== 'undefined') {
