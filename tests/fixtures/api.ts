@@ -11,6 +11,11 @@ import type { Page, Route } from '@playwright/test'
 
 const backendApiPath = /\/api\/backend(?:\/|$)/
 
+export interface ApiMockOptions {
+  textReviewsEnabled?: boolean | (() => boolean)
+  reviewSettingsStatus?: number
+}
+
 const addDays = (dateString: string, days: number) => {
   const date = new Date(`${dateString}T00:00:00.000Z`)
   date.setUTCDate(date.getUTCDate() + days)
@@ -174,14 +179,20 @@ const reviews: MealReviewItem[] = [
   },
 ]
 
-export const createReviewsResponse = (mealId: number): { success: true; data: PaginatedMealReviewsResponse } => ({
-  success: true,
-  data: {
-    reviews: reviews.filter((review) => review.mealId === mealId),
-    pagination: { page: 1, limit: 50, total: reviews.length, pages: 1 },
-    stats: { totalReviews: reviews.length, averageStars: 5 },
-  },
-})
+export const createReviewsResponse = (
+  mealId: number,
+  textReviewsEnabled = true,
+): { success: true; data: PaginatedMealReviewsResponse } => {
+  const mealReviews = reviews.filter((review) => review.mealId === mealId)
+  return {
+    success: true,
+    data: {
+      reviews: mealReviews.map((review) => textReviewsEnabled ? review : { ...review, comment: '' }),
+      pagination: { page: 1, limit: 50, total: mealReviews.length, pages: 1 },
+      stats: { totalReviews: mealReviews.length, averageStars: 5 },
+    },
+  }
+}
 
 const json = async (route: Route, body: unknown, status = 200) => {
   await route.fulfill({
@@ -191,7 +202,11 @@ const json = async (route: Route, body: unknown, status = 200) => {
   })
 }
 
-export const installApiMocks = async (page: Page) => {
+export const installApiMocks = async (page: Page, options: ApiMockOptions = {}) => {
+  const isTextReviewsEnabled = () => typeof options.textReviewsEnabled === 'function'
+    ? options.textReviewsEnabled()
+    : options.textReviewsEnabled ?? true
+
   await page.route(backendApiPath, async (route) => {
     const request = route.request()
     const url = new URL(request.url())
@@ -215,9 +230,18 @@ export const installApiMocks = async (page: Page) => {
       return
     }
 
+    if (pathname === '/reviews/settings' && request.method() === 'GET') {
+      if (options.reviewSettingsStatus && options.reviewSettingsStatus !== 200) {
+        await json(route, { success: false, error: { message: 'Review settings are unavailable.' } }, options.reviewSettingsStatus)
+        return
+      }
+      await json(route, { success: true, data: { textReviewsEnabled: isTextReviewsEnabled() } })
+      return
+    }
+
     const reviewsMatch = pathname.match(/^\/meals\/(\d+)\/reviews$/)
     if (reviewsMatch && request.method() === 'GET') {
-      await json(route, createReviewsResponse(Number(reviewsMatch[1])))
+      await json(route, createReviewsResponse(Number(reviewsMatch[1]), isTextReviewsEnabled()))
       return
     }
 

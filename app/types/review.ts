@@ -3,6 +3,15 @@ export interface MealReviewStats {
   averageStars: number
 }
 
+export interface ReviewSettings {
+  textReviewsEnabled: boolean
+}
+
+export interface ReviewSettingsApiResponse {
+  success: boolean
+  data: ReviewSettings
+}
+
 export interface MealReviewItem {
   id: number
   star: number
