@@ -17,6 +17,8 @@
         :key="meal.id"
         :meal="meal"
         :canteen="canteen"
+        :weekday="weekday"
+        :layout="layout"
         @select="emit('select-meal', meal, canteen)"
       />
     </div>
@@ -32,6 +34,8 @@ type CanteenWithMeals = Canteen & { mealsForSelectedDay: Meal[] }
 
 defineProps<{
   canteen: CanteenWithMeals
+  weekday: string
+  layout: 'mobile' | 'desktop'
   capacity: CanteenCapacity | null
   expectedCapacity: CanteenCapacityPredictionPoint | null
   isToday: boolean

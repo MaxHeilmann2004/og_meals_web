@@ -4,6 +4,8 @@
       v-for="canteen in filteredCanteens"
       :key="canteen.id"
       :canteen="canteen"
+      :weekday="weekday"
+      :layout="layout"
       :capacity="capacityForCanteen(canteen.id)"
       :expected-capacity="expectedCapacityForCanteen(canteen.id)"
       :is-today="selectedDayIsToday"
@@ -26,6 +28,8 @@ type CanteenWithMeals = Canteen & { mealsForSelectedDay: Meal[] }
 
 defineProps<{
   filteredCanteens: CanteenWithMeals[]
+  weekday: string
+  layout: 'mobile' | 'desktop'
   totalMealsForSelectedDay: number
   pending: boolean
   selectedDayIsToday: boolean

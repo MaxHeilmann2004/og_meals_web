@@ -22,6 +22,8 @@
       <MealPlanContent
         v-if="data"
         :filtered-canteens="filteredCanteens"
+        :weekday="selectedWeekday"
+        :layout="isMobile ? 'mobile' : 'desktop'"
         :total-meals-for-selected-day="totalMealsForSelectedDay"
         :pending="pending"
         :selected-day-is-today="selectedDayIsToday"
