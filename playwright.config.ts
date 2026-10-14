@@ -13,7 +13,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   // Use the built test app below so browser workers do not contend on Nuxt/Vite HMR.
   workers: process.env.CI ? 2 : 4,
-  reporter: process.env.CI ? 'github' : 'list',
+  reporter: process.env.CI
+    ? [['github'], ['html', { open: 'never' }]]
+    : 'list',
   use: {
     baseURL: 'http://127.0.0.1:4173',
     trace: 'retain-on-failure',
