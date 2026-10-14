@@ -9,7 +9,7 @@ import type {
 } from '~/types'
 import type { Page, Route } from '@playwright/test'
 
-const apiOrigin = 'https://3b-meals.mh-home.net'
+const backendApiPath = /\/api\/backend(?:\/|$)/
 
 const addDays = (dateString: string, days: number) => {
   const date = new Date(`${dateString}T00:00:00.000Z`)
@@ -192,29 +192,30 @@ const json = async (route: Route, body: unknown, status = 200) => {
 }
 
 export const installApiMocks = async (page: Page) => {
-  await page.route(`${apiOrigin}/**`, async (route) => {
+  await page.route(backendApiPath, async (route) => {
     const request = route.request()
     const url = new URL(request.url())
+    const pathname = url.pathname.replace(/^\/api\/backend/, '') || '/'
 
-    if (url.pathname === '/meals' && request.method() === 'GET') {
+    if (pathname === '/meals' && request.method() === 'GET') {
       const start = url.searchParams.get('start') ?? '2025-01-06'
       await json(route, createMealsResponse(start))
       return
     }
 
-    if (url.pathname === '/capacity/current' && request.method() === 'GET') {
+    if (pathname === '/capacity/current' && request.method() === 'GET') {
       await json(route, createCapacityResponse())
       return
     }
 
-    if (url.pathname === '/capacity/timeline' && request.method() === 'GET') {
+    if (pathname === '/capacity/timeline' && request.method() === 'GET') {
       const date = url.searchParams.get('date') ?? '2025-01-06'
       const canteenId = Number(url.searchParams.get('canteenId'))
       await json(route, createTimelineResponse(date, canteenId === bonprix.id ? bonprix : elbe))
       return
     }
 
-    const reviewsMatch = url.pathname.match(/^\/meals\/(\d+)\/reviews$/)
+    const reviewsMatch = pathname.match(/^\/meals\/(\d+)\/reviews$/)
     if (reviewsMatch && request.method() === 'GET') {
       await json(route, createReviewsResponse(Number(reviewsMatch[1])))
       return
@@ -225,17 +226,17 @@ export const installApiMocks = async (page: Page) => {
       return
     }
 
-    if (url.pathname === '/meals/sync-now' && request.method() === 'POST') {
+    if (pathname === '/meals/sync-now' && request.method() === 'POST') {
       await json(route, { success: true })
       return
     }
 
-    if (url.pathname.startsWith('/img/admin/') && request.method() === 'DELETE') {
+    if (pathname.startsWith('/img/admin/') && request.method() === 'DELETE') {
       await json(route, { success: true, data: { linkedMealsDeleted: 1 } })
       return
     }
 
-    if (url.pathname.startsWith('/img/')) {
+    if (pathname.startsWith('/img/')) {
       await route.fulfill({
         status: 200,
         contentType: 'image/svg+xml',

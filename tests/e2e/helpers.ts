@@ -38,8 +38,9 @@ export const loadPage = async (page: Page) => {
 
     window.Date = FixedDate as unknown as DateConstructor
   }, { now: TEST_NOW })
-  await page.goto('/')
+  await page.goto('/?verification=test-verification-token')
   await expect(page.locator('.meal-card').first()).toBeVisible({ timeout: 30_000 })
+  expect(new URL(page.url()).searchParams.has('verification')).toBe(false)
   await disableAnimations(page)
 }
 

@@ -31,6 +31,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import type { MealImageDto } from '~/types'
+import { apiUrl } from '~/services/apiClient'
 
 const props = withDefaults(
   defineProps<{
@@ -45,15 +46,7 @@ const props = withDefaults(
   }
 )
 
-const apiBaseUrl = useRuntimeConfig().public.apiBaseUrl
-
-const fullImageUrl = computed(() => {
-  const url = props.mealImage.url
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url
-  }
-  return `${apiBaseUrl}${url}`
-})
+const fullImageUrl = computed(() => apiUrl(props.mealImage.url))
 
 const imgRef = ref<HTMLImageElement | null>(null)
 const isLoading = ref(true)
