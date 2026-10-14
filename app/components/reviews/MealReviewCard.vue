@@ -10,7 +10,7 @@
       />
       <span class="review-card-date">{{ formatRelativeDate(review.createdAt) }}</span>
     </div>
-    <p class="review-card-comment">{{ review.comment }}</p>
+    <p v-if="textReviewsEnabled && review.comment.trim()" class="review-card-comment">{{ review.comment }}</p>
     <span v-if="!review.isFromOriginalMeal && review.matchType === 'similarity'" class="propagated-tag">
       <AiBadge :inline="true" />
       Ähnliches Gericht
@@ -25,6 +25,7 @@ import { formatRelativeDate } from '~/utils/meal/formatters'
 defineProps<{
   review: MealReviewItem
   isMobile: boolean
+  textReviewsEnabled: boolean
 }>()
 </script>
 

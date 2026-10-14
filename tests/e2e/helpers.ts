@@ -1,5 +1,5 @@
 import { expect, type Page } from '@playwright/test'
-import { installApiMocks } from '../fixtures/api'
+import { installApiMocks, type ApiMockOptions } from '../fixtures/api'
 
 export const TEST_NOW = '2025-01-06T12:00:00.000Z'
 
@@ -16,8 +16,8 @@ const disableAnimations = async (page: Page) => {
   })
 }
 
-export const loadPage = async (page: Page) => {
-  await installApiMocks(page)
+export const loadPage = async (page: Page, apiMockOptions?: ApiMockOptions) => {
+  await installApiMocks(page, apiMockOptions)
   await page.addInitScript(({ now }) => {
     const OriginalDate = Date
     const fixedTime = new OriginalDate(now).getTime()
@@ -44,8 +44,8 @@ export const loadPage = async (page: Page) => {
   await disableAnimations(page)
 }
 
-export const preparePage = async (page: Page) => {
-  await loadPage(page)
+export const preparePage = async (page: Page, apiMockOptions?: ApiMockOptions) => {
+  await loadPage(page, apiMockOptions)
 
   // Start from Monday so the interaction tests use a predictable meal list.
   await page.locator('.day-chip').first().click()

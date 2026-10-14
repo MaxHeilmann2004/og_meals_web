@@ -20,6 +20,7 @@
           :key="review.id"
           :review="review"
           :is-mobile="isMobile"
+          :text-reviews-enabled="textReviewsEnabled"
         />
       </div>
     </div>
@@ -35,6 +36,7 @@ withDefaults(defineProps<{
   isLoading: boolean
   error?: string | null
   isMobile: boolean
+  textReviewsEnabled: boolean
 }>(), {
   error: null,
 })

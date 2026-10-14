@@ -22,50 +22,55 @@
 
     <Transition name="review-expand">
       <div v-if="isReviewFormExpanded" class="add-review-body">
-        <div class="review-form-comment">
-          <var-input
-            v-model="newReview.comment"
-            textarea
-            rows="3"
-            :maxlength="500"
-            show-word-limit
-            placeholder="Schreibe eine Bewertung zum Gericht..."
-            :line="false"
-            class="custom-textarea"
-          />
-        </div>
-
-        <div class="turnstile-outer-wrapper">
-          <div class="turnstile-widget-slot">
-            <div class="turnstile-shimmer-placeholder" aria-hidden="true"></div>
-            <div :id="turnstileContainerId" class="turnstile-container"></div>
-          </div>
-        </div>
-
-        <div class="review-form-actions">
-          <var-button
-            type="primary"
-            :disabled="isSubmitting || newReview.star === 0 || !newReview.comment.trim() || !turnstileToken"
-            block
-            class="submit-review-btn"
-            @click="submitReview"
-          >
-            <LoadingSpinner
-              v-if="isSubmitting"
-              size="18px"
-              color="currentColor"
-              label="Bewertung wird gesendet"
+        <p v-if="textReviewsEnabled === null" class="review-settings-status" role="status">
+          {{ isSettingsLoading ? 'Bewertungseinstellungen werden geladen...' : 'Bewertungseinstellungen konnten nicht geladen werden.' }}
+        </p>
+        <template v-else>
+          <div v-if="textReviewsEnabled" class="review-form-comment">
+            <var-input
+              v-model="newReview.comment"
+              textarea
+              rows="3"
+              :maxlength="500"
+              show-word-limit
+              placeholder="Schreibe eine Bewertung zum Gericht..."
+              :line="false"
+              class="custom-textarea"
             />
-            <span v-else>Bewertung senden</span>
-          </var-button>
-        </div>
+          </div>
 
-        <Transition name="fade">
-          <p v-if="submitError" class="submit-error">{{ submitError }}</p>
-        </Transition>
-        <Transition name="fade">
-          <p v-if="submitSuccess" class="submit-success">✓ Bewertung erfolgreich gesendet!</p>
-        </Transition>
+          <div class="turnstile-outer-wrapper">
+            <div class="turnstile-widget-slot">
+              <div class="turnstile-shimmer-placeholder" aria-hidden="true"></div>
+              <div :id="turnstileContainerId" class="turnstile-container"></div>
+            </div>
+          </div>
+
+          <div class="review-form-actions">
+            <var-button
+              type="primary"
+              :disabled="isSubmitting || newReview.star === 0 || (textReviewsEnabled && !newReview.comment.trim()) || !turnstileToken"
+              block
+              class="submit-review-btn"
+              @click="submitReview"
+            >
+              <LoadingSpinner
+                v-if="isSubmitting"
+                size="18px"
+                color="currentColor"
+                label="Bewertung wird gesendet"
+              />
+              <span v-else>Bewertung senden</span>
+            </var-button>
+          </div>
+
+          <Transition name="fade">
+            <p v-if="submitError" class="submit-error">{{ submitError }}</p>
+          </Transition>
+          <Transition name="fade">
+            <p v-if="submitSuccess" class="submit-success">✓ Bewertung erfolgreich gesendet!</p>
+          </Transition>
+        </template>
       </div>
     </Transition>
   </div>
@@ -103,6 +108,8 @@ const props = defineProps<{
   weekday: string
   show: boolean
   isMobile: boolean
+  textReviewsEnabled: boolean | null
+  isSettingsLoading: boolean
 }>()
 
 const emit = defineEmits<{
@@ -157,7 +164,11 @@ const submitReview = async () => {
     submitError.value = 'Bitte wähle eine Sternebewertung.'
     return
   }
-  if (!newReview.value.comment.trim()) {
+  if (props.textReviewsEnabled === null) {
+    submitError.value = 'Bewertungseinstellungen sind noch nicht verfügbar.'
+    return
+  }
+  if (props.textReviewsEnabled && !newReview.value.comment.trim()) {
     submitError.value = 'Bitte schreibe einen Kommentar.'
     return
   }
@@ -171,13 +182,18 @@ const submitReview = async () => {
   submitSuccess.value = false
 
   try {
-    const response = await reviewsApi.submit(props.mealId, {
+    const payload: { star: number; comment?: string; turnstileToken: string } = {
       star: newReview.value.star,
-      comment: newReview.value.comment.trim(),
       turnstileToken: turnstileToken.value,
-    })
+    }
+    if (props.textReviewsEnabled) payload.comment = newReview.value.comment.trim()
 
-    if (!response.success) return
+    const response = await reviewsApi.submit(props.mealId, payload)
+
+    if (!response.success) {
+      submitError.value = 'Fehler beim Absenden der Bewertung. Bitte versuche es erneut.'
+      return
+    }
 
     submitSuccess.value = true
     useTrackEvent('Review Submitted', {
@@ -214,6 +230,9 @@ const resetForm = () => {
 }
 
 watch(() => props.mealId, resetForm)
+watch(() => props.textReviewsEnabled, (enabled) => {
+  if (enabled === false) newReview.value.comment = ''
+})
 watch(() => props.show, (show) => {
   if (show) resetForm()
   else removeTurnstile()
@@ -223,8 +242,8 @@ watch(() => newReview.value.star, (star) => {
   if (star > 0 && !isReviewFormExpanded.value) isReviewFormExpanded.value = true
 })
 
-watch(isReviewFormExpanded, (expanded) => {
-  if (!expanded) {
+watch([isReviewFormExpanded, () => props.textReviewsEnabled], ([expanded, textReviewsEnabled]) => {
+  if (!expanded || textReviewsEnabled === null) {
     removeTurnstile()
     return
   }
@@ -296,6 +315,12 @@ onUnmounted(removeTurnstile)
 }
 
 .review-form-comment { width: 100%; }
+.review-settings-status {
+  margin: 0;
+  color: var(--color-on-surface-variant);
+  font-size: 0.875rem;
+  text-align: center;
+}
 
 .custom-textarea {
   background: var(--color-surface-container) !important;
