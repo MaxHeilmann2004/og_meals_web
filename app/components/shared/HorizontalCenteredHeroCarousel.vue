@@ -39,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import type { MealImageDto } from '~/types'
 
 const props = defineProps<{
@@ -50,11 +50,18 @@ const props = defineProps<{
   collapsedPillWidthPx?: number
 }>()
 
+const emit = defineEmits<{
+  'image-change': [index: number]
+}>()
+
 const badgePosition = computed(() => props.badgePosition ?? 'top-right')
 const itemBorderRadiusPx = computed(() => props.itemBorderRadiusPx ?? 28)
 const collapsedPillWidthPx = computed(() => props.collapsedPillWidthPx)
 
 const activeIndex = ref(0)
+watch(activeIndex, (index, previousIndex) => {
+  if (index !== previousIndex) emit('image-change', index)
+})
 const containerRef = ref<HTMLElement | null>(null)
 const containerWidth = ref(0)
 const hasMeasuredLayout = ref(false)
