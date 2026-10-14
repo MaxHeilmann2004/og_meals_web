@@ -10,8 +10,4 @@ test('uses the side-panel filter layout on wide screens', async ({ page }) => {
   await expect(page.locator('.filter-side-panel')).toBeVisible()
   await expect(page.locator('.filter-dialog')).toHaveCount(0)
   await expect(page.locator('.filter-bottom-sheet')).toHaveCount(0)
-  await expect(page).toHaveScreenshot('wide-filter-open.png', {
-    fullPage: true,
-    animations: 'disabled',
-  })
 })

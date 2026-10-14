@@ -46,8 +46,7 @@ export const loadPage = async (page: Page) => {
 export const preparePage = async (page: Page) => {
   await loadPage(page)
 
-  // The application intentionally selects the current weekday. Selecting Monday
-  // after loading makes the visual baseline independent of the calendar date.
+  // Start from Monday so the interaction tests use a predictable meal list.
   await page.locator('.day-chip').first().click()
   await expect(page.locator('.meal-title').first()).toContainText('Gegrilltes Gemüse')
 }

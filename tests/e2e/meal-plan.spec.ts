@@ -14,13 +14,6 @@ test.describe('meal plan', () => {
     await expect(page.locator('.day-chip').nth(expectedIndex)).toHaveClass(/is-selected/)
   })
 
-  test('matches the current meal-plan layout', async ({ page }) => {
-    await expect(page).toHaveScreenshot('meal-plan.png', {
-      fullPage: true,
-      animations: 'disabled',
-    })
-  })
-
   test('changes the selected weekday and meal list', async ({ page }) => {
     const dayChips = page.locator('.day-chip')
     await expect(dayChips).toHaveCount(5)

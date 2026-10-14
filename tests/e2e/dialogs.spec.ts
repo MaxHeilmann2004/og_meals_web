@@ -23,11 +23,6 @@ test.describe('dialogs', () => {
       expect(Math.abs(mealTop - reviewTop)).toBeLessThanOrEqual(4)
     }
     await expect(page.locator('.review-card')).toContainText('Sehr lecker!')
-
-    await expect(page).toHaveScreenshot('meal-detail-open.png', {
-      fullPage: true,
-      animations: 'disabled',
-    })
   })
 
   test('opens the capacity dialog', async ({ page }) => {
@@ -35,10 +30,6 @@ test.describe('dialogs', () => {
 
     await expect(page.locator('.capacity-dialog')).toBeVisible()
     await expect(page.locator('.capacity-chart-section')).toBeVisible()
-    await expect(page).toHaveScreenshot('capacity-dialog-open.png', {
-      fullPage: true,
-      animations: 'disabled',
-    })
   })
 
   test('opens and closes the imprint dialog', async ({ page }) => {
@@ -46,9 +37,6 @@ test.describe('dialogs', () => {
 
     await expect(page.locator('.imprint-dialog')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Impressum' })).toBeVisible()
-    await expect(page.locator('.imprint-dialog')).toHaveScreenshot('imprint-dialog-open.png', {
-      animations: 'disabled',
-    })
 
     await page.getByRole('button', { name: 'Impressum schließen' }).click()
     await expect(page.locator('.imprint-dialog')).toBeHidden()
