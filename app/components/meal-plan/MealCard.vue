@@ -17,6 +17,7 @@
         variant="card"
         :item-border-radius-px="28"
         :collapsed-pill-width-px="44"
+        @image-change="trackMealImageChange"
       />
     </div>
 
@@ -72,6 +73,8 @@ import { cleanMealTitle, formatPrice, getMealCategoryName } from '~/utils/meal/f
 const props = defineProps<{
   meal: Meal
   canteen: Canteen
+  weekday: string
+  layout: 'mobile' | 'desktop'
 }>()
 
 const emit = defineEmits<{
@@ -81,6 +84,18 @@ const emit = defineEmits<{
 const filterStore = useFilterStore()
 const showStudentPrice = computed(() => filterStore.showStudentPrices && !!props.meal.studentPrice)
 const categoryName = computed(() => getMealCategoryName(props.meal, props.canteen.name))
+
+const trackMealImageChange = (index: number) => {
+  useTrackEvent('Change Meal Image', {
+    props: {
+      canteen: props.canteen.displayName || props.canteen.name,
+      weekday: props.weekday,
+      layout: props.layout,
+      meal_id: String(props.meal.id),
+      meal_image_index: String(index),
+    },
+  })
+}
 
 const starClass = (i: number) => {
   const avg = props.meal.reviewStats.averageStars

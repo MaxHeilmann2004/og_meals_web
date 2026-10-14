@@ -1,11 +1,23 @@
 import { mount } from '@vue/test-utils'
+import { defineComponent, h } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 // The standalone test TypeScript project does not process Vue SFCs; Vitest does via the Vue Vite plugin.
 // @ts-expect-error Vue SFC import
 import MealCard from '~/components/meal-plan/MealCard.vue'
 import type { Canteen, Meal } from '~/types'
 import { useFilterStore } from '~/stores/filters'
+
+const MealMediaStub = defineComponent({
+  name: 'MealMedia',
+  emits: ['image-change'],
+  setup(_, { emit }) {
+    return () => h('button', {
+      class: 'meal-media-stub',
+      onClick: () => emit('image-change', 1),
+    })
+  },
+})
 
 const canteen: Canteen = {
   id: 8,
@@ -31,15 +43,19 @@ const meal: Meal = {
 }
 
 describe('MealCard', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   beforeEach(() => {
     setActivePinia(createPinia())
   })
 
   const mountCard = () => mount(MealCard, {
-    props: { meal, canteen },
+    props: { meal, canteen, weekday: 'Montag', layout: 'mobile' },
     global: {
       stubs: {
-        MealMedia: true,
+        MealMedia: MealMediaStub,
         HorizontalCenteredHeroCarousel: true,
         MealImage: true,
         MealIcon: true,
@@ -77,5 +93,23 @@ describe('MealCard', () => {
     await wrapper.trigger('keydown.space')
 
     expect(wrapper.emitted('select')).toHaveLength(3)
+  })
+
+  it('tracks image changes with the meal card context', async () => {
+    const trackEvent = vi.fn()
+    vi.stubGlobal('useTrackEvent', trackEvent)
+    const wrapper = mountCard()
+
+    await wrapper.find('.meal-media-stub').trigger('click')
+
+    expect(trackEvent).toHaveBeenCalledWith('Change Meal Image', {
+      props: {
+        canteen: 'Kantine Elbe',
+        weekday: 'Montag',
+        layout: 'mobile',
+        meal_id: '101',
+        meal_image_index: '1',
+      },
+    })
   })
 })
