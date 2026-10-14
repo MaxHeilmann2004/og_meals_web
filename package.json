@@ -41,6 +41,7 @@
     "@vite-pwa/nuxt": "^1.1.1",
     "@vitejs/plugin-vue": "^6.0.9",
     "@vue/test-utils": "^2.5.1",
+    "eslint": "^10.12.0",
     "happy-dom": "^20.14.5",
     "typescript": "^5.9.3",
     "vitest": "^5.0.1",
