@@ -78,9 +78,9 @@ node .output/server/index.mjs
 
 ## Configuration
 
-Set `NUXT_VERIFICATION_TOKEN` to the private access code required to open the meal plan. The verification code can be entered on the site or supplied once as `?verification=<code>`; the server validates the query token before rendering, stores it in an HttpOnly, same-site cookie, then redirects to a clean URL. The code is never exposed in public Nuxt runtime configuration. If the token is not set, access remains closed.
+The verification code is the upstream proxy key, extracted by the upstream service from its client-side JavaScript bundle. It is publicly inspectable and should not be treated as a secret. The Nuxt server validates submitted codes by calling the backend's `GET /verification` endpoint with the `X-Verification-Code` header; that endpoint returns `{ "configured": boolean, "authenticated": boolean }`. After successful validation, Nuxt stores the user-supplied code in an HttpOnly, same-site cookie. It can be entered on the site or supplied once as `?verification=<code>`; the server checks it and redirects to a clean URL. If backend verification cannot be established, access remains closed.
 
-The Nuxt server protects its API proxy and forwards the verified code in the `X-Verification-Code` header. The upstream API must validate this header before direct API access is protected; until that backend change is deployed, the Nuxt site gate does not prevent direct requests to the upstream API.
+The Nuxt API proxy forwards the cookie value to the backend in the `X-Verification-Code` header, where protected API routes must validate it. Set `NUXT_PUBLIC_API_BASE_URL` to override the backend URL (defaults to `https://3b-meals.mh-home.net`).
 
 The following public environment variables are also supported:
 

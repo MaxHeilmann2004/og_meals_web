@@ -1,17 +1,64 @@
-import { getRequestURL, setCookie } from 'h3'
-import { timingSafeEqual } from 'node:crypto'
+import { createError, getRequestURL, setCookie } from 'h3'
 import type { H3Event } from 'h3'
 
 export const verificationCookieName = 'og-meals-verification'
 
-export const isVerificationTokenValid = (token: string | undefined, expectedToken: string) => {
-  if (!token) return false
+export interface BackendVerificationStatus {
+  configured: boolean
+  authenticated: boolean
+}
 
-  const tokenBytes = Buffer.from(token)
-  const expectedBytes = Buffer.from(expectedToken)
-  if (tokenBytes.length !== expectedBytes.length) return false
+const verificationUnavailable = () => createError({
+  statusCode: 503,
+  statusMessage: 'Could not verify access with the backend.',
+})
 
-  return timingSafeEqual(tokenBytes, expectedBytes)
+export const getBackendVerificationStatus = async (event: H3Event, token?: string): Promise<BackendVerificationStatus> => {
+  const config = useRuntimeConfig(event)
+  let verificationUrl: URL
+  try {
+    verificationUrl = new URL('/verification', config.public.apiBaseUrl)
+  } catch {
+    throw verificationUnavailable()
+  }
+
+  let response: Response
+  try {
+    response = await fetch(verificationUrl, {
+      cache: 'no-store',
+      headers: {
+        'cache-control': 'no-store',
+        ...(token ? { 'x-verification-code': token } : {}),
+      },
+    })
+  } catch {
+    throw verificationUnavailable()
+  }
+
+  if (!response.ok) throw verificationUnavailable()
+
+  let status: unknown
+  try {
+    status = await response.json()
+  } catch {
+    throw verificationUnavailable()
+  }
+
+  if (
+    typeof status !== 'object'
+    || status === null
+    || !('configured' in status)
+    || typeof status.configured !== 'boolean'
+    || !('authenticated' in status)
+    || typeof status.authenticated !== 'boolean'
+  ) {
+    throw verificationUnavailable()
+  }
+
+  return {
+    configured: status.configured,
+    authenticated: status.authenticated,
+  }
 }
 
 export const setVerificationCookie = (event: H3Event, token: string) => {

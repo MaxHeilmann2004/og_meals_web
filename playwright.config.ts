@@ -42,10 +42,17 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: 'NUXT_VERIFICATION_TOKEN=test-verification-token pnpm build:test && NUXT_VERIFICATION_TOKEN=test-verification-token HOST=127.0.0.1 PORT=4173 node .output/server/index.mjs',
-    url: 'http://127.0.0.1:4173',
-    reuseExistingServer: false,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command: 'node tests/e2e/mock-backend.mjs',
+      url: 'http://127.0.0.1:4174/verification',
+      reuseExistingServer: false,
+    },
+    {
+      command: 'NUXT_TEST_MODE=true NUXT_PUBLIC_API_BASE_URL=http://127.0.0.1:4174 pnpm build:test && NUXT_TEST_MODE=true NUXT_PUBLIC_API_BASE_URL=http://127.0.0.1:4174 HOST=127.0.0.1 PORT=4173 node .output/server/index.mjs',
+      url: 'http://127.0.0.1:4173',
+      reuseExistingServer: false,
+      timeout: 120_000,
+    },
+  ],
 })

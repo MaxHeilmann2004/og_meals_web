@@ -1,21 +1,13 @@
 import { getCookie, getRequestURL, getRouterParam, proxyRequest, setResponseHeader } from 'h3'
-import { isVerificationTokenValid, verificationCookieName } from '../../utils/verification'
+import { verificationCookieName } from '../../utils/verification'
 
 export default defineEventHandler((event) => {
   const config = useRuntimeConfig(event)
-  const expectedToken = config.verificationToken
 
   setResponseHeader(event, 'Cache-Control', 'private, no-store')
 
-  if (!expectedToken) {
-    throw createError({
-      statusCode: 503,
-      statusMessage: 'Meal plan access is not configured on this server.',
-    })
-  }
-
   const verificationToken = getCookie(event, verificationCookieName)
-  if (!isVerificationTokenValid(verificationToken, expectedToken)) {
+  if (!verificationToken) {
     throw createError({
       statusCode: 401,
       statusMessage: 'Verification required.',

@@ -1,15 +1,11 @@
 import { getCookie, setResponseHeader } from 'h3'
-import { isVerificationTokenValid, verificationCookieName } from '../utils/verification'
+import { getBackendVerificationStatus, verificationCookieName } from '../utils/verification'
 
-export default defineEventHandler((event) => {
-  const config = useRuntimeConfig(event)
-  const configured = Boolean(config.verificationToken)
+export default defineEventHandler(async (event) => {
   const token = getCookie(event, verificationCookieName)
 
   setResponseHeader(event, 'Cache-Control', 'private, no-store')
 
-  return {
-    configured,
-    authenticated: configured && isVerificationTokenValid(token, config.verificationToken),
-  }
+  const status = await getBackendVerificationStatus(event, token)
+  return { ...status, authenticated: status.configured && status.authenticated }
 })

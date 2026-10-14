@@ -21,6 +21,15 @@ test.describe('site verification', () => {
     await expect(page.locator('.meal-card')).toHaveCount(0)
   })
 
+  test('fails closed when the backend cannot verify a submitted code', async ({ page }) => {
+    await page.goto('/')
+    await page.getByLabel('Verification code').fill('backend-unavailable')
+    await page.getByRole('button', { name: 'Continue' }).click()
+
+    await expect(page.getByRole('alert')).toHaveText('Could not verify access with the backend.')
+    await expect(page.locator('.meal-card')).toHaveCount(0)
+  })
+
   test('opens the meal plan after a valid code is entered', async ({ page }) => {
     await installApiMocks(page)
     await page.goto('/')
@@ -28,5 +37,11 @@ test.describe('site verification', () => {
     await page.getByRole('button', { name: 'Continue' }).click()
 
     await expect(page.locator('.meal-card').first()).toBeVisible()
+    await page.route('**/api/backend/meals?proxy-test=1', (route) => route.continue())
+    const upstreamStatus = await page.evaluate(async () => {
+      const response = await fetch('/api/backend/meals?proxy-test=1')
+      return response.status
+    })
+    expect(upstreamStatus).toBe(200)
   })
 })
