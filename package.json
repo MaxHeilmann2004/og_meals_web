@@ -5,9 +5,10 @@
   "scripts": {
     "build": "nuxt build",
     "build:test": "NUXT_TEST_MODE=true nuxt build",
-    "check": "pnpm typecheck && pnpm typecheck:tests && pnpm test && pnpm build",
+    "check": "pnpm lint && pnpm typecheck && pnpm typecheck:tests && pnpm test && pnpm build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
+    "lint": "eslint .",
     "preview": "nuxt preview",
     "test": "vitest run",
     "test:e2e": "playwright test",
@@ -33,6 +34,7 @@
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
+    "@nuxt/eslint": "^1.17.0",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.1",
     "@vite-pwa/assets-generator": "^1.0.2",

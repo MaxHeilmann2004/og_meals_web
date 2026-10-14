@@ -45,6 +45,12 @@ Run unit and component tests:
 pnpm test
 ```
 
+Run ESLint:
+
+```bash
+pnpm lint
+```
+
 Run the TypeScript checks:
 
 ```bash
@@ -64,7 +70,7 @@ The browser tests use deterministic API fixtures and fixed viewports. Visual sna
 pnpm test:e2e:update
 ```
 
-Run the standard non-browser verification suite with:
+Run linting, TypeScript checks, unit/component tests, and the production build with:
 
 ```bash
 pnpm check

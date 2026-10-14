@@ -10,12 +10,12 @@
     @closed="onClosed"
   >
     <section
-      v-if="meal && canteen"
+      v-if="displayMeal && displayCanteen"
       class="meal-detail-dialog"
       :class="{ 'is-mobile': isMobile }"
       role="dialog"
       aria-modal="true"
-      :aria-label="`${meal.title} Details`"
+      :aria-label="`${displayMeal.title} Details`"
     >
       <!-- Circular Close Button overlaying the corner, outside scroll container -->
       <button class="dialog-close-btn" @click="emit('update:show', false)" aria-label="Schließen">
@@ -31,8 +31,8 @@
           <div class="dialog-left-col-scroll">
             <div class="hero-media">
               <MealMedia
-                :images="meal.images"
-                :content-description="meal.title"
+                :images="displayMeal.images"
+                :content-description="displayMeal.title"
                 badge-position="bottom-right"
                 :item-border-radius-px="isMobile ? 28 : 32"
               />
@@ -40,8 +40,8 @@
 
             <div class="dialog-content">
               <MealDetailSummary
-                :meal="meal"
-                :canteen="canteen"
+                :meal="displayMeal"
+                :canteen="displayCanteen"
                 :show-student-price="showStudentPrice"
               />
 
@@ -79,21 +79,21 @@
                 @click.capture="prepareCollapseClose"
               >
                 <var-collapse-item name="nutrition" title="Nährwerte">
-                  <MealNutritionTable :nutritional-info="meal.nutritionalInfo" />
+                  <MealNutritionTable :nutritional-info="displayMeal.nutritionalInfo" />
                 </var-collapse-item>
 
                 <var-collapse-item name="allergens" title="Allergene">
-                  <MealAllergensList :allergens="meal.allergens" />
+                  <MealAllergensList :allergens="displayMeal.allergens" />
                 </var-collapse-item>
 
                 <var-collapse-item name="features" title="Merkmale">
-                  <MealFeaturesList :features="meal.features" />
+                  <MealFeaturesList :features="displayMeal.features" />
                 </var-collapse-item>
 
-                <var-collapse-item v-if="isMobile" name="reviews" :title="`Bewertungen (${meal.reviewStats?.totalReviews ?? 0})`">
+                <var-collapse-item v-if="isMobile" name="reviews" :title="`Bewertungen (${displayMeal.reviewStats?.totalReviews ?? 0})`">
                   <MealReviewsSection
-                    :meal-id="meal.id"
-                    :canteen="canteen.displayName || canteen.name"
+                    :meal-id="displayMeal.id"
+                    :canteen="displayCanteen.displayName || displayCanteen.name"
                     :weekday="weekday"
                     :show="show"
                     :is-mobile="true"
@@ -107,7 +107,7 @@
                   title="Admin Tools"
                 >
                   <MealAdminTools
-                    :meal="meal"
+                    :meal="displayMeal"
                     :admin-token="adminToken"
                     @images-updated="updateMealImages"
                   />
@@ -120,8 +120,8 @@
         <!-- ── Right Column: Reviews (Desktop Only) ── -->
         <div v-if="!isMobile" class="dialog-right-col">
           <MealReviewsSection
-            :meal-id="meal.id"
-            :canteen="canteen.displayName || canteen.name"
+            :meal-id="displayMeal.id"
+            :canteen="displayCanteen.displayName || displayCanteen.name"
             :weekday="weekday"
             :show="show"
             :is-mobile="false"
@@ -180,17 +180,17 @@ watch(() => props.canteen, (newCanteen) => {
   }
 }, { immediate: true })
 
-const meal = computed(() => localMeal.value)
-const canteen = computed(() => localCanteen.value)
+const displayMeal = computed(() => localMeal.value)
+const displayCanteen = computed(() => localCanteen.value)
 const isAdmin = computed(() => props.isAdmin)
 const adminToken = computed(() => props.adminToken)
 
-const showStudentPrice = computed(() => filterStore.showStudentPrices && !!meal.value?.studentPrice)
+const showStudentPrice = computed(() => filterStore.showStudentPrices && !!displayMeal.value?.studentPrice)
 
-const shortDateStr = computed(() => formatMealShortDate(meal.value?.date))
+const shortDateStr = computed(() => formatMealShortDate(displayMeal.value?.date))
 
 const sustainabilityTextShort = computed(() => {
-  const co2 = meal.value?.sustainabilityCo2
+  const co2 = displayMeal.value?.sustainabilityCo2
   if (co2 == null) return null
   if (co2 < 2.0) {
     return `${Math.round(co2 * 1000)}g CO₂`
@@ -253,9 +253,9 @@ watch(() => [...openSections.value], (sections) => {
     useTrackEvent('Expandable Opened', {
       props: {
         section,
-        canteen: canteen.value?.displayName || canteen.value?.name || '',
+        canteen: displayCanteen.value?.displayName || displayCanteen.value?.name || '',
         weekday: props.weekday,
-        meal_id: String(meal.value?.id ?? ''),
+        meal_id: String(displayMeal.value?.id ?? ''),
         layout: props.isMobile ? 'mobile' : 'desktop',
       },
     })

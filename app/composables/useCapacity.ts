@@ -47,7 +47,7 @@ export const useCapacity = (
   const capacityTimelineKey = (canteenId: number, date: string) => `${canteenId}:${date}`
 
   const expectedCapacityByCanteenId = computed(() => {
-    capacityTimelineVersion.value
+    void capacityTimelineVersion.value
     const result = new Map<number, CanteenCapacityPredictionPoint | null>()
     if (selectedDayIsToday.value) return result
 

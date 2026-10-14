@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import type { Canteen, Meal, MealsApiResponse } from '~/types'
+import type { MealsApiResponse } from '~/types'
 import { useFilterStore } from '~/stores/filters'
 import { useCanteenStore } from '~/stores/canteens'
 import { mealsApi } from '~/services/mealsApi'

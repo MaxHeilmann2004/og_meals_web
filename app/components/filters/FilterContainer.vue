@@ -93,7 +93,6 @@ const isFilterOpen = computed(() => filterStore.isFilterOpen)
 
 const panelScrollRef = ref<HTMLElement | null>(null)
 const {
-  dragOffset,
   isDragging,
   isReturning,
   sheetStyle,
