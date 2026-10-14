@@ -7,6 +7,7 @@
       :badge-position="badgePosition"
       :item-border-radius-px="itemBorderRadiusPx"
       :collapsed-pill-width-px="collapsedPillWidthPx"
+      @image-change="emit('image-change', $event)"
     />
     <div v-else-if="images.length === 1" class="single-image-wrapper">
       <MealImage
@@ -26,6 +27,10 @@
 
 <script setup lang="ts">
 import type { MealImageDto } from '~/types'
+
+const emit = defineEmits<{
+  'image-change': [index: number]
+}>()
 
 withDefaults(defineProps<{
   images: MealImageDto[]
