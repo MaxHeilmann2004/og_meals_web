@@ -35,6 +35,7 @@
                 :content-description="meal.title"
                 badge-position="bottom-right"
                 :item-border-radius-px="isMobile ? 28 : 32"
+                @image-change="trackMealImageChange"
               />
             </div>
 
@@ -207,6 +208,18 @@ const reviewStatsSummary = computed(() => {
 
 const updateReviewStats = (stats: MealReviewStats) => {
   if (localMeal.value) localMeal.value.reviewStats = stats
+}
+
+const trackMealImageChange = (index: number) => {
+  useTrackEvent('Change Meal Image', {
+    props: {
+      canteen: canteen.value?.displayName || canteen.value?.name || '',
+      weekday: props.weekday,
+      layout: props.isMobile ? 'mobile' : 'desktop',
+      meal_id: String(meal.value?.id ?? ''),
+      meal_image_index: String(index),
+    },
+  })
 }
 
 useDialogHistory(
