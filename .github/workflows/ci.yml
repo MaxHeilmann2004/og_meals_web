@@ -39,12 +39,3 @@ jobs:
 
       - name: Run browser tests
         run: pnpm test:e2e
-
-      - name: Upload failed Playwright screenshots
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-actual-screenshots-${{ github.run_id }}
-          path: test-results/playwright/**/*-actual.png
-          if-no-files-found: error
-          retention-days: 1
