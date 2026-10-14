@@ -7,8 +7,8 @@ export const mealsApi = {
   },
 
   getDetailsUrl(mealId: number, adminToken?: string) {
-    const url = new URL(apiUrl(`/meals/${mealId}`))
+    const url = new URL(apiUrl(`/meals/${mealId}`), 'http://localhost')
     if (adminToken) url.searchParams.set('adminToken', adminToken)
-    return url.toString()
+    return `${url.pathname}${url.search}`
   },
 }

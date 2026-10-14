@@ -9,7 +9,7 @@ import { compareMealsByCategory } from '~/utils/meal/order'
 import { filterMealsForDay, type MealFilterOptions } from '~/utils/meal/filtering'
 import { getInitialDayIndex, getWeekDates } from '~/utils/meal/week'
 
-export const useMealPlan = async () => {
+export const useMealPlan = async (enabled: Ref<boolean>) => {
   const filterStore = useFilterStore()
   const canteenStore = useCanteenStore()
   const weekDates = getWeekDates()
@@ -22,6 +22,7 @@ export const useMealPlan = async () => {
   const { data, pending, error, refresh } = await useAsyncData<MealsApiResponse>(
     'meals-week',
     () => mealsApi.getWeek(startOfWeek, endOfWeek),
+    { immediate: enabled.value, watch: [enabled] },
   )
 
   const rawCanteens = computed(() => [...(data.value?.canteens ?? [])].sort(compareCanteens))

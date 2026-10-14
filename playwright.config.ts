@@ -43,7 +43,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm build:test && HOST=127.0.0.1 PORT=4173 node .output/server/index.mjs',
+    command: 'NUXT_VERIFICATION_TOKEN=test-verification-token pnpm build:test && NUXT_VERIFICATION_TOKEN=test-verification-token HOST=127.0.0.1 PORT=4173 node .output/server/index.mjs',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: false,
     timeout: 120_000,

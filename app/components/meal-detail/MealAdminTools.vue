@@ -82,9 +82,7 @@ const openDetailedApiJsonInNewTab = () => {
 }
 
 const resolveMealImageUrl = (url: string) =>
-  url.startsWith('http://') || url.startsWith('https://')
-    ? url
-    : adminApi.imageUrl(url)
+  adminApi.imageUrl(url)
 
 const extractImageHashFromUrl = (imageUrl: string) => {
   const stripFileExtension = (value: string) => value.replace(/\.[a-zA-Z0-9]+$/, '')

@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div v-if="isVerified" class="page-container">
     <DaySelector
       :day-names="dayNames"
       :selected-day-index="selectedDayIndex"
@@ -63,6 +63,39 @@
       />
     </ClientOnly>
   </div>
+
+  <section v-else class="verification-page">
+    <form v-if="verificationSession?.configured" class="verification-card" @submit.prevent="submitVerification()">
+      <img src="/logo.svg" alt="OG Meals Logo" class="verification-logo" />
+      <h1>Access required</h1>
+      <p>Enter the verification code to view the meal plan.</p>
+      <label for="verification-code">Verification code</label>
+      <input
+        id="verification-code"
+        v-model="verificationCode"
+        type="password"
+        name="verification"
+        autocomplete="current-password"
+        required
+        :disabled="isSubmitting"
+      />
+      <p v-if="verificationError" class="verification-error" role="alert">
+        {{ verificationError }}
+      </p>
+      <var-button type="primary" native-type="submit" block :loading="isSubmitting">
+        Continue
+      </var-button>
+    </form>
+    <p v-else-if="verificationSession?.configured === false" class="verification-unavailable" role="alert">
+      Meal plan access is not configured on this server.
+    </p>
+    <p v-else-if="verificationSessionError" class="verification-unavailable" role="alert">
+      Could not check verification status. Reload the page and try again.
+    </p>
+    <p v-else class="verification-unavailable" role="status">
+      Checking access...
+    </p>
+  </section>
 </template>
 
 <script setup lang="ts">
@@ -77,9 +110,51 @@ import MealPlanContent from '~/components/meal-plan/MealPlanContent.vue'
 import { useMealPlan } from '~/composables/useMealPlan'
 import { capacityApi } from '~/services/capacityApi'
 
+interface VerificationSession {
+  configured: boolean
+  authenticated: boolean
+}
+
 const dayNames = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']
 const selectedWeekday = computed(() => dayNames[selectedDayIndex.value]!)
 const { adminToken, isAdmin } = useAdminAccess()
+const verificationCode = ref('')
+const verificationError = ref('')
+const isSubmitting = ref(false)
+const {
+  data: verificationSession,
+  error: verificationSessionError,
+} = await useFetch<VerificationSession>('/api/verification')
+const isVerified = computed(() => verificationSession.value?.authenticated === true)
+
+const submitVerification = async () => {
+  const token = verificationCode.value
+  if (!token || isSubmitting.value) return
+
+  isSubmitting.value = true
+  verificationError.value = ''
+
+  try {
+    verificationSession.value = await $fetch<VerificationSession>('/api/verification', {
+      method: 'POST',
+      body: { token },
+    })
+    verificationCode.value = ''
+  } catch (error) {
+    const response = typeof error === 'object' && error !== null && 'data' in error
+      ? error.data
+      : null
+    const statusMessage = typeof response === 'object' && response !== null && 'statusMessage' in response
+      ? response.statusMessage
+      : null
+    verificationError.value = typeof statusMessage === 'string'
+      ? statusMessage
+      : 'Verification failed. Check your connection and try again.'
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
 const {
   data,
   pending,
@@ -90,7 +165,7 @@ const {
   selectedDayDateStr,
   filteredCanteens,
   totalMealsForSelectedDay,
-} = await useMealPlan()
+} = await useMealPlan(isVerified)
 const isMobile = useMediaQuery('(max-width: 767px)')
 const isMealDialogOpen = ref(false)
 const selectedMeal = ref<Meal | null>(null)
@@ -104,7 +179,8 @@ const {
   pending: capacityPending,
 } = await useAsyncData<CanteenCapacityApiResponse>(
   'canteen-capacity',
-  () => capacityApi.getCurrent()
+  () => capacityApi.getCurrent(),
+  { immediate: isVerified.value, watch: [isVerified] },
 )
 
 const {
@@ -185,6 +261,76 @@ onMounted(() => scrollSelectedChipIntoView(false))
 </script>
 
 <style scoped>
+.verification-page {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.verification-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(100%, 360px);
+  padding: 28px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 16px;
+  background: var(--color-surface);
+  color: var(--color-on-surface);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 8%);
+}
+
+.verification-logo {
+  width: auto;
+  height: 36px;
+  align-self: center;
+}
+
+.verification-card h1,
+.verification-card p {
+  margin: 0;
+}
+
+.verification-card h1 {
+  text-align: center;
+  font-size: 1.35rem;
+}
+
+.verification-card > p {
+  color: var(--color-on-surface-variant);
+  text-align: center;
+}
+
+.verification-card label {
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.verification-card input {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--color-outline);
+  border-radius: 8px;
+  background: var(--color-body);
+  color: var(--color-on-surface);
+  font: inherit;
+}
+
+.verification-card input:focus-visible {
+  outline: 3px solid var(--color-primary-container);
+  outline-offset: 2px;
+}
+
+.verification-error,
+.verification-unavailable {
+  color: var(--color-danger);
+  text-align: center;
+}
+
 .page-container {
   display: flex;
   flex-direction: column;
