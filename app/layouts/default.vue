@@ -29,6 +29,14 @@
       <button type="button" class="imprint-link" @click="isImprintOpen = true">
         Impressum
       </button>
+      <a
+        class="imprint-link"
+        href="https://github.com/MaxHeilmann2004/og_meals_web"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        GitHub repository
+      </a>
     </footer>
 
     <!-- Dialogs teleport to <body> — no layout impact -->
@@ -169,11 +177,14 @@ onMounted(async () => {
 .app-footer {
   display: flex;
   justify-content: center;
+  gap: 8px;
   padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px));
   background-color: var(--color-body);
 }
 
 .imprint-link {
+  display: inline-flex;
+  align-items: center;
   padding: 8px 12px;
   border: 0;
   border-radius: 8px;
