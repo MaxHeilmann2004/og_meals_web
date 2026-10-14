@@ -93,6 +93,8 @@
                 <var-collapse-item v-if="isMobile" name="reviews" :title="`Bewertungen (${meal.reviewStats?.totalReviews ?? 0})`">
                   <MealReviewsSection
                     :meal-id="meal.id"
+                    :canteen="canteen.displayName || canteen.name"
+                    :weekday="weekday"
                     :show="show"
                     :is-mobile="true"
                     @stats-updated="updateReviewStats"
@@ -119,6 +121,8 @@
         <div v-if="!isMobile" class="dialog-right-col">
           <MealReviewsSection
             :meal-id="meal.id"
+            :canteen="canteen.displayName || canteen.name"
+            :weekday="weekday"
             :show="show"
             :is-mobile="false"
             @stats-updated="updateReviewStats"
@@ -147,6 +151,7 @@ const props = defineProps<{
   show: boolean
   meal: Meal | null
   canteen: Canteen | null
+  weekday: string
   isMobile: boolean
   isAdmin: boolean
   adminToken: string
@@ -248,6 +253,8 @@ watch(() => [...openSections.value], (sections) => {
     useTrackEvent('Expandable Opened', {
       props: {
         section,
+        canteen: canteen.value?.displayName || canteen.value?.name || '',
+        weekday: props.weekday,
         meal_id: String(meal.value?.id ?? ''),
         layout: props.isMobile ? 'mobile' : 'desktop',
       },

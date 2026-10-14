@@ -77,6 +77,8 @@ import { reviewsApi } from '~/services/reviewsApi'
 
 const props = defineProps<{
   mealId: number
+  canteen: string
+  weekday: string
   show: boolean
   isMobile: boolean
 }>()
@@ -157,6 +159,9 @@ const submitReview = async () => {
     useTrackEvent('Review Submitted', {
       props: {
         meal_id: String(props.mealId),
+        canteen: props.canteen,
+        weekday: props.weekday,
+        layout: props.isMobile ? 'mobile' : 'desktop',
         rating: String(newReview.value.star),
       },
     })

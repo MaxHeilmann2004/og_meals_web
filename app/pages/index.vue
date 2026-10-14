@@ -3,7 +3,7 @@
     <DaySelector
       :day-names="dayNames"
       :selected-day-index="selectedDayIndex"
-      @select="selectedDayIndex = $event"
+      @select="selectWeekday"
     />
 
     <!-- Main List / Grid -->
@@ -30,7 +30,7 @@
         :capacity-for-canteen="capacityForCanteen"
         :expected-capacity-for-canteen="expectedCapacityForCanteen"
         @select-meal="openMealDetails"
-        @capacity-details="openCapacityDetails"
+        @capacity-details="openCapacityDetailsWithTracking"
       />
     </div>
 
@@ -39,6 +39,7 @@
         :show="isMealDialogOpen"
         :meal="selectedMeal"
         :canteen="selectedMealCanteen"
+        :weekday="selectedWeekday"
         :is-mobile="isMobile"
         :is-admin="isAdmin"
         :admin-token="adminToken"
@@ -63,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { computed, ref, onMounted, watch, nextTick } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type { Canteen, CanteenCapacityApiResponse, Meal } from '~/types'
 import { getTodayCalendarDate } from '~/utils/capacity/capacity'
@@ -75,6 +76,7 @@ import { useMealPlan } from '~/composables/useMealPlan'
 import { capacityApi } from '~/services/capacityApi'
 
 const dayNames = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']
+const selectedWeekday = computed(() => dayNames[selectedDayIndex.value]!)
 const { adminToken, isAdmin } = useAdminAccess()
 const {
   data,
@@ -122,9 +124,40 @@ const {
 } = useCapacity(rawCanteens, selectedDayDateStr, todayDate, capacityData, capacityPending)
 
 const openMealDetails = (meal: Meal, canteen: Canteen) => {
+  useTrackEvent('Meal View Opened', {
+    props: {
+      canteen: canteen.displayName || canteen.name,
+      weekday: selectedWeekday.value,
+      layout: isMobile.value ? 'mobile' : 'desktop',
+      meal_id: String(meal.id),
+    },
+  })
   selectedMeal.value = meal
   selectedMealCanteen.value = canteen
   isMealDialogOpen.value = true
+}
+
+const openCapacityDetailsWithTracking = (canteen: Canteen) => {
+  useTrackEvent('Capacity Opened', {
+    props: {
+      canteen: canteen.displayName || canteen.name,
+      weekday: selectedWeekday.value,
+      layout: isMobile.value ? 'mobile' : 'desktop',
+    },
+  })
+  openCapacityDetails(canteen)
+}
+
+const selectWeekday = (index: number) => {
+  if (index === selectedDayIndex.value) return
+
+  selectedDayIndex.value = index
+  useTrackEvent('Weekday Switched', {
+    props: {
+      weekday: selectedWeekday.value,
+      layout: isMobile.value ? 'mobile' : 'desktop',
+    },
+  })
 }
 
 const scrollSelectedChipIntoView = (smooth = true) => {

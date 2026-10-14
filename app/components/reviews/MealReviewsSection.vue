@@ -2,6 +2,8 @@
   <div class="reviews-section-content" :class="{ 'is-mobile': isMobile }">
     <MealReviewForm
       :meal-id="mealId"
+      :canteen="canteen"
+      :weekday="weekday"
       :show="show"
       :is-mobile="isMobile"
       @submitted="fetchReviews(mealId)"
@@ -26,6 +28,8 @@ import MealReviewList from './MealReviewList.vue'
 
 const props = defineProps<{
   mealId: number
+  canteen: string
+  weekday: string
   show: boolean
   isMobile: boolean
 }>()
