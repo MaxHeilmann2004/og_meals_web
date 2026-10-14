@@ -74,6 +74,28 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { reviewsApi } from '~/services/reviewsApi'
+import { getApiErrorMessage } from '~/utils/apiError'
+
+interface TurnstileOptions {
+  sitekey: string
+  appearance: 'always'
+  theme: 'auto'
+  callback: (token: string) => void
+  'error-callback': () => void
+  'expired-callback': () => void
+}
+
+interface TurnstileApi {
+  render: (container: string, options: TurnstileOptions) => string
+  remove: (widgetId: string) => void
+  reset: (widgetId: string) => void
+}
+
+declare global {
+  interface Window {
+    turnstile?: TurnstileApi
+  }
+}
 
 const props = defineProps<{
   mealId: number
@@ -92,7 +114,7 @@ const isReviewFormExpanded = ref(false)
 const hoverStar = ref(0)
 const newReview = ref({ star: 0, comment: '' })
 const turnstileToken = ref('')
-const turnstileWidgetId = ref<any>(null)
+const turnstileWidgetId = ref<string | null>(null)
 const isSubmitting = ref(false)
 const submitError = ref<string | null>(null)
 const submitSuccess = ref(false)
@@ -100,22 +122,24 @@ const submitSuccess = ref(false)
 const turnstileContainerId = computed(() => props.isMobile ? 'turnstile-container-mobile' : 'turnstile-container-desktop')
 
 const removeTurnstile = () => {
-  if (typeof window === 'undefined' || !(window as any).turnstile || turnstileWidgetId.value === null) return
+  if (typeof window === 'undefined' || !window.turnstile || turnstileWidgetId.value === null) return
   try {
-    ;(window as any).turnstile.remove(turnstileWidgetId.value)
+    window.turnstile.remove(turnstileWidgetId.value)
   } catch { /* Turnstile may already have removed the widget. */ }
   turnstileWidgetId.value = null
   turnstileToken.value = ''
 }
 
 const renderTurnstile = () => {
+  if (typeof window === 'undefined' || !window.turnstile) return
   const containerId = `#${turnstileContainerId.value}`
   const container = document.querySelector(containerId)
-  if (typeof window === 'undefined' || !(window as any).turnstile || !container) return
+  if (!container) return
 
   removeTurnstile()
+  const turnstile = window.turnstile
   const siteKey = runtimeConfig.public.turnstileSiteKey || '0x4AAAAAADqKcwY5vdT51caz'
-  turnstileWidgetId.value = (window as any).turnstile.render(containerId, {
+  turnstileWidgetId.value = turnstile.render(containerId, {
     sitekey: siteKey,
     appearance: 'always',
     theme: 'auto',
@@ -168,13 +192,13 @@ const submitReview = async () => {
     newReview.value.star = 0
     newReview.value.comment = ''
     turnstileToken.value = ''
-    if (typeof window !== 'undefined' && (window as any).turnstile && turnstileWidgetId.value !== null) {
-      try { (window as any).turnstile.reset(turnstileWidgetId.value) } catch { /* ignore reset failures */ }
+    if (typeof window !== 'undefined' && window.turnstile && turnstileWidgetId.value !== null) {
+      try { window.turnstile.reset(turnstileWidgetId.value) } catch { /* ignore reset failures */ }
     }
     emit('submitted')
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to submit review:', error)
-    submitError.value = error.data?.error?.message || 'Fehler beim Absenden der Bewertung. Bitte versuche es erneut.'
+    submitError.value = getApiErrorMessage(error) || 'Fehler beim Absenden der Bewertung. Bitte versuche es erneut.'
   } finally {
     isSubmitting.value = false
   }
@@ -206,7 +230,7 @@ watch(isReviewFormExpanded, (expanded) => {
   }
 
   if (typeof window !== 'undefined'
-    && !(window as any).turnstile
+    && !window.turnstile
     && !document.querySelector('script[data-turnstile]')) {
     const script = document.createElement('script')
     script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
@@ -218,14 +242,14 @@ watch(isReviewFormExpanded, (expanded) => {
 
   setTimeout(() => {
     if (typeof window === 'undefined') return
-    if ((window as any).turnstile) {
+    if (window.turnstile) {
       renderTurnstile()
       return
     }
     let attempts = 0
     const checkTurnstile = setInterval(() => {
       attempts++
-      if ((window as any).turnstile) {
+      if (window.turnstile) {
         clearInterval(checkTurnstile)
         renderTurnstile()
       } else if (attempts >= 50) {

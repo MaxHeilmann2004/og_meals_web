@@ -22,6 +22,7 @@ export default defineNuxtConfig({
   ],
 
   modules: [
+    '@nuxt/eslint',
     '@varlet/nuxt',
     '@pinia/nuxt',
     '@vite-pwa/nuxt',
@@ -101,4 +102,3 @@ export default defineNuxtConfig({
     }
   }
 })
-

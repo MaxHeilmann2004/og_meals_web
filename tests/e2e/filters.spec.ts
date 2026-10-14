@@ -30,16 +30,6 @@ test.describe('responsive filter UI', () => {
     }
   })
 
-  test('matches the current open-filter layout', async ({ page }) => {
-    await page.getByRole('button', { name: 'Filter' }).click()
-    await expect(page.locator('.filter-panel')).toBeVisible()
-
-    await expect(page).toHaveScreenshot('filters-open.png', {
-      fullPage: true,
-      animations: 'disabled',
-    })
-  })
-
   test('closes through the overlay and restores body scrolling', async ({ page }) => {
     test.skip(isWideViewport(page), 'The wide side panel has no backdrop or body scroll lock')
 

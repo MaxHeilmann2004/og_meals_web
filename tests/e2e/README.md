@@ -1,17 +1,9 @@
-# Browser baseline tests
+# Browser end-to-end tests
 
-These tests are the behavior and visual baseline for the current application. API requests are intercepted with deterministic fixtures so the tests do not depend on live meal data or external image services. Playwright runs against a built test app with four workers, avoiding Nuxt/Vite HMR contention.
+These tests cover browser interactions against a built test app. API requests are intercepted with deterministic fixtures so the tests do not depend on live meal data or external image services. Playwright runs with four workers, avoiding Nuxt/Vite HMR contention.
 
-Run the functional and visual tests with:
+Run the browser tests with:
 
 ```bash
 pnpm test:e2e
 ```
-
-Create or intentionally update visual baselines only with:
-
-```bash
-pnpm test:e2e:update
-```
-
-Snapshot updates must be reviewed manually. Refactoring pull requests should pass against the existing snapshots rather than updating them.

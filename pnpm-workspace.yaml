@@ -6,3 +6,4 @@ allowBuilds:
   esbuild: true
   maplibre-gl: true
   sharp: true
+  unrs-resolver: false

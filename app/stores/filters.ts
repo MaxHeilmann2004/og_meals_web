@@ -1,11 +1,5 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
-import {
-  EXCLUDE_FEATURES,
-  INCLUDE_FEATURES,
-  SALAD_CATEGORY_IDS,
-} from "~/config/featureCatalog";
-
 export { EXCLUDE_FEATURES, INCLUDE_FEATURES, SALAD_CATEGORY_IDS } from "~/config/featureCatalog";
 
 export const useFilterStore = defineStore(

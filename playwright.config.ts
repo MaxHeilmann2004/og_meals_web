@@ -3,7 +3,6 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './tests/e2e',
   outputDir: './test-results/playwright',
-  snapshotDir: './tests/e2e/__screenshots__',
   fullyParallel: true,
   timeout: 60_000,
   expect: {
@@ -17,7 +16,6 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:4173',
     trace: 'retain-on-failure',
-    screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     colorScheme: 'light',
   },

@@ -42,6 +42,7 @@ import { ref } from 'vue'
 import { useDark } from '@vueuse/core'
 import { useAdminAccess } from '~/composables/useAdminAccess'
 import { adminApi } from '~/services/adminApi'
+import { getApiErrorMessage } from '~/utils/apiError'
 
 const { adminToken, isAdmin } = useAdminAccess()
 const isDark = useDark({
@@ -69,13 +70,8 @@ const triggerManualSync = async () => {
     manualSyncSuccess.value = 'Manual sync triggered. Reloading meals...'
     await refreshNuxtData('meals-week')
     manualSyncSuccess.value = 'Manual sync triggered successfully.'
-  } catch (error: any) {
-    manualSyncError.value = String(
-      error?.data?.error?.message
-      || error?.data?.message
-      || error?.message
-      || 'Manual sync failed.',
-    )
+  } catch (error: unknown) {
+    manualSyncError.value = getApiErrorMessage(error) || 'Manual sync failed.'
   } finally {
     isManualSyncing.value = false
   }

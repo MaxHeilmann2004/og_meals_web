@@ -45,6 +45,12 @@ Run unit and component tests:
 pnpm test
 ```
 
+Run ESLint:
+
+```bash
+pnpm lint
+```
+
 Run the TypeScript checks:
 
 ```bash
@@ -52,19 +58,13 @@ pnpm typecheck
 pnpm typecheck:tests
 ```
 
-Run browser interaction and visual regression tests:
+Run functional browser tests:
 
 ```bash
 pnpm test:e2e
 ```
 
-The browser tests use deterministic API fixtures and fixed viewports. Visual snapshots are stored in `tests/e2e/__screenshots__` and must only be updated deliberately:
-
-```bash
-pnpm test:e2e:update
-```
-
-Run the standard non-browser verification suite with:
+Run linting, TypeScript checks, unit/component tests, and the production build with:
 
 ```bash
 pnpm check

@@ -33,7 +33,7 @@ import MealReviewCard from './MealReviewCard.vue'
 withDefaults(defineProps<{
   reviews: MealReviewItem[]
   isLoading: boolean
-  error: string | null
+  error?: string | null
   isMobile: boolean
 }>(), {
   error: null,
