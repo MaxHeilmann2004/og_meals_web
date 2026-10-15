@@ -1,9 +1,10 @@
 import { createServer } from 'node:http'
 
-const verificationCode = 'test-verification-token'
+const verificationCodes = new Set(['test-verification-token', '1234567890123'])
 const server = createServer((request, response) => {
   const url = new URL(request.url ?? '/', 'http://127.0.0.1:4174')
   const suppliedCode = request.headers['x-verification-code']
+  const authenticated = verificationCodes.has(suppliedCode)
 
   response.setHeader('content-type', 'application/json')
   response.setHeader('cache-control', 'no-store')
@@ -16,14 +17,14 @@ const server = createServer((request, response) => {
 
     response.writeHead(200).end(JSON.stringify({
       configured: true,
-      authenticated: suppliedCode === verificationCode,
+      authenticated,
     }))
     return
   }
 
   if (url.pathname === '/meals' && request.method === 'GET') {
-    response.writeHead(suppliedCode === verificationCode ? 200 : 401)
-      .end(JSON.stringify({ authenticated: suppliedCode === verificationCode }))
+    response.writeHead(authenticated ? 200 : 401)
+      .end(JSON.stringify({ authenticated }))
     return
   }
 

@@ -1,7 +1,8 @@
-import { createError, getRequestURL, setCookie } from 'h3'
+import { createError, deleteCookie, getRequestURL, setCookie } from 'h3'
 import type { H3Event } from 'h3'
 
 export const verificationCookieName = 'og-meals-verification'
+const verificationCookieMaxAge = 60 * 60 * 24 * 400
 
 export interface BackendVerificationStatus {
   configured: boolean
@@ -67,6 +68,15 @@ export const setVerificationCookie = (event: H3Event, token: string) => {
     secure: process.env.NODE_ENV === 'production' || getRequestURL(event).protocol === 'https:',
     sameSite: 'strict',
     path: '/',
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: verificationCookieMaxAge,
+  })
+}
+
+export const clearVerificationCookie = (event: H3Event) => {
+  deleteCookie(event, verificationCookieName, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production' || getRequestURL(event).protocol === 'https:',
+    sameSite: 'strict',
+    path: '/',
   })
 }

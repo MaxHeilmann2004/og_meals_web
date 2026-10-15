@@ -69,6 +69,20 @@
       <img src="/logo.svg" alt="OG Meals Logo" class="verification-logo" />
       <h1>Access required</h1>
       <p>Enter the verification code to view the meal plan.</p>
+      <var-button
+        type="primary"
+        native-type="button"
+        block
+        :disabled="isSubmitting"
+        @click="isScannerOpen = true"
+      >
+        Scan QR code
+      </var-button>
+      <VerificationQrScanner
+        v-if="isScannerOpen"
+        @decoded="handleQrCode"
+        @close="isScannerOpen = false"
+      />
       <label for="verification-code">Verification code</label>
       <input
         id="verification-code"
@@ -107,6 +121,7 @@ import { useAdminAccess } from '~/composables/useAdminAccess'
 import { useCapacity } from '~/composables/useCapacity'
 import DaySelector from '~/components/meal-plan/DaySelector.vue'
 import MealPlanContent from '~/components/meal-plan/MealPlanContent.vue'
+import VerificationQrScanner from '~/components/shared/VerificationQrScanner.vue'
 import { useMealPlan } from '~/composables/useMealPlan'
 import { capacityApi } from '~/services/capacityApi'
 
@@ -121,18 +136,19 @@ const { adminToken, isAdmin } = useAdminAccess()
 const verificationCode = ref('')
 const verificationError = ref('')
 const isSubmitting = ref(false)
+const isScannerOpen = ref(false)
 const {
   data: verificationSession,
   error: verificationSessionError,
 } = await useFetch<VerificationSession>('/api/verification')
 const isVerified = computed(() => verificationSession.value?.authenticated === true)
 
-const submitVerification = async () => {
-  const token = verificationCode.value
+const verifyCode = async (token = verificationCode.value) => {
   if (!token || isSubmitting.value) return
 
   isSubmitting.value = true
   verificationError.value = ''
+  isScannerOpen.value = false
 
   try {
     verificationSession.value = await $fetch<VerificationSession>('/api/verification', {
@@ -154,6 +170,13 @@ const submitVerification = async () => {
     isSubmitting.value = false
   }
 }
+
+const handleQrCode = (token: string) => {
+  verificationCode.value = token
+  return verifyCode(token)
+}
+
+const submitVerification = () => verifyCode()
 
 const {
   data,

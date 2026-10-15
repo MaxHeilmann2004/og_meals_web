@@ -78,7 +78,9 @@ node .output/server/index.mjs
 
 ## Configuration
 
-The verification code is the upstream proxy key, extracted by the upstream service from its client-side JavaScript bundle. It is publicly inspectable and should not be treated as a secret. The Nuxt server validates submitted codes by calling the backend's `GET /verification` endpoint with the `X-Verification-Code` header; that endpoint returns `{ "configured": boolean, "authenticated": boolean }`. After successful validation, Nuxt stores the user-supplied code in an HttpOnly, same-site cookie. It can be entered on the site or supplied once as `?verification=<code>`; the server checks it and redirects to a clean URL. If backend verification cannot be established, access remains closed.
+The verification code is the upstream proxy key, extracted by the upstream service from its client-side JavaScript bundle. It is publicly inspectable and should not be treated as a secret. The Nuxt server validates submitted codes by calling the backend's `GET /verification` endpoint with the `X-Verification-Code` header; that endpoint returns `{ "configured": boolean, "authenticated": boolean }`. Users can enter the code manually or scan the Kochwerk QR code; its decoded text is submitted verbatim as the verification code. Camera access requires a supported browser and secure context (HTTPS); manual entry remains available as a fallback.
+
+After successful validation, Nuxt stores the user-supplied code in an HttpOnly, same-site cookie with a rolling 400-day persistence window. The cookie is refreshed whenever the backend confirms that the code is still valid and cleared when the backend rejects it. The code can also be supplied once as `?verification=<code>`; the server checks it and redirects to a clean URL. If backend verification cannot be established, access remains closed.
 
 The Nuxt API proxy forwards the cookie value to the backend in the `X-Verification-Code` header, where protected API routes must validate it. Set `NUXT_PUBLIC_API_BASE_URL` to override the backend URL (defaults to `https://3b-meals.mh-home.net`).
 
