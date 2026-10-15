@@ -213,10 +213,10 @@ const updateReviewStats = (stats: MealReviewStats) => {
 const trackMealImageChange = (index: number) => {
   useTrackEvent('Change Meal Image', {
     props: {
-      canteen: canteen.value?.displayName || canteen.value?.name || '',
+      canteen: displayCanteen.value?.displayName || displayCanteen.value?.name || '',
       weekday: props.weekday,
       layout: props.isMobile ? 'mobile' : 'desktop',
-      meal_id: String(meal.value?.id ?? ''),
+      meal_id: String(displayMeal.value?.id ?? ''),
       meal_image_index: String(index),
     },
   })
