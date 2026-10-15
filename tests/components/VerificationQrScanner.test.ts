@@ -84,6 +84,7 @@ describe('VerificationQrScanner', () => {
 
   it('continues scanning when a frame contains no decodable QR code', async () => {
     mockCamera()
+    const consoleInfo = vi.spyOn(console, 'info').mockImplementation(() => {})
     let videoWidth = 0
     const wrapper = mountScanner(() => videoWidth)
     await flushPromises()
@@ -96,6 +97,10 @@ describe('VerificationQrScanner', () => {
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)
     expect(wrapper.find('.verification-scanner-instructions').exists()).toBe(true)
     expect(stopTrack).not.toHaveBeenCalled()
+    expect(consoleInfo).toHaveBeenCalledWith(
+      '[VerificationQrScanner] First frame contained no decodable QR code; continuing to scan.',
+      expect.objectContaining({ name: 'NotFoundException', videoWidth: 640, videoHeight: 480 }),
+    )
     wrapper.unmount()
     expect(stopTrack).toHaveBeenCalledOnce()
   })
@@ -125,6 +130,7 @@ describe('VerificationQrScanner', () => {
 
   it('reports camera playback failures and releases the stream', async () => {
     mockCamera()
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const wrapper = mountScanner(
       () => 640,
       () => Promise.reject(new DOMException('Playback failed', 'NotReadableError')),
@@ -134,6 +140,10 @@ describe('VerificationQrScanner', () => {
     expect(wrapper.get('[role="alert"]').text()).toContain('Die Kamera konnte nicht gestartet werden.')
     expect(decodeFrame).not.toHaveBeenCalled()
     expect(stopTrack).toHaveBeenCalledOnce()
+    expect(consoleError).toHaveBeenCalledWith(
+      '[VerificationQrScanner] Camera startup or playback failed.',
+      expect.objectContaining({ name: 'NotReadableError', message: 'Playback failed' }),
+    )
     expect((wrapper.get('video').element as HTMLVideoElement).srcObject).toBeNull()
     wrapper.unmount()
   })

@@ -42,6 +42,7 @@ describe('VerificationQrScanner with ZXing', () => {
   })
 
   it('retries a transient ZXing canvas error and continues decoding live frames', async () => {
+    const consoleInfo = vi.spyOn(console, 'info').mockImplementation(() => {})
     const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const stream = new MediaStream()
     Object.defineProperty(stream, 'getTracks', {
@@ -67,9 +68,14 @@ describe('VerificationQrScanner with ZXing', () => {
     })
     await flushPromises()
 
-    await new Promise(resolve => setTimeout(resolve, 600))
+    await vi.waitFor(() => expect(contextCalls).toBe(1))
+    await vi.waitFor(() => expect(contextCalls).toBeGreaterThan(1))
 
     expect(contextCalls).toBeGreaterThan(1)
+    expect(consoleInfo).toHaveBeenCalledWith(
+      '[VerificationQrScanner] First frame contained no decodable QR code; continuing to scan.',
+      expect.objectContaining({ name: 'NotFoundException' }),
+    )
     expect(consoleWarn).toHaveBeenCalledOnce()
     expect(wrapper.find('[role="alert"]').exists()).toBe(false)
     expect(video.srcObject).toBe(stream)
