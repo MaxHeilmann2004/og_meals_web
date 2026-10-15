@@ -22,9 +22,8 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
-import type { IScannerControls } from '@zxing/browser'
 
-const ignoredDecodeErrors = new Set(['NotFoundException', 'ChecksumException', 'FormatException'])
+const retryableDecodeErrors = new Set(['NotFoundException', 'ChecksumException', 'FormatException'])
 
 const emit = defineEmits<{
   decoded: [value: string]
@@ -33,18 +32,17 @@ const emit = defineEmits<{
 
 const videoElement = ref<HTMLVideoElement>()
 const cameraError = ref('')
-let scannerControls: IScannerControls | undefined
+let cameraStream: MediaStream | undefined
+let scanTimeout: ReturnType<typeof setTimeout> | undefined
 let isActive = false
 
 const stopCamera = () => {
   isActive = false
-  scannerControls?.stop()
-  scannerControls = undefined
+  if (scanTimeout !== undefined) clearTimeout(scanTimeout)
+  scanTimeout = undefined
 
-  const stream = videoElement.value?.srcObject
-  if (typeof MediaStream !== 'undefined' && stream instanceof MediaStream) {
-    stream.getTracks().forEach(track => track.stop())
-  }
+  cameraStream?.getTracks().forEach(track => track.stop())
+  cameraStream = undefined
   if (videoElement.value) videoElement.value.srcObject = null
 }
 
@@ -77,29 +75,58 @@ const startCamera = async () => {
     if (!isActive || !videoElement.value) return
 
     const reader = new BrowserQRCodeReader()
-    const controls = await reader.decodeFromVideoDevice(undefined, videoElement.value, (result, error) => {
-      if (result) {
-        const decodedValue = result.getText()
-        stopCamera()
-        if (decodedValue.length === 0) {
-          cameraError.value = 'Der QR-Code ist leer. Gib den Verifizierungscode manuell ein.'
-        } else {
-          emit('decoded', decodedValue)
-        }
-        return
-      }
-
-      if (error && !ignoredDecodeErrors.has(error.name)) {
-        cameraError.value = 'Der QR-Code konnte nicht gelesen werden. Versuche es mit einem anderen QR-Code oder gib den Verifizierungscode manuell ein.'
-        stopCamera()
-      }
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: { ideal: 'environment' } },
     })
-
-    if (isActive) {
-      scannerControls = controls
-    } else {
-      controls.stop()
+    if (!isActive) {
+      stream.getTracks().forEach(track => track.stop())
+      return
     }
+
+    cameraStream = stream
+    const video = videoElement.value
+    if (!video) {
+      stopCamera()
+      return
+    }
+    video.srcObject = stream
+    await video.play()
+
+    const scanFrame = () => {
+      if (!isActive) return
+
+      const currentVideo = videoElement.value
+      // Avoid decoding the initial empty frame, which ZXing treats as a fatal scan error.
+      if (currentVideo && currentVideo.videoWidth > 0 && currentVideo.videoHeight > 0) {
+        try {
+          const result = reader.decode(currentVideo)
+          if (result) {
+            const decodedValue = result.getText()
+            stopCamera()
+            if (decodedValue.length === 0) {
+              cameraError.value = 'Der QR-Code ist leer. Gib den Verifizierungscode manuell ein.'
+            } else {
+              emit('decoded', decodedValue)
+            }
+            return
+          }
+        } catch (error) {
+          const errorName = typeof error === 'object' && error !== null && 'name' in error
+            ? error.name
+            : ''
+          if (!retryableDecodeErrors.has(String(errorName))) {
+            cameraError.value = 'Der QR-Code konnte nicht gelesen werden. Versuche es mit einem anderen QR-Code oder gib den Verifizierungscode manuell ein.'
+            stopCamera()
+            return
+          }
+        }
+      }
+
+      scanTimeout = setTimeout(scanFrame, 250)
+    }
+
+    scanFrame()
   } catch (error) {
     if (isActive) cameraError.value = getCameraErrorMessage(error)
     stopCamera()
@@ -126,11 +153,14 @@ onBeforeUnmount(stopCamera)
 }
 
 .verification-scanner-video {
-  width: 100%;
+  align-self: center;
+  width: min(100%, 400px);
+  height: auto;
+  aspect-ratio: 4 / 3;
   max-height: 300px;
   border-radius: 8px;
   background: #171717;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .verification-scanner-error,
