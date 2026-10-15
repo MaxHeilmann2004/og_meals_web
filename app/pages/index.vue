@@ -66,10 +66,24 @@
 
   <section v-else class="verification-page">
     <form v-if="verificationSession?.configured" class="verification-card" @submit.prevent="submitVerification()">
-      <img src="/logo.svg" alt="OG Meals Logo" class="verification-logo" />
-      <h1>Access required</h1>
-      <p>Enter the verification code to view the meal plan.</p>
-      <label for="verification-code">Verification code</label>
+      <img src="/logo.svg" alt="OG Meals-Logo" class="verification-logo" />
+      <h1>Zugriff erforderlich</h1>
+      <p>Scanne den Kochwerk-QR-Code oder gib den Verifizierungscode manuell ein. Den QR-Code findest du im OTTO SharePoint, wenn du nach „Kochwerk App“ suchst.</p>
+      <var-button
+        type="primary"
+        native-type="button"
+        block
+        :disabled="isSubmitting"
+        @click="isScannerOpen = true"
+      >
+        QR-Code scannen
+      </var-button>
+      <VerificationQrScanner
+        v-if="isScannerOpen"
+        @decoded="handleQrCode"
+        @close="isScannerOpen = false"
+      />
+      <label for="verification-code">Verifizierungscode</label>
       <input
         id="verification-code"
         v-model="verificationCode"
@@ -83,17 +97,17 @@
         {{ verificationError }}
       </p>
       <var-button type="primary" native-type="submit" block :loading="isSubmitting">
-        Continue
+        Weiter
       </var-button>
     </form>
     <p v-else-if="verificationSession?.configured === false" class="verification-unavailable" role="alert">
-      Meal plan access is not configured on this server.
+      Der Zugriff auf den Speiseplan ist auf diesem Server nicht eingerichtet.
     </p>
     <p v-else-if="verificationSessionError" class="verification-unavailable" role="alert">
-      Could not check verification status. Reload the page and try again.
+      Der Zugriffsstatus konnte nicht geprüft werden. Lade die Seite neu und versuche es erneut.
     </p>
     <p v-else class="verification-unavailable" role="status">
-      Checking access...
+      Zugriff wird geprüft …
     </p>
   </section>
 </template>
@@ -107,6 +121,7 @@ import { useAdminAccess } from '~/composables/useAdminAccess'
 import { useCapacity } from '~/composables/useCapacity'
 import DaySelector from '~/components/meal-plan/DaySelector.vue'
 import MealPlanContent from '~/components/meal-plan/MealPlanContent.vue'
+import VerificationQrScanner from '~/components/shared/VerificationQrScanner.vue'
 import { useMealPlan } from '~/composables/useMealPlan'
 import { capacityApi } from '~/services/capacityApi'
 
@@ -121,18 +136,19 @@ const { adminToken, isAdmin } = useAdminAccess()
 const verificationCode = ref('')
 const verificationError = ref('')
 const isSubmitting = ref(false)
+const isScannerOpen = ref(false)
 const {
   data: verificationSession,
   error: verificationSessionError,
 } = await useFetch<VerificationSession>('/api/verification')
 const isVerified = computed(() => verificationSession.value?.authenticated === true)
 
-const submitVerification = async () => {
-  const token = verificationCode.value
+const verifyCode = async (token = verificationCode.value) => {
   if (!token || isSubmitting.value) return
 
   isSubmitting.value = true
   verificationError.value = ''
+  isScannerOpen.value = false
 
   try {
     verificationSession.value = await $fetch<VerificationSession>('/api/verification', {
@@ -149,11 +165,18 @@ const submitVerification = async () => {
       : null
     verificationError.value = typeof statusMessage === 'string'
       ? statusMessage
-      : 'Verification failed. Check your connection and try again.'
+      : 'Die Prüfung ist fehlgeschlagen. Prüfe deine Internetverbindung und versuche es erneut.'
   } finally {
     isSubmitting.value = false
   }
 }
+
+const handleQrCode = (token: string) => {
+  verificationCode.value = token
+  return verifyCode(token)
+}
+
+const submitVerification = () => verifyCode()
 
 const {
   data,

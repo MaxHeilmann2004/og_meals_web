@@ -7,7 +7,6 @@ export default defineNuxtConfig({
   devtools: { enabled: process.env.NUXT_TEST_MODE !== 'true' },
 
   runtimeConfig: {
-    verificationToken: '',
     public: {
       apiBaseUrl: 'https://3b-meals.mh-home.net',
       turnstileSiteKey: '0x4AAAAAADqKcwY5vdT51caz' // Default sitekey, overridden by NUXT_PUBLIC_TURNSTILE_SITE_KEY env variable at runtime
