@@ -45,7 +45,7 @@
     "happy-dom": "^20.14.5",
     "typescript": "^5.9.3",
     "vitest": "^5.0.1",
-    "vue-tsc": "^3.3.5"
+    "vue-tsc": "^3.3.13"
   },
   "engines": {
     "pnpm": "11.22.0"
