@@ -39,6 +39,7 @@ test.describe('site verification', () => {
     await expect(page.locator('.meal-card').first()).toBeVisible()
     const cookie = (await page.context().cookies()).find(item => item.name === 'og-meals-verification')
     expect(cookie?.httpOnly).toBe(true)
+    expect(cookie?.sameSite).toBe('Lax')
     expect(cookie?.expires).toBeGreaterThan(Date.now() / 1000 + 390 * 24 * 60 * 60)
 
     const refreshedStatus = await page.evaluate(async () => {
@@ -53,6 +54,39 @@ test.describe('site verification', () => {
       return response.status
     })
     expect(proxyStatus).toBe(200)
+  })
+
+  test('opens a shared verification link from another site', async ({ page }) => {
+    await installApiMocks(page)
+    let cleanPageCookie = ''
+    let resolveCleanPageRequest!: () => void
+    const cleanPageRequest = new Promise<void>((resolve) => {
+      resolveCleanPageRequest = resolve
+    })
+    page.on('request', async (request) => {
+      const url = new URL(request.url())
+      if (
+        !request.isNavigationRequest()
+        || url.origin !== 'http://127.0.0.1:4173'
+        || url.pathname !== '/'
+        || url.searchParams.has('verification')
+      ) return
+
+      cleanPageCookie = (await request.allHeaders()).cookie ?? ''
+      resolveCleanPageRequest()
+    })
+    await page.route('http://outside.test/**', route => route.fulfill({
+      contentType: 'text/html',
+      body: '<a href="http://127.0.0.1:4173/?verification=test-verification-token">Open shared link</a>',
+    }))
+
+    await page.goto('http://outside.test/')
+    await page.getByRole('link', { name: 'Open shared link' }).click()
+
+    await expect(page.locator('.meal-card').first()).toBeVisible()
+    await cleanPageRequest
+    expect(cleanPageCookie).toContain('og-meals-verification=test-verification-token')
+    expect(new URL(page.url()).searchParams.has('verification')).toBe(false)
   })
 
   test('keeps manual entry available when camera permission is denied', async ({ page }) => {

@@ -66,7 +66,7 @@ export const setVerificationCookie = (event: H3Event, token: string) => {
   setCookie(event, verificationCookieName, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production' || getRequestURL(event).protocol === 'https:',
-    sameSite: 'strict',
+    sameSite: 'lax',
     path: '/',
     maxAge: verificationCookieMaxAge,
   })
@@ -76,7 +76,7 @@ export const clearVerificationCookie = (event: H3Event) => {
   deleteCookie(event, verificationCookieName, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production' || getRequestURL(event).protocol === 'https:',
-    sameSite: 'strict',
+    sameSite: 'lax',
     path: '/',
   })
 }
