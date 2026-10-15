@@ -83,6 +83,10 @@ withDefaults(defineProps<{
   justify-content: center;
 }
 
+:global([var-theme="light"]) .placeholder-overlay {
+  background-color: rgba(255, 255, 255, 0.55);
+}
+
 .placeholder-overlay span {
   color: var(--color-on-surface-variant);
   font-size: 0.875rem;
