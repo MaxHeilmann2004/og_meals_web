@@ -68,7 +68,7 @@
     <form v-if="verificationSession?.configured" class="verification-card" @submit.prevent="submitVerification()">
       <img src="/logo.svg" alt="OG Meals Logo" class="verification-logo" />
       <h1>Access required</h1>
-      <p>Enter the verification code to view the meal plan.</p>
+      <p>Scan the Kochwerk QR code or enter the verification code manually. Find the QR code in OTTO SharePoint by searching for “Kochwerk App”.</p>
       <var-button
         type="primary"
         native-type="button"
