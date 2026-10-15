@@ -5,7 +5,7 @@ test.describe('site verification', () => {
   test('keeps the meal plan and backend proxy locked without a valid code', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page.getByRole('heading', { name: 'Access required' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Zugriff erforderlich' })).toBeVisible()
     await expect(page.locator('.meal-card')).toHaveCount(0)
 
     const response = await page.request.get('/api/backend/meals')
@@ -14,27 +14,27 @@ test.describe('site verification', () => {
 
   test('rejects an invalid code submitted through the login form', async ({ page }) => {
     await page.goto('/')
-    await page.getByLabel('Verification code').fill('invalid-code')
-    await page.getByRole('button', { name: 'Continue' }).click()
+    await page.getByLabel('Verifizierungscode').fill('invalid-code')
+    await page.getByRole('button', { name: 'Weiter' }).click()
 
-    await expect(page.getByRole('alert')).toHaveText('Invalid verification code.')
+    await expect(page.getByRole('alert')).toHaveText('Ungültiger Verifizierungscode.')
     await expect(page.locator('.meal-card')).toHaveCount(0)
   })
 
   test('fails closed when the backend cannot verify a submitted code', async ({ page }) => {
     await page.goto('/')
-    await page.getByLabel('Verification code').fill('backend-unavailable')
-    await page.getByRole('button', { name: 'Continue' }).click()
+    await page.getByLabel('Verifizierungscode').fill('backend-unavailable')
+    await page.getByRole('button', { name: 'Weiter' }).click()
 
-    await expect(page.getByRole('alert')).toHaveText('Could not verify access with the backend.')
+    await expect(page.getByRole('alert')).toHaveText('Der Zugriff konnte beim Backend nicht überprüft werden.')
     await expect(page.locator('.meal-card')).toHaveCount(0)
   })
 
   test('accepts a raw numeric QR value as the verification code', async ({ page }) => {
     await installApiMocks(page)
     await page.goto('/')
-    await page.getByLabel('Verification code').fill('1234567890123')
-    await page.getByRole('button', { name: 'Continue' }).click()
+    await page.getByLabel('Verifizierungscode').fill('1234567890123')
+    await page.getByRole('button', { name: 'Weiter' }).click()
 
     await expect(page.locator('.meal-card').first()).toBeVisible()
     const cookie = (await page.context().cookies()).find(item => item.name === 'og-meals-verification')
@@ -65,17 +65,17 @@ test.describe('site verification', () => {
       })
     })
     await page.goto('/')
-    await page.getByRole('button', { name: 'Scan QR code' }).click()
+    await page.getByRole('button', { name: 'QR-Code scannen' }).click()
 
-    await expect(page.getByRole('alert')).toContainText('Camera access was denied.')
-    await expect(page.getByLabel('Verification code')).toBeVisible()
+    await expect(page.getByRole('alert')).toContainText('Der Kamerazugriff wurde verweigert.')
+    await expect(page.getByLabel('Verifizierungscode')).toBeVisible()
   })
 
   test('opens the meal plan after a valid code is entered', async ({ page }) => {
     await installApiMocks(page)
     await page.goto('/')
-    await page.getByLabel('Verification code').fill('test-verification-token')
-    await page.getByRole('button', { name: 'Continue' }).click()
+    await page.getByLabel('Verifizierungscode').fill('test-verification-token')
+    await page.getByRole('button', { name: 'Weiter' }).click()
 
     await expect(page.locator('.meal-card').first()).toBeVisible()
     await page.route('**/api/backend/meals?proxy-test=1', (route) => route.continue())

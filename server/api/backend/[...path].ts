@@ -10,7 +10,7 @@ export default defineEventHandler((event) => {
   if (!verificationToken) {
     throw createError({
       statusCode: 401,
-      statusMessage: 'Verification required.',
+      statusMessage: 'Verifizierung erforderlich.',
     })
   }
 

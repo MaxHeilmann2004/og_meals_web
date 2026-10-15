@@ -66,9 +66,9 @@
 
   <section v-else class="verification-page">
     <form v-if="verificationSession?.configured" class="verification-card" @submit.prevent="submitVerification()">
-      <img src="/logo.svg" alt="OG Meals Logo" class="verification-logo" />
-      <h1>Access required</h1>
-      <p>Scan the Kochwerk QR code or enter the verification code manually. Find the QR code in OTTO SharePoint by searching for “Kochwerk App”.</p>
+      <img src="/logo.svg" alt="OG Meals-Logo" class="verification-logo" />
+      <h1>Zugriff erforderlich</h1>
+      <p>Scanne den Kochwerk-QR-Code oder gib den Verifizierungscode manuell ein. Den QR-Code findest du im OTTO SharePoint, wenn du nach „Kochwerk App“ suchst.</p>
       <var-button
         type="primary"
         native-type="button"
@@ -76,14 +76,14 @@
         :disabled="isSubmitting"
         @click="isScannerOpen = true"
       >
-        Scan QR code
+        QR-Code scannen
       </var-button>
       <VerificationQrScanner
         v-if="isScannerOpen"
         @decoded="handleQrCode"
         @close="isScannerOpen = false"
       />
-      <label for="verification-code">Verification code</label>
+      <label for="verification-code">Verifizierungscode</label>
       <input
         id="verification-code"
         v-model="verificationCode"
@@ -97,17 +97,17 @@
         {{ verificationError }}
       </p>
       <var-button type="primary" native-type="submit" block :loading="isSubmitting">
-        Continue
+        Weiter
       </var-button>
     </form>
     <p v-else-if="verificationSession?.configured === false" class="verification-unavailable" role="alert">
-      Meal plan access is not configured on this server.
+      Der Zugriff auf den Speiseplan ist auf diesem Server nicht eingerichtet.
     </p>
     <p v-else-if="verificationSessionError" class="verification-unavailable" role="alert">
-      Could not check verification status. Reload the page and try again.
+      Der Zugriffsstatus konnte nicht geprüft werden. Lade die Seite neu und versuche es erneut.
     </p>
     <p v-else class="verification-unavailable" role="status">
-      Checking access...
+      Zugriff wird geprüft …
     </p>
   </section>
 </template>
@@ -165,7 +165,7 @@ const verifyCode = async (token = verificationCode.value) => {
       : null
     verificationError.value = typeof statusMessage === 'string'
       ? statusMessage
-      : 'Verification failed. Check your connection and try again.'
+      : 'Die Prüfung ist fehlgeschlagen. Prüfe deine Internetverbindung und versuche es erneut.'
   } finally {
     isSubmitting.value = false
   }

@@ -53,7 +53,7 @@ describe('VerificationQrScanner', () => {
     const wrapper = mountScanner()
     await flushPromises()
 
-    expect(wrapper.get('[role="alert"]').text()).toContain('Camera access was denied.')
+    expect(wrapper.get('[role="alert"]').text()).toContain('Der Kamerazugriff wurde verweigert.')
     expect(wrapper.emitted('decoded')).toBeUndefined()
   })
 
@@ -62,7 +62,7 @@ describe('VerificationQrScanner', () => {
     const wrapper = mountScanner()
     await flushPromises()
 
-    expect(wrapper.get('[role="alert"]').text()).toContain('Camera scanning is not supported')
+    expect(wrapper.get('[role="alert"]').text()).toContain('wird von diesem Browser oder dieser Verbindung nicht unterstützt')
     expect(wrapper.emitted('decoded')).toBeUndefined()
   })
 
@@ -79,7 +79,7 @@ describe('VerificationQrScanner', () => {
     onDecode({ getText: () => '' })
     await nextTick()
 
-    expect(wrapper.get('[role="alert"]').text()).toContain('The QR code is empty.')
+    expect(wrapper.get('[role="alert"]').text()).toContain('Der QR-Code ist leer.')
     expect(wrapper.emitted('decoded')).toBeUndefined()
     expect(stopControls).toHaveBeenCalledOnce()
     wrapper.unmount()

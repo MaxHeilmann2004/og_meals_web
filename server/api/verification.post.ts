@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   if (typeof body?.token !== 'string' || !body.token) {
     throw createError({
       statusCode: 401,
-      statusMessage: 'Invalid verification code.',
+      statusMessage: 'Ungültiger Verifizierungscode.',
     })
   }
 
@@ -16,13 +16,13 @@ export default defineEventHandler(async (event) => {
   if (!status.configured) {
     throw createError({
       statusCode: 503,
-      statusMessage: 'Meal plan access is not configured on this server.',
+      statusMessage: 'Der Zugriff auf den Speiseplan ist auf diesem Server nicht eingerichtet.',
     })
   }
   if (!status.authenticated) {
     throw createError({
       statusCode: 401,
-      statusMessage: 'Invalid verification code.',
+      statusMessage: 'Ungültiger Verifizierungscode.',
     })
   }
 

@@ -6,16 +6,16 @@
       autoplay
       muted
       playsinline
-      aria-label="QR code camera preview"
+      aria-label="Kameravorschau für QR-Code"
     />
     <p v-if="cameraError" class="verification-scanner-error" role="alert">
       {{ cameraError }}
     </p>
     <p v-else class="verification-scanner-instructions">
-      Point your camera at the Kochwerk QR code.
+      Richte die Kamera auf den Kochwerk-QR-Code.
     </p>
     <var-button type="primary" native-type="button" block @click="closeScanner">
-      Close camera
+      Kamera schließen
     </var-button>
   </div>
 </template>
@@ -54,20 +54,20 @@ const getCameraErrorMessage = (error: unknown) => {
     : ''
 
   if (errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError' || errorName === 'SecurityError') {
-    return 'Camera access was denied. Allow camera access in your browser settings or enter the code manually.'
+    return 'Der Kamerazugriff wurde verweigert. Erlaube den Kamerazugriff in den Browsereinstellungen oder gib den Code manuell ein.'
   }
   if (errorName === 'NotFoundError' || errorName === 'DevicesNotFoundError') {
-    return 'No camera was found. Enter the verification code manually.'
+    return 'Keine Kamera gefunden. Gib den Verifizierungscode manuell ein.'
   }
   if (errorName === 'NotReadableError' || errorName === 'TrackStartError') {
-    return 'The camera could not be started. Close other apps using it or enter the code manually.'
+    return 'Die Kamera konnte nicht gestartet werden. Schließe andere Apps, die sie verwenden, oder gib den Code manuell ein.'
   }
-  return 'Could not start the camera. Check your browser permissions or enter the code manually.'
+  return 'Die Kamera konnte nicht gestartet werden. Prüfe die Browserberechtigungen oder gib den Code manuell ein.'
 }
 
 const startCamera = async () => {
   if (!navigator.mediaDevices?.getUserMedia) {
-    cameraError.value = 'Camera scanning is not supported by this browser or connection. Enter the code manually.'
+    cameraError.value = 'Das Scannen mit der Kamera wird von diesem Browser oder dieser Verbindung nicht unterstützt. Gib den Code manuell ein.'
     return
   }
 
@@ -82,7 +82,7 @@ const startCamera = async () => {
         const decodedValue = result.getText()
         stopCamera()
         if (decodedValue.length === 0) {
-          cameraError.value = 'The QR code is empty. Enter the verification code manually.'
+          cameraError.value = 'Der QR-Code ist leer. Gib den Verifizierungscode manuell ein.'
         } else {
           emit('decoded', decodedValue)
         }
@@ -90,7 +90,7 @@ const startCamera = async () => {
       }
 
       if (error && !ignoredDecodeErrors.has(error.name)) {
-        cameraError.value = 'Could not read that QR code. Try another or enter the verification code manually.'
+        cameraError.value = 'Der QR-Code konnte nicht gelesen werden. Versuche es mit einem anderen QR-Code oder gib den Verifizierungscode manuell ein.'
         stopCamera()
       }
     })

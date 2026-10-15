@@ -11,7 +11,7 @@ export interface BackendVerificationStatus {
 
 const verificationUnavailable = () => createError({
   statusCode: 503,
-  statusMessage: 'Could not verify access with the backend.',
+  statusMessage: 'Der Zugriff konnte beim Backend nicht überprüft werden.',
 })
 
 export const getBackendVerificationStatus = async (event: H3Event, token?: string): Promise<BackendVerificationStatus> => {
