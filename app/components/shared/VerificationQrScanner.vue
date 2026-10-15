@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
-const retryableDecodeErrors = new Set(['NotFoundException', 'ChecksumException', 'FormatException'])
+const expectedFrameMissErrors = new Set(['NotFoundException', 'ChecksumException', 'FormatException'])
 
 const emit = defineEmits<{
   decoded: [value: string]
@@ -35,6 +35,7 @@ const cameraError = ref('')
 let cameraStream: MediaStream | undefined
 let scanTimeout: ReturnType<typeof setTimeout> | undefined
 let isActive = false
+let hasLoggedUnexpectedDecodeError = false
 
 const stopCamera = () => {
   isActive = false
@@ -99,27 +100,29 @@ const startCamera = async () => {
       const currentVideo = videoElement.value
       // Avoid decoding the initial empty frame, which ZXing treats as a fatal scan error.
       if (currentVideo && currentVideo.videoWidth > 0 && currentVideo.videoHeight > 0) {
+        let decodedValue: string | undefined
         try {
           const result = reader.decode(currentVideo)
-          if (result) {
-            const decodedValue = result.getText()
-            stopCamera()
-            if (decodedValue.length === 0) {
-              cameraError.value = 'Der QR-Code ist leer. Gib den Verifizierungscode manuell ein.'
-            } else {
-              emit('decoded', decodedValue)
-            }
-            return
-          }
+          if (result) decodedValue = result.getText()
         } catch (error) {
+          // ZXing decodes one frame at a time; a failed frame must not stop the live stream.
           const errorName = typeof error === 'object' && error !== null && 'name' in error
-            ? error.name
+            ? String(error.name)
             : ''
-          if (!retryableDecodeErrors.has(String(errorName))) {
-            cameraError.value = 'Der QR-Code konnte nicht gelesen werden. Versuche es mit einem anderen QR-Code oder gib den Verifizierungscode manuell ein.'
-            stopCamera()
-            return
+          if (!hasLoggedUnexpectedDecodeError && !expectedFrameMissErrors.has(errorName)) {
+            console.warn('Unexpected QR frame decode error; continuing to scan.', error)
+            hasLoggedUnexpectedDecodeError = true
           }
+        }
+
+        if (decodedValue !== undefined) {
+          stopCamera()
+          if (decodedValue.length === 0) {
+            cameraError.value = 'Der QR-Code ist leer. Gib den Verifizierungscode manuell ein.'
+          } else {
+            emit('decoded', decodedValue)
+          }
+          return
         }
       }
 
