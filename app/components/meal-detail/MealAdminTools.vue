@@ -88,7 +88,7 @@ const extractImageHashFromUrl = (imageUrl: string) => {
   const stripFileExtension = (value: string) => value.replace(/\.[a-zA-Z0-9]+$/, '')
 
   try {
-    const parsed = new URL(imageUrl, adminApi.imageUrl('/'))
+    const parsed = new URL(imageUrl, 'http://localhost')
     const pathParts = parsed.pathname.split('/').filter(Boolean)
     const imgSegmentIndex = pathParts.indexOf('img')
     const hashParts = imgSegmentIndex >= 0 ? pathParts.slice(imgSegmentIndex + 1) : pathParts
