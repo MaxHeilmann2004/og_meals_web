@@ -140,6 +140,7 @@ const isScannerOpen = ref(false)
 const {
   data: verificationSession,
   error: verificationSessionError,
+  refresh: refreshVerificationSession,
 } = await useFetch<VerificationSession>('/api/verification')
 const isVerified = computed(() => verificationSession.value?.authenticated === true)
 
@@ -280,7 +281,15 @@ watch(isMealDialogOpen, (isOpen) => {
   }
 })
 
-onMounted(() => scrollSelectedChipIntoView(false))
+onMounted(() => {
+  scrollSelectedChipIntoView(false)
+
+  // Cross-site navigations (e.g. from search results) may omit legacy SameSite=Strict cookies on the
+  // SSR request. Same-site client requests include them, so re-check and let the server upgrade the cookie.
+  if (verificationSession.value?.configured && !verificationSession.value.authenticated) {
+    void refreshVerificationSession()
+  }
+})
 </script>
 
 <style scoped>
