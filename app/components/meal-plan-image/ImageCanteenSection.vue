@@ -10,6 +10,7 @@
         :layout="layout"
         :colors="colors"
         :show-student-prices="showStudentPrices"
+        :text-scale="textScale"
       />
     </div>
   </div>
@@ -28,6 +29,7 @@ const props = defineProps<{
   layout: MealPlanImageLayout
   colors: MealPlanImageColors
   showStudentPrices: boolean
+  textScale?: number
 }>()
 
 const sectionStyle = {
@@ -38,7 +40,7 @@ const sectionStyle = {
 
 const headerStyle = computed(() => ({
   margin: '12px 12px 16px',
-  fontSize: '24px',
+  fontSize: `${24 * (props.textScale ?? 1)}px`,
   fontWeight: 700,
   lineHeight: 1.2,
   color: props.colors.onSurface,

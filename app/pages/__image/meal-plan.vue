@@ -5,6 +5,7 @@
     :theme="theme"
     :show-student-prices="showStudentPrices"
     :transparent="transparent"
+    :text-scale="textScale"
   />
 </template>
 
@@ -14,7 +15,9 @@ import { computed } from 'vue'
 import type { MealsApiResponse } from '~/types'
 import {
   MEAL_PLAN_IMAGE_DEFAULT_WIDTH,
+  MEAL_PLAN_IMAGE_MAX_TEXT_SCALE,
   MEAL_PLAN_IMAGE_MAX_WIDTH,
+  MEAL_PLAN_IMAGE_MIN_TEXT_SCALE,
   MEAL_PLAN_IMAGE_MIN_WIDTH,
   type MealPlanImageTheme,
 } from '~/config/mealPlanImage'
@@ -34,6 +37,10 @@ const width = Math.min(
 const theme: MealPlanImageTheme = first(query.theme) === 'dark' ? 'dark' : 'light'
 const showStudentPrices = first(query.studentPrices) === '1'
 const transparent = first(query.transparent) === '1'
+const textScale = Math.min(
+  MEAL_PLAN_IMAGE_MAX_TEXT_SCALE,
+  Math.max(MEAL_PLAN_IMAGE_MIN_TEXT_SCALE, Number.parseFloat(first(query.textScale)) || 1),
+)
 
 const requestId = import.meta.server ? useRequestHeader('x-meal-plan-image-request-id') : undefined
 const mealsRequestStartedAt = Date.now()

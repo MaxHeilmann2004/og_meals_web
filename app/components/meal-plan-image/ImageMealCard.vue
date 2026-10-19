@@ -29,8 +29,8 @@
           v-for="(state, index) in model.stars"
           :key="index"
           :src="starSrc(state)"
-          width="14"
-          height="14"
+          :width="iconSize(14)"
+          :height="iconSize(14)"
           :style="{ marginRight: index < 4 ? '1px' : '0px' }"
         />
       </div>
@@ -45,8 +45,8 @@
             v-if="getFeatureIconUrl(feature)"
             :src="getFeatureIconUrl(feature)!"
             :data-tint="getFeatureColor(feature)"
-            width="20"
-            height="20"
+            :width="iconSize(20)"
+            :height="iconSize(20)"
             :style="{ marginLeft: '6px' }"
           />
           <span v-else :style="featureBadgeStyle">{{ feature.name || feature.shortName || 'Unknown' }}</span>
@@ -73,7 +73,11 @@ const props = defineProps<{
   layout: MealPlanImageLayout
   colors: MealPlanImageColors
   showStudentPrices: boolean
+  textScale?: number
 }>()
+
+const iconSize = (px: number) => Math.round(px * (props.textScale ?? 1))
+const fontSize = (px: number) => `${Math.round(px * (props.textScale ?? 1) * 100) / 100}px`
 
 const model = computed(() => getMealCardModel(props.meal, props.canteen.name))
 const showStudentPrice = computed(() => props.showStudentPrices && !!props.meal.studentPrice)
@@ -129,7 +133,7 @@ const placeholderOverlayStyle = computed(() => ({
 
 const placeholderTextStyle = computed(() => ({
   color: props.colors.onSurfaceVariant,
-  fontSize: '14px',
+  fontSize: fontSize(14),
   fontWeight: 500,
 }))
 
@@ -156,7 +160,7 @@ const infoRowStyle = {
 const titleStyle = computed(() => ({
   flex: 1,
   marginRight: '16px',
-  fontSize: '16px',
+  fontSize: fontSize(16),
   fontWeight: 700,
   lineHeight: 1.4,
   lineClamp: 2,
@@ -164,14 +168,14 @@ const titleStyle = computed(() => ({
   color: props.colors.onSurface,
 }))
 
-const pricesStyle = {
+const pricesStyle = computed(() => ({
   display: 'flex',
   alignItems: 'center',
   marginTop: '2px',
-  fontSize: '14px',
+  fontSize: fontSize(14),
   fontWeight: 500,
   whiteSpace: 'nowrap',
-}
+}))
 
 const regularPriceStyle = computed(() => ({
   color: props.colors.onSurface,
@@ -197,7 +201,7 @@ const starsStyle = {
 }
 
 const ratingCountStyle = computed(() => ({
-  fontSize: '12.8px',
+  fontSize: fontSize(12.8),
   fontWeight: 500,
   color: props.colors.onSurfaceVariant,
 }))
@@ -212,7 +216,7 @@ const footerRowStyle = {
 // The app never defines --color-on-secondary-container, so the category name inherits the text colour.
 const categoryStyle = computed(() => ({
   flex: 1,
-  fontSize: '14px',
+  fontSize: fontSize(14),
   fontWeight: 500,
   color: props.colors.onSurface,
 }))
@@ -225,7 +229,7 @@ const featureIconsStyle = {
 const featureBadgeStyle = computed(() => ({
   marginLeft: '6px',
   padding: '2px 6px',
-  fontSize: '12px',
+  fontSize: fontSize(12),
   fontWeight: 500,
   whiteSpace: 'nowrap',
   color: props.colors.onSurface,

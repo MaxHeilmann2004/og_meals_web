@@ -19,5 +19,7 @@ export const MEAL_PLAN_IMAGE_DEFAULT_WIDTH = 1300
 export const MEAL_PLAN_IMAGE_MIN_WIDTH = 320
 export const MEAL_PLAN_IMAGE_MAX_WIDTH = 2400
 export const MEAL_PLAN_IMAGE_MAX_SCALE = 3
+export const MEAL_PLAN_IMAGE_MIN_TEXT_SCALE = 0.5
+export const MEAL_PLAN_IMAGE_MAX_TEXT_SCALE = 3
 
 export type MealPlanImageTheme = 'light' | 'dark'

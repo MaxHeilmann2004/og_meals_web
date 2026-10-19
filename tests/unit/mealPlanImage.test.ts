@@ -118,6 +118,7 @@ describe('meal plan image options', () => {
       date: '2025-01-08',
       width: 1300,
       scale: 1,
+      textScale: 1,
       theme: 'light',
       studentPrices: false,
       transparent: false,
@@ -130,6 +131,7 @@ describe('meal plan image options', () => {
       date: '2025-02-03',
       width: '800',
       scale: '2',
+      textScale: '1.25',
       theme: 'dark',
       studentPrices: '1',
       transparent: '1',
@@ -138,6 +140,7 @@ describe('meal plan image options', () => {
       date: '2025-02-03',
       width: 800,
       scale: 2,
+      textScale: 1.25,
       theme: 'dark',
       studentPrices: true,
       transparent: true,
@@ -152,6 +155,9 @@ describe('meal plan image options', () => {
     { width: '99999' },
     { width: 'abc' },
     { scale: '9' },
+    { textScale: '0.1' },
+    { textScale: '5' },
+    { textScale: 'big' },
     { theme: 'blue' },
   ])('rejects invalid input %j', (query) => {
     expect(() => parseMealPlanImageOptions(query, now)).toThrowError(MealPlanImageOptionsError)

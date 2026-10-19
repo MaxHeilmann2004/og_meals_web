@@ -1,7 +1,9 @@
 import {
   MEAL_PLAN_IMAGE_DEFAULT_WIDTH,
   MEAL_PLAN_IMAGE_MAX_SCALE,
+  MEAL_PLAN_IMAGE_MAX_TEXT_SCALE,
   MEAL_PLAN_IMAGE_MAX_WIDTH,
+  MEAL_PLAN_IMAGE_MIN_TEXT_SCALE,
   MEAL_PLAN_IMAGE_MIN_WIDTH,
   type MealPlanImageTheme,
 } from '../../../app/config/mealPlanImage'
@@ -10,6 +12,7 @@ export interface MealPlanImageOptions {
   date: string
   width: number
   scale: number
+  textScale: number
   theme: MealPlanImageTheme
   studentPrices: boolean
   transparent: boolean
@@ -55,6 +58,15 @@ const parseNumber = (value: string | undefined, name: string, min: number, max: 
   return Math.round(parsed)
 }
 
+const parseTextScale = (value: string | undefined) => {
+  if (value === undefined || value === '') return 1
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed < MEAL_PLAN_IMAGE_MIN_TEXT_SCALE || parsed > MEAL_PLAN_IMAGE_MAX_TEXT_SCALE) {
+    throw badRequest(`Ungültiger Wert für textScale, erlaubt sind ${MEAL_PLAN_IMAGE_MIN_TEXT_SCALE}–${MEAL_PLAN_IMAGE_MAX_TEXT_SCALE}.`)
+  }
+  return Math.round(parsed * 100) / 100
+}
+
 export const parseMealPlanImageOptions = (
   query: Record<string, string | undefined>,
   now = new Date(),
@@ -66,6 +78,7 @@ export const parseMealPlanImageOptions = (
     date: parseDate(query.date, now),
     width: parseNumber(query.width, 'width', MEAL_PLAN_IMAGE_MIN_WIDTH, MEAL_PLAN_IMAGE_MAX_WIDTH, MEAL_PLAN_IMAGE_DEFAULT_WIDTH),
     scale: parseNumber(query.scale, 'scale', 1, MEAL_PLAN_IMAGE_MAX_SCALE, 1),
+    textScale: parseTextScale(query.textScale),
     theme,
     studentPrices: query.studentPrices === '1',
     transparent: query.transparent === '1',

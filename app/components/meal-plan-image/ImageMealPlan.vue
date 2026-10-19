@@ -8,6 +8,7 @@
         :layout="layout"
         :colors="colors"
         :show-student-prices="showStudentPrices"
+        :text-scale="textScale"
       />
       <div v-if="canteens.length === 0" :style="emptyStyle">
         Keine Gerichte für diesen Tag verfügbar.
@@ -31,6 +32,7 @@ const props = defineProps<{
   theme: MealPlanImageTheme
   showStudentPrices: boolean
   transparent?: boolean
+  textScale?: number
 }>()
 
 const colors = computed(() => getMealPlanImageColors(props.theme))
@@ -43,6 +45,7 @@ const rootStyle = computed(() => ({
   backgroundColor: props.transparent ? 'transparent' : colors.value.background,
   color: colors.value.onSurface,
   fontFamily: MEAL_PLAN_IMAGE_FONT_FAMILY,
+  fontSize: `${16 * (props.textScale ?? 1)}px`,
 }))
 
 const listStyle = computed(() => ({
