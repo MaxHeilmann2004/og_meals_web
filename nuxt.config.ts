@@ -59,7 +59,10 @@ export default defineNuxtConfig({
         }
       ],
       meta: [
-        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover' },
+        { name: 'color-scheme', content: 'light dark' },
+        { name: 'theme-color', content: '#FFFBFF', media: '(prefers-color-scheme: light)' },
+        { name: 'theme-color', content: '#201A19', media: '(prefers-color-scheme: dark)' },
         { name: 'description', content: 'Der inoffizielle Speiseplan für die Otto Group Kantinen.' },
         { name: 'apple-mobile-web-app-capable', content: 'yes' },
         { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
