@@ -37,6 +37,23 @@ Preview it locally:
 pnpm preview
 ```
 
+## Meal plan image
+
+`GET /api/meal-plan-image` returns a PNG of the reduced meal plan (Elbe and bonprix; Grill, The Original, F&T Vegan, Pasta, Pizza, Heimatküche, Vital, Live-Counter). The selection lives in `app/config/mealPlanImage.ts`.
+
+Authenticate with a valid verification token, either as `x-verification-code` header or as `?verification=` parameter. Optional query parameters:
+
+| Parameter | Default | Description |
+| --- | --- | --- |
+| `date` | today (Europe/Berlin, weekends → Monday) | `YYYY-MM-DD` |
+| `width` | `1300` | Image width in px (320–2400); the column count follows the width |
+| `scale` | `1` | Pixel density factor (1–3) |
+| `theme` | `light` | `light` or `dark` |
+| `studentPrices` | off | `1` shows student prices |
+| `inline` | off | `1` displays the image instead of downloading it |
+
+The image is built from the Vue components in `app/components/meal-plan-image/`. The internal page `/__image/meal-plan` is rendered through Nuxt SSR, converted with Satori and rasterized with resvg, so no browser is needed. Satori does not support CSS variables or stylesheets, so these components use inline styles and the colors in `app/config/mealPlanImageTheme.ts`. The bundled font is Outfit (OFL, see `server/assets/fonts`). Results are cached in memory for five minutes.
+
 ## Testing
 
 Run unit and component tests:

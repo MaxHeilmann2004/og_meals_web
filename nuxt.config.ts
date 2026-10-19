@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -15,6 +17,12 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': { headers: { 'cache-control': 'private, no-store' } },
+    '/__image/**': { headers: { 'cache-control': 'private, no-store' } },
+  },
+
+  nitro: {
+    // Lets the meal plan image renderer read static icons without an HTTP round trip (not served by event.fetch in dev).
+    serverAssets: [{ baseName: 'static', dir: fileURLToPath(new URL('./public', import.meta.url)) }],
   },
 
   future: {
