@@ -12,7 +12,6 @@ import type { MealPlanImageOptions } from './options'
 
 const CACHE_TTL_MS = 5 * 60 * 1000
 const CACHE_MAX_ENTRIES = 24
-const MAX_CONCURRENT_RENDERS = 2
 
 export type RenderCacheStatus = 'hit' | 'joined' | 'miss'
 
@@ -32,17 +31,6 @@ const cache = new Map<string, CacheEntry>()
 
 let activeRenders = 0
 let completedRenders = 0
-const waiting: Array<() => void> = []
-
-const acquire = async () => {
-  if (activeRenders >= MAX_CONCURRENT_RENDERS) await new Promise<void>(resolve => waiting.push(resolve))
-  activeRenders++
-}
-
-const release = () => {
-  activeRenders--
-  waiting.shift()?.()
-}
 
 const cacheKey = (options: MealPlanImageOptions) =>
   [options.date, options.width, options.scale, options.theme, options.studentPrices].join('|')
@@ -129,15 +117,15 @@ export const renderMealPlanImage = async (
   const result = (async () => {
     const timer = createStepTimer(requestId)
     const coldStart = completedRenders === 0
-    logMealPlanImage(requestId, `render started for ${key}${coldStart ? ' (first render since server start)' : ''}, ${activeRenders} active, ${waiting.length} queued`)
-    await timer.step('queue', acquire)
+    logMealPlanImage(requestId, `render started for ${key}${coldStart ? ' (first render since server start)' : ''}, ${activeRenders} already running`)
+    activeRenders++
     try {
       const png = await renderPng(event, token, options, requestId, timer)
       completedRenders++
       logMealPlanImage(requestId, `render finished in ${timer.totalMs()}ms`)
       return { png, timings: timer.timings }
     } finally {
-      release()
+      activeRenders--
     }
   })()
   const entry: CacheEntry = { expiresAt: now + CACHE_TTL_MS, requestId, settled: false, result }
