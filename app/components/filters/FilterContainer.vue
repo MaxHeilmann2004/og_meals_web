@@ -124,7 +124,6 @@ const mode = computed<'sheet' | 'dialog' | 'side'>(() => {
 })
 
 interface BodyScrollLockState {
-  bodyOverflow: string
   bodyPaddingRight: string
   bodyOverscrollBehavior: string
   htmlOverflow: string
@@ -139,15 +138,15 @@ const lockBodyScroll = () => {
   const body = document.body
   const html = document.documentElement
   bodyScrollLockState = {
-    bodyOverflow: body.style.overflow,
     bodyPaddingRight: body.style.paddingRight,
     bodyOverscrollBehavior: body.style.overscrollBehavior,
     htmlOverflow: html.style.overflow,
     htmlOverscrollBehavior: html.style.overscrollBehavior,
   }
 
+  // Only lock overflow on <html>. Setting overflow on <body> as well turns it into its
+  // own scroll container, which breaks the sticky header (it scrolls away).
   const scrollbarWidth = window.innerWidth - html.clientWidth
-  body.style.overflow = 'hidden'
   body.style.overscrollBehavior = 'none'
   if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`
   html.style.overflow = 'hidden'
@@ -162,7 +161,6 @@ const unlockBodyScroll = () => {
   const savedState = bodyScrollLockState
   bodyScrollLockState = null
 
-  body.style.overflow = savedState.bodyOverflow
   body.style.paddingRight = savedState.bodyPaddingRight
   body.style.overscrollBehavior = savedState.bodyOverscrollBehavior
   html.style.overflow = savedState.htmlOverflow
