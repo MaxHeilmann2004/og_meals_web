@@ -58,6 +58,8 @@ The image is built from the Vue components in `app/components/meal-plan-image/`.
 
 Every request is logged with a short request ID (`[meal-plan-image] <id> ...`): verification, backend meals request, SSR page, each image download and resize, Satori and resvg, with slow (>= 1 s) and failed images as warnings. The same step durations are returned in the `Server-Timing` response header, which the browser devtools show on the Network tab.
 
+The full configuration reference (German) is in [docs/meal-plan-image.md](docs/meal-plan-image.md).
+
 ## Testing
 
 Run unit and component tests:
