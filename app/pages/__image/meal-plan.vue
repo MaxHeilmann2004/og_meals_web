@@ -33,10 +33,18 @@ const width = Math.min(
 const theme: MealPlanImageTheme = first(query.theme) === 'dark' ? 'dark' : 'light'
 const showStudentPrices = first(query.studentPrices) === '1'
 
+const requestId = import.meta.server ? useRequestHeader('x-meal-plan-image-request-id') : undefined
+const mealsRequestStartedAt = Date.now()
+
 const { data, error } = await useAsyncData<MealsApiResponse>(
   'meal-plan-image',
   () => mealsApi.getWeek(date, date),
 )
+
+if (import.meta.server) {
+  const outcome = error.value ? `failed: ${error.value.message}` : `${data.value?.meals.length ?? 0} meals`
+  console.info(`[meal-plan-image] ${requestId ?? '-'} backend meals request took ${Date.now() - mealsRequestStartedAt}ms (${outcome})`)
+}
 
 if (error.value) {
   throw createError({

@@ -1,5 +1,6 @@
 import sharp from 'sharp'
 import type { ElementNode } from 'ultrahtml'
+import { formatBytes, logMealPlanImage, warnMealPlanImage } from './log'
 import { collectImages } from './markup'
 
 export type AssetFetcher = (path: string) => Promise<Response>
@@ -38,15 +39,37 @@ const rasterToDataUri = async (data: Uint8Array, width: number, height: number, 
   return toDataUri('image/jpeg', jpeg)
 }
 
+const SLOW_ASSET_MS = 1000
+
+export interface InlineImagesSummary {
+  images: number
+  fallbacks: number
+  sourceBytes: number
+  slowestMs: number
+}
+
 /** Replaces every `<img src>` with a self-contained data URI so Satori needs no network access. */
-export const inlineImages = async (root: ElementNode, fetchAsset: AssetFetcher, scale: number) => {
+export const inlineImages = async (
+  root: ElementNode,
+  fetchAsset: AssetFetcher,
+  scale: number,
+  requestId: string,
+): Promise<InlineImagesSummary> => {
+  const summary: InlineImagesSummary = { images: 0, fallbacks: 0, sourceBytes: 0, slowestMs: 0 }
+
   const placeholders = new Map<string, Promise<string>>()
   const getPlaceholder = (width: number, height: number) => {
     const key = `${width}x${height}`
     let placeholder = placeholders.get(key)
     if (!placeholder) {
+      const startedAt = performance.now()
       placeholder = fetchAsset(placeholderPath)
-        .then(async response => rasterToDataUri(new Uint8Array(await response.arrayBuffer()), width, height, scale))
+        .then(async (response) => {
+          const data = new Uint8Array(await response.arrayBuffer())
+          const dataUri = await rasterToDataUri(data, width, height, scale)
+          logMealPlanImage(requestId, `placeholder ${key} prepared in ${Math.round(performance.now() - startedAt)}ms (source ${formatBytes(data.byteLength)})`)
+          return dataUri
+        })
       placeholders.set(key, placeholder)
     }
     return placeholder
@@ -58,20 +81,38 @@ export const inlineImages = async (root: ElementNode, fetchAsset: AssetFetcher, 
     let result = resolved.get(key)
     if (!result) {
       result = (async () => {
+        const startedAt = performance.now()
+        const elapsed = () => Math.round(performance.now() - startedAt)
+        const fail = (reason: string) => {
+          warnMealPlanImage(requestId, `image ${src} falls back to placeholder after ${elapsed()}ms: ${reason}`)
+          return null
+        }
+
         const path = normalizeAssetPath(src)
-        if (!path) return null
+        if (!path) return fail('path is not allowed')
         try {
           const response = await fetchAsset(path)
-          if (!response.ok) return null
+          const fetchedMs = elapsed()
+          if (!response.ok) return fail(`HTTP ${response.status}`)
           const contentType = (response.headers.get('content-type') ?? '').split(';')[0]!.trim().toLowerCase()
           if (contentType === 'image/svg+xml') {
             const svg = await response.text()
             return toDataUri(contentType, tint ? tintSvg(svg, tint) : svg)
           }
-          if (!contentType.startsWith('image/')) return null
-          return await rasterToDataUri(new Uint8Array(await response.arrayBuffer()), width, height, scale)
-        } catch {
-          return null
+          if (!contentType.startsWith('image/')) return fail(`unexpected content type "${contentType}"`)
+
+          const data = new Uint8Array(await response.arrayBuffer())
+          const downloadedMs = elapsed()
+          const dataUri = await rasterToDataUri(data, width, height, scale)
+          const totalMs = elapsed()
+          summary.sourceBytes += data.byteLength
+          summary.slowestMs = Math.max(summary.slowestMs, totalMs)
+          const detail = `headers ${fetchedMs}ms, download ${downloadedMs - fetchedMs}ms, resize ${totalMs - downloadedMs}ms, ${formatBytes(data.byteLength)} ${contentType}`
+          if (totalMs >= SLOW_ASSET_MS) warnMealPlanImage(requestId, `slow image ${src}: ${totalMs}ms (${detail})`)
+          else logMealPlanImage(requestId, `image ${src}: ${totalMs}ms (${detail})`)
+          return dataUri
+        } catch (error) {
+          return fail(error instanceof Error ? error.message : String(error))
         }
       })()
       resolved.set(key, result)
@@ -85,11 +126,15 @@ export const inlineImages = async (root: ElementNode, fetchAsset: AssetFetcher, 
     delete image.attributes['data-tint']
     if (src.startsWith('data:')) return
 
+    summary.images++
     const width = Number(image.attributes.width)
     const height = Number(image.attributes.height)
-    image.attributes.src = (src === placeholderPath ? null : await resolve(src, tint, width, height))
-      ?? await getPlaceholder(width, height)
+    const dataUri = src === placeholderPath ? null : await resolve(src, tint, width, height)
+    if (!dataUri) summary.fallbacks++
+    image.attributes.src = dataUri ?? await getPlaceholder(width, height)
   }))
+
+  return summary
 }
 
 const publicContentTypes: Record<string, string> = { svg: 'image/svg+xml', png: 'image/png' }

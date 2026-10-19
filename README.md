@@ -54,6 +54,8 @@ Authenticate with a valid verification token, either as `x-verification-code` he
 
 The image is built from the Vue components in `app/components/meal-plan-image/`. The internal page `/__image/meal-plan` is rendered through Nuxt SSR, converted with Satori and rasterized with resvg, so no browser is needed. Satori does not support CSS variables or stylesheets, so these components use inline styles and the colors in `app/config/mealPlanImageTheme.ts`. The bundled font is Outfit (OFL, see `server/assets/fonts`). Results are cached in memory for five minutes.
 
+Every request is logged with a short request ID (`[meal-plan-image] <id> ...`): verification, backend meals request, SSR page, each image download and resize, Satori and resvg, with slow (>= 1 s) and failed images as warnings. The same step durations are returned in the `Server-Timing` response header, which the browser devtools show on the Network tab.
+
 ## Testing
 
 Run unit and component tests:
