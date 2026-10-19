@@ -76,7 +76,8 @@ describe('meal plan image selection', () => {
 describe('meal plan image layout', () => {
   it('derives columns like the CSS grid', () => {
     expect(getMealPlanImageLayout(1300).columns).toBe(3)
-    expect(getMealPlanImageLayout(2400).columns).toBe(3)
+    expect(getMealPlanImageLayout(2400).columns).toBe(5)
+    expect(getMealPlanImageLayout(1700).columns).toBe(4)
     expect(getMealPlanImageLayout(900).columns).toBe(2)
     expect(getMealPlanImageLayout(480).columns).toBe(1)
     expect(getMealPlanImageLayout(320).columns).toBe(1)
@@ -119,6 +120,7 @@ describe('meal plan image options', () => {
       scale: 1,
       theme: 'light',
       studentPrices: false,
+      transparent: false,
       inline: false,
     })
   })
@@ -130,6 +132,7 @@ describe('meal plan image options', () => {
       scale: '2',
       theme: 'dark',
       studentPrices: '1',
+      transparent: '1',
       inline: '1',
     }, now)).toEqual({
       date: '2025-02-03',
@@ -137,6 +140,7 @@ describe('meal plan image options', () => {
       scale: 2,
       theme: 'dark',
       studentPrices: true,
+      transparent: true,
       inline: true,
     })
   })

@@ -46,10 +46,11 @@ Authenticate with a valid verification token, either as `x-verification-code` he
 | Parameter | Default | Description |
 | --- | --- | --- |
 | `date` | today (Europe/Berlin, weekends → Monday) | `YYYY-MM-DD` |
-| `width` | `1300` | Image width in px (320–2400); the column count follows the width |
+| `width` | `1300` | Image width in px (320–2400); the column count follows the width (about 3 at 1300, 5 at 2400) |
 | `scale` | `1` | Pixel density factor (1–3) |
 | `theme` | `light` | `light` or `dark` |
 | `studentPrices` | off | `1` shows student prices |
+| `transparent` | off | `1` renders a transparent background instead of the theme background |
 | `inline` | off | `1` displays the image instead of downloading it |
 
 The image is built from the Vue components in `app/components/meal-plan-image/`. The internal page `/__image/meal-plan` is rendered through Nuxt SSR, converted with Satori and rasterized with resvg, so no browser is needed. Satori does not support CSS variables or stylesheets, so these components use inline styles and the colors in `app/config/mealPlanImageTheme.ts`. The bundled font is Outfit (OFL, see `server/assets/fonts`). Results are cached in memory for five minutes.
