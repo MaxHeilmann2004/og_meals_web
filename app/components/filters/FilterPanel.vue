@@ -136,7 +136,7 @@ const includeFeatures = INCLUDE_FEATURES;
 
 <style scoped>
 .filter-panel {
-  padding: 20px 24px 32px;
+  padding: 20px 24px calc(32px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
 }
