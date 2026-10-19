@@ -1,5 +1,5 @@
-import { createError, getQuery, getRequestHeader, setResponseHeaders } from 'h3'
-import { getBackendVerificationStatus } from '../utils/verification'
+import { createError, getCookie, getQuery, getRequestHeader, setResponseHeaders } from 'h3'
+import { getBackendVerificationStatus, verificationCookieName } from '../utils/verification'
 import { MealPlanImageOptionsError, parseMealPlanImageOptions } from '../utils/mealPlanImage/options'
 import { renderMealPlanImage } from '../utils/mealPlanImage/render'
 
@@ -17,7 +17,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Der Verifizierungscode darf nur einmal angegeben werden.' })
   }
 
-  const token = getRequestHeader(event, 'x-verification-code') || (typeof queryToken === 'string' ? queryToken : '')
+  // Header and query token take precedence; the browser cookie allows opening the endpoint directly while debugging.
+  const token = getRequestHeader(event, 'x-verification-code')
+    || (typeof queryToken === 'string' ? queryToken : '')
+    || getCookie(event, verificationCookieName)
+    || ''
   if (!token) throw unauthorized()
 
   const status = await getBackendVerificationStatus(event, token)

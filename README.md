@@ -41,7 +41,7 @@ pnpm preview
 
 `GET /api/meal-plan-image` returns a PNG of the reduced meal plan (Elbe and bonprix; Grill, The Original, F&T Vegan, Pasta, Pizza, Heimatküche, Vital, Live-Counter). The selection lives in `app/config/mealPlanImage.ts`.
 
-Authenticate with a valid verification token, either as `x-verification-code` header or as `?verification=` parameter. Optional query parameters:
+Authenticate with a valid verification token, either as `x-verification-code` header or as `?verification=` parameter. If neither is given, the `og-meals-verification` cookie of the browser session is used, so the endpoint can be opened directly in a verified browser. Optional query parameters:
 
 | Parameter | Default | Description |
 | --- | --- | --- |
