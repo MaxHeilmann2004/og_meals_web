@@ -68,6 +68,7 @@ import { computed } from 'vue'
 import type { Meal, Canteen } from '~/types'
 import MealMedia from '../shared/MealMedia.vue'
 import { useFilterStore } from '~/stores/filters'
+import { getOverviewFeatures, getStarState } from '~/utils/meal/cardModel'
 import { cleanMealTitle, formatPrice, getMealCategoryName } from '~/utils/meal/formatters'
 
 const props = defineProps<{
@@ -97,22 +98,11 @@ const trackMealImageChange = (index: number) => {
   })
 }
 
-const starClass = (i: number) => {
-  const avg = props.meal.reviewStats.averageStars
-  if (i <= Math.floor(avg)) return 'star-full'
-  if (i === Math.ceil(avg) && avg % 1 >= 0.5) return 'star-half'
-  return 'star-empty'
-}
+const starClass = (i: number) => `star-${getStarState(props.meal.reviewStats.averageStars, i)}`
 
 const cleanedTitle = computed(() => cleanMealTitle(props.meal.title))
 
-// Show features that appear on the card overview (matches Compose app behaviour)
-const visibleFeatures = computed(() => {
-  if (!props.meal.features) return []
-  return props.meal.features.filter(f => f.showInOverview === true)
-})
-
-
+const visibleFeatures = computed(() => getOverviewFeatures(props.meal))
 </script>
 
 <style scoped>
