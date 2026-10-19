@@ -41,7 +41,11 @@ const rasterToDataUri = async (data: Uint8Array, width: number, height: number, 
 
 const SLOW_ASSET_MS = 1000
 
+export const inlinedAssetPrefix = 'asset:'
+
 export interface InlineImagesSummary {
+  /** Data URIs by short token; the markup only carries the token because satori-html is extremely slow on large attributes. */
+  assets: Map<string, string>
   images: number
   fallbacks: number
   sourceBytes: number
@@ -55,7 +59,7 @@ export const inlineImages = async (
   scale: number,
   requestId: string,
 ): Promise<InlineImagesSummary> => {
-  const summary: InlineImagesSummary = { images: 0, fallbacks: 0, sourceBytes: 0, slowestMs: 0 }
+  const summary: InlineImagesSummary = { assets: new Map(), images: 0, fallbacks: 0, sourceBytes: 0, slowestMs: 0 }
 
   const placeholders = new Map<string, Promise<string>>()
   const getPlaceholder = (width: number, height: number) => {
@@ -120,6 +124,7 @@ export const inlineImages = async (
     return result
   }
 
+  const tokens = new Map<string, string>()
   await Promise.all(collectImages(root).map(async (image) => {
     const src = image.attributes.src ?? ''
     const tint = image.attributes['data-tint']
@@ -131,7 +136,14 @@ export const inlineImages = async (
     const height = Number(image.attributes.height)
     const dataUri = src === placeholderPath ? null : await resolve(src, tint, width, height)
     if (!dataUri) summary.fallbacks++
-    image.attributes.src = dataUri ?? await getPlaceholder(width, height)
+    const resolvedUri = dataUri ?? await getPlaceholder(width, height)
+    let token = tokens.get(resolvedUri)
+    if (!token) {
+      token = `${inlinedAssetPrefix}${tokens.size}`
+      tokens.set(resolvedUri, token)
+      summary.assets.set(token, resolvedUri)
+    }
+    image.attributes.src = token
   }))
 
   return summary

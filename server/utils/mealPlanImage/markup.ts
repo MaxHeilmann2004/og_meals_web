@@ -42,3 +42,15 @@ export const decodeEntities = <T>(node: T): T => {
   }
   return node
 }
+
+/** Puts the data URIs back on the vnode tree, see `inlineImages`. */
+export const restoreInlinedAssets = <T>(node: T, assets: Map<string, string>): T => {
+  if (Array.isArray(node)) {
+    node.forEach(child => restoreInlinedAssets(child, assets))
+  } else if (node && typeof node === 'object') {
+    const props = (node as { props?: { src?: unknown, children?: unknown } }).props
+    if (typeof props?.src === 'string' && assets.has(props.src)) props.src = assets.get(props.src)
+    if (props?.children !== undefined) restoreInlinedAssets(props.children, assets)
+  }
+  return node
+}

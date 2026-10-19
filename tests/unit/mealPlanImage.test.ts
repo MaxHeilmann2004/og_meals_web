@@ -3,7 +3,7 @@ import type { Canteen, Meal } from '~/types'
 import { getMealPlanImageLayout } from '~/utils/meal/imageLayout'
 import { getMealCardModel, getStarState } from '~/utils/meal/cardModel'
 import { normalizeCategoryName, selectMealPlanImageCanteens } from '~/utils/meal/imageSelection'
-import { decodeEntities } from '../../server/utils/mealPlanImage/markup'
+import { decodeEntities, restoreInlinedAssets } from '../../server/utils/mealPlanImage/markup'
 import { getDefaultMealPlanImageDate, MealPlanImageOptionsError, parseMealPlanImageOptions } from '../../server/utils/mealPlanImage/options'
 
 const canteen = (id: number, name: string): Canteen => ({
@@ -168,5 +168,16 @@ describe('markup entity decoding', () => {
       type: 'div',
       props: { children: ['F&T Vegan', { type: 'span', props: { children: '<\'A"' } }] },
     })
+  })
+})
+
+describe('inlined asset restoration', () => {
+  it('replaces asset tokens with data URIs in nested vnodes', () => {
+    const assets = new Map([['asset:0', 'data:image/jpeg;base64,AAAA']])
+    const tree = { type: 'div', props: { children: [{ type: 'img', props: { src: 'asset:0' } }, { type: 'img', props: { src: '/other.png' } }] } }
+
+    restoreInlinedAssets(tree, assets)
+
+    expect(tree.props.children.map(child => child.props.src)).toEqual(['data:image/jpeg;base64,AAAA', '/other.png'])
   })
 })
