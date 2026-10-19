@@ -48,6 +48,7 @@ Authenticate with a valid verification token, either as `x-verification-code` he
 | `date` | today (Europe/Berlin, weekends → Monday) | `YYYY-MM-DD` |
 | `width` | `1300` | Image width in px (320–2400); the column count follows the width (about 3 at 1300, 5 at 2400) |
 | `scale` | `1` | Pixel density factor (1–3) |
+| `textScale` | `1` | Text size factor (0.5–3), also scales the rating stars and feature icons; card heights grow with the text, the column layout stays the same |
 | `theme` | `light` | `light` or `dark` |
 | `studentPrices` | off | `1` shows student prices |
 | `transparent` | off | `1` renders a transparent background instead of the theme background |

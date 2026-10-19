@@ -33,7 +33,7 @@ let activeRenders = 0
 let completedRenders = 0
 
 const cacheKey = (options: MealPlanImageOptions) =>
-  [options.date, options.width, options.scale, options.theme, options.studentPrices, options.transparent].join('|')
+  [options.date, options.width, options.scale, options.textScale, options.theme, options.studentPrices, options.transparent].join('|')
 
 const renderPng = async (
   event: H3Event,
@@ -54,6 +54,7 @@ const renderPng = async (
     date: options.date,
     width: String(options.width),
     theme: options.theme,
+    textScale: String(options.textScale),
     studentPrices: options.studentPrices ? '1' : '0',
     transparent: options.transparent ? '1' : '0',
   })
