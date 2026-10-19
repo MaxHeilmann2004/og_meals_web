@@ -16,6 +16,9 @@
         </svg>
         und wähle „Zum Home-Bildschirm“.
       </p>
+      <p v-else-if="mode === 'android'" class="pwa-banner-description">
+        Öffne das Browser-Menü (⋮) und wähle „App installieren“ bzw. „Zum Startbildschirm hinzufügen“.
+      </p>
     </div>
 
     <div class="pwa-banner-actions">
@@ -35,25 +38,28 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useNuxtApp } from '#app'
-import { isBannerSnoozed, isIosSafari, isStandaloneDisplay, snoozeBanner } from '~/utils/pwa/install'
+import { isAndroidDevice, isBannerSnoozed, isIosDevice, isStandaloneDisplay, snoozeBanner } from '~/utils/pwa/install'
 
 const { $pwa } = useNuxtApp()
 
 const standalone = ref(true)
 const ios = ref(false)
+const android = ref(false)
 const snoozed = ref(true)
 
 onMounted(() => {
   standalone.value = isStandaloneDisplay()
-  ios.value = isIosSafari(navigator.userAgent, navigator.maxTouchPoints)
+  ios.value = isIosDevice(navigator.userAgent, navigator.maxTouchPoints)
+  android.value = isAndroidDevice(navigator.userAgent)
   snoozed.value = isBannerSnoozed(localStorage)
 })
 
-// 'prompt': browser offers a native install prompt; 'ios': manual "Add to Home Screen" hint.
-const mode = computed<'prompt' | 'ios' | null>(() => {
+// 'prompt': native install prompt available; 'ios'/'android': manual instructions for browsers without one.
+const mode = computed<'prompt' | 'ios' | 'android' | null>(() => {
   if (standalone.value || snoozed.value || $pwa?.isPWAInstalled) return null
   if ($pwa?.showInstallPrompt) return 'prompt'
-  return ios.value ? 'ios' : null
+  if (ios.value) return 'ios'
+  return android.value ? 'android' : null
 })
 
 const visible = computed(() => mode.value !== null)
