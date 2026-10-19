@@ -20,6 +20,10 @@
       </div>
     </header>
 
+    <ClientOnly>
+      <PwaInstallBanner />
+    </ClientOnly>
+
     <!-- Main Content Area -->
     <main class="app-content">
       <slot />
