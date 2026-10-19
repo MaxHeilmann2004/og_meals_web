@@ -5,7 +5,7 @@ import { html as toVNode } from 'satori-html'
 import { verificationCookieName } from '../verification'
 import { loadMealPlanImageFonts } from './fonts'
 import { inlineImages, readPublicAsset } from './images'
-import { decodeEntities, extractImageRoot, renderMarkup } from './markup'
+import { decodeEntities, extractImageRoot, renderMarkup, restoreInlinedAssets } from './markup'
 import { formatBytes, logMealPlanImage, mealPlanImageRequestIdHeader, warnMealPlanImage, createStepTimer, type StepTimings } from './log'
 import { mealPlanImageRenderHeader, mealPlanImageRenderPath, mealPlanImageRenderSecret } from './internal'
 import type { MealPlanImageOptions } from './options'
@@ -70,14 +70,14 @@ const renderPng = async (
   }, result => formatBytes(result.length))
 
   const root = await timer.step('parse', () => extractImageRoot(html))
-  await timer.step(
+  const { assets } = await timer.step(
     'images',
     () => inlineImages(root, fetchAsset, options.scale, requestId),
     result => `${result.images} images, ${result.fallbacks} placeholders, ${formatBytes(result.sourceBytes)} downloaded, slowest ${result.slowestMs}ms`,
   )
 
   const fonts = await timer.step('fonts', () => loadMealPlanImageFonts())
-  const vnode = await timer.step('markup', async () => decodeEntities(toVNode(await renderMarkup(root))))
+  const vnode = await timer.step('markup', async () => restoreInlinedAssets(decodeEntities(toVNode(await renderMarkup(root))), assets))
   const svg = await timer.step('satori', () => satori(vnode as Parameters<typeof satori>[0], {
     width: options.width,
     fonts,
