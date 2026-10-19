@@ -29,7 +29,20 @@
     <span v-else class="capacity-badge-text">
       {{ isToday ? 'Keine aktuellen Daten' : 'Keine Erwartung' }}
     </span>
-    <span class="capacity-badge-chevron" aria-hidden="true">›</span>
+    <svg
+      class="capacity-badge-chevron"
+      viewBox="0 0 16 16"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 3.5 10.5 8 6 12.5" />
+    </svg>
   </button>
 </template>
 
@@ -143,10 +156,8 @@ const ariaLabel = computed(() => {
 }
 
 .capacity-badge-chevron {
-  margin-left: 1px;
-  font-size: 1.15rem;
-  font-weight: 400;
-  line-height: 0.8;
+  flex: 0 0 auto;
+  margin-left: -1px;
 }
 
 @media (max-width: 500px) {
