@@ -33,7 +33,7 @@ let activeRenders = 0
 let completedRenders = 0
 
 const cacheKey = (options: MealPlanImageOptions) =>
-  [options.date, options.width, options.scale, options.theme, options.studentPrices].join('|')
+  [options.date, options.width, options.scale, options.theme, options.studentPrices, options.transparent].join('|')
 
 const renderPng = async (
   event: H3Event,
@@ -55,6 +55,7 @@ const renderPng = async (
     width: String(options.width),
     theme: options.theme,
     studentPrices: options.studentPrices ? '1' : '0',
+    transparent: options.transparent ? '1' : '0',
   })
   // Includes the Nuxt SSR render (lazy-loaded on the first request) and the meals request to the backend.
   const html = await timer.step('page', async () => {

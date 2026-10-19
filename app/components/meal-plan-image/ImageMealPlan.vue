@@ -30,6 +30,7 @@ const props = defineProps<{
   width: number
   theme: MealPlanImageTheme
   showStudentPrices: boolean
+  transparent?: boolean
 }>()
 
 const colors = computed(() => getMealPlanImageColors(props.theme))
@@ -39,7 +40,7 @@ const rootStyle = computed(() => ({
   display: 'flex',
   justifyContent: 'center',
   width: `${props.width}px`,
-  backgroundColor: colors.value.background,
+  backgroundColor: props.transparent ? 'transparent' : colors.value.background,
   color: colors.value.onSurface,
   fontFamily: MEAL_PLAN_IMAGE_FONT_FAMILY,
 }))

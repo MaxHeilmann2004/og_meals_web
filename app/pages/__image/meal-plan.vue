@@ -4,6 +4,7 @@
     :width="width"
     :theme="theme"
     :show-student-prices="showStudentPrices"
+    :transparent="transparent"
   />
 </template>
 
@@ -32,6 +33,7 @@ const width = Math.min(
 )
 const theme: MealPlanImageTheme = first(query.theme) === 'dark' ? 'dark' : 'light'
 const showStudentPrices = first(query.studentPrices) === '1'
+const transparent = first(query.transparent) === '1'
 
 const requestId = import.meta.server ? useRequestHeader('x-meal-plan-image-request-id') : undefined
 const mealsRequestStartedAt = Date.now()

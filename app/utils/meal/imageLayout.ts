@@ -2,7 +2,6 @@ export const MEAL_PLAN_IMAGE_PADDING_X = 16
 export const MEAL_PLAN_IMAGE_GRID_GAP = 16
 export const MEAL_PLAN_IMAGE_CARD_MIN_WIDTH = 400
 export const MEAL_PLAN_IMAGE_CARD_PADDING = 12
-export const MEAL_PLAN_IMAGE_MAX_CONTENT_WIDTH = 1300
 
 export interface MealPlanImageLayout {
   contentWidth: number
@@ -12,12 +11,9 @@ export interface MealPlanImageLayout {
   mediaHeight: number
 }
 
-/** Mirrors the CSS grid `repeat(auto-fill, minmax(400px, 1fr))` used on the meal plan page. */
+/** Mirrors the CSS grid `repeat(auto-fill, minmax(400px, 1fr))` used on the meal plan page, without its max page width. */
 export const getMealPlanImageLayout = (imageWidth: number): MealPlanImageLayout => {
-  const contentWidth = Math.min(
-    imageWidth - MEAL_PLAN_IMAGE_PADDING_X * 2,
-    MEAL_PLAN_IMAGE_MAX_CONTENT_WIDTH - MEAL_PLAN_IMAGE_PADDING_X * 2,
-  )
+  const contentWidth = imageWidth - MEAL_PLAN_IMAGE_PADDING_X * 2
   const columns = Math.max(
     1,
     Math.floor((contentWidth + MEAL_PLAN_IMAGE_GRID_GAP) / (MEAL_PLAN_IMAGE_CARD_MIN_WIDTH + MEAL_PLAN_IMAGE_GRID_GAP)),

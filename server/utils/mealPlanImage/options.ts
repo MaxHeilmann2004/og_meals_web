@@ -12,6 +12,7 @@ export interface MealPlanImageOptions {
   scale: number
   theme: MealPlanImageTheme
   studentPrices: boolean
+  transparent: boolean
   inline: boolean
 }
 
@@ -67,6 +68,7 @@ export const parseMealPlanImageOptions = (
     scale: parseNumber(query.scale, 'scale', 1, MEAL_PLAN_IMAGE_MAX_SCALE, 1),
     theme,
     studentPrices: query.studentPrices === '1',
+    transparent: query.transparent === '1',
     inline: query.inline === '1',
   }
 }
