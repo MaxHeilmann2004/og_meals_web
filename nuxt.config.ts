@@ -70,9 +70,9 @@ export default defineNuxtConfig({
         { name: 'mobile-web-app-capable', content: 'yes' }
       ],
       link: [
-        { rel: 'icon', href: '/favicon.ico?v=3', sizes: '48x48' },
-        { rel: 'icon', href: '/icon.svg?v=3', sizes: 'any', type: 'image/svg+xml' },
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png?v=3' }
+        { rel: 'icon', href: '/favicon.ico?v=4', sizes: '48x48' },
+        { rel: 'icon', href: '/icon.svg?v=4', sizes: 'any', type: 'image/svg+xml' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png?v=4' }
       ]
     }
   },
@@ -87,20 +87,18 @@ export default defineNuxtConfig({
       // Installed PWAs take the Android navigation bar color from the manifest, and it can't follow
       // light/dark mode, so use a neutral mid-tone that works with both themes.
       theme_color: '#857B7A',
-      background_color: '#201A19',
+      background_color: '#EE0020',
       display: 'standalone',
       orientation: 'portrait',
       start_url: '/',
       scope: '/',
       icons: [
-        { src: 'pwa-64x64.png?v=3', sizes: '64x64', type: 'image/png', purpose: 'any' },
-        { src: 'pwa-192x192.png?v=3', sizes: '192x192', type: 'image/png', purpose: 'any' },
-        { src: 'pwa-512x512.png?v=3', sizes: '512x512', type: 'image/png', purpose: 'any' },
-        { src: 'pwa-1024x1024.png?v=3', sizes: '1024x1024', type: 'image/png', purpose: 'any' },
-        { src: 'maskable-icon-512x512.png?v=3', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-        { src: 'maskable-icon-1024x1024.png?v=3', sizes: '1024x1024', type: 'image/png', purpose: 'maskable' },
-        { src: 'monochrome-icon-512x512.png?v=1', sizes: '512x512', type: 'image/png', purpose: 'monochrome' },
-        { src: 'monochrome-icon-1024x1024.png?v=1', sizes: '1024x1024', type: 'image/png', purpose: 'monochrome' }
+        { src: 'pwa-64x64.png?v=4', sizes: '64x64', type: 'image/png', purpose: 'any' },
+        { src: 'pwa-192x192.png?v=4', sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: 'pwa-512x512.png?v=4', sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: 'pwa-1024x1024.png?v=4', sizes: '1024x1024', type: 'image/png', purpose: 'any' },
+        { src: 'maskable-icon-512x512.png?v=4', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        { src: 'maskable-icon-1024x1024.png?v=4', sizes: '1024x1024', type: 'image/png', purpose: 'maskable' }
       ]
     },
     workbox: {
