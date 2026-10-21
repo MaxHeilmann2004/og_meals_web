@@ -3,13 +3,17 @@
     <DaySelector
       :day-names="dayNames"
       :selected-day-index="selectedDayIndex"
+      :week-offset="weekOffset"
+      :previous-week-label="previousWeekLabel"
+      :next-week-label="nextWeekLabel"
       @select="selectWeekday"
+      @select-week="selectWeek"
     />
 
     <!-- Main List / Grid -->
     <div class="content-viewport">
       <!-- Initial Loading State (only when no data at all yet) -->
-      <div v-if="pending && !data" class="loading-overlay">
+      <div v-if="pending && (!data || totalMealsForSelectedDay === 0)" class="loading-overlay">
         <LoadingSpinner size="72px" label="Lade Speiseplan..." />
       </div>
 
@@ -26,6 +30,7 @@
         :layout="isMobile ? 'mobile' : 'desktop'"
         :total-meals-for-selected-day="totalMealsForSelectedDay"
         :pending="pending"
+        :is-future-week="weekOffset > 0"
         :selected-day-is-today="selectedDayIsToday"
         :capacity-pending="capacityPending"
         :expectation-pending="expectationPending"
@@ -116,6 +121,7 @@
 import { computed, ref, onMounted, watch, nextTick } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import type { Canteen, CanteenCapacityApiResponse, Meal } from '~/types'
+import { getWeekDates, getWeekRelativeLabel } from '~/utils/meal/week'
 import { getTodayCalendarDate } from '~/utils/capacity/capacity'
 import { useAdminAccess } from '~/composables/useAdminAccess'
 import { useCapacity } from '~/composables/useCapacity'
@@ -130,6 +136,7 @@ interface VerificationSession {
   authenticated: boolean
 }
 
+const maxWeekOffset = 1
 const dayNames = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag']
 const selectedWeekday = computed(() => dayNames[selectedDayIndex.value]!)
 const { adminToken, isAdmin } = useAdminAccess()
@@ -184,6 +191,8 @@ const {
   pending,
   error,
   refresh,
+  weekOffset,
+  setWeekOffset,
   rawCanteens,
   selectedDayIndex,
   selectedDayDateStr,
@@ -262,6 +271,25 @@ const selectWeekday = (index: number) => {
   })
 }
 
+const getWeekLabel = (offset: number) => {
+  if (offset < 0 || offset > maxWeekOffset) return null
+  return getWeekRelativeLabel(getWeekDates(new Date(), offset)[0]!)
+}
+const previousWeekLabel = computed(() => getWeekLabel(weekOffset.value - 1))
+const nextWeekLabel = computed(() => getWeekLabel(weekOffset.value + 1))
+
+const selectWeek = (offset: number) => {
+  if (offset === weekOffset.value) return
+
+  setWeekOffset(offset)
+  useTrackEvent('Week Switched', {
+    props: {
+      week: offset === 0 ? 'current' : 'next',
+      layout: isMobile.value ? 'mobile' : 'desktop',
+    },
+  })
+}
+
 const scrollSelectedChipIntoView = (smooth = true) => {
   nextTick(() => {
     document.querySelector('.day-chip.is-selected')?.scrollIntoView({
@@ -272,7 +300,7 @@ const scrollSelectedChipIntoView = (smooth = true) => {
   })
 }
 
-watch(selectedDayIndex, () => scrollSelectedChipIntoView(true))
+watch([selectedDayIndex, weekOffset], () => scrollSelectedChipIntoView(true))
 
 watch(isMealDialogOpen, (isOpen) => {
   if (!isOpen) {

@@ -7,6 +7,7 @@
     "build:test": "NUXT_TEST_MODE=true nuxt build",
     "check": "pnpm lint && pnpm typecheck && pnpm typecheck:tests && pnpm test && pnpm build",
     "dev": "nuxt dev",
+    "dev:mock": "node scripts/dev-mock.mjs",
     "generate": "nuxt generate",
     "lint": "eslint .",
     "preview": "nuxt preview",
