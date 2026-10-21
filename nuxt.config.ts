@@ -98,7 +98,9 @@ export default defineNuxtConfig({
         { src: 'pwa-512x512.png?v=3', sizes: '512x512', type: 'image/png', purpose: 'any' },
         { src: 'pwa-1024x1024.png?v=3', sizes: '1024x1024', type: 'image/png', purpose: 'any' },
         { src: 'maskable-icon-512x512.png?v=3', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-        { src: 'maskable-icon-1024x1024.png?v=3', sizes: '1024x1024', type: 'image/png', purpose: 'maskable' }
+        { src: 'maskable-icon-1024x1024.png?v=3', sizes: '1024x1024', type: 'image/png', purpose: 'maskable' },
+        { src: 'monochrome-icon-512x512.png?v=1', sizes: '512x512', type: 'image/png', purpose: 'monochrome' },
+        { src: 'monochrome-icon-1024x1024.png?v=1', sizes: '1024x1024', type: 'image/png', purpose: 'monochrome' }
       ]
     },
     workbox: {
