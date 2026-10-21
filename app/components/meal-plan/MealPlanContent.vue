@@ -1,11 +1,12 @@
 <template>
   <div class="canteens-list">
     <CanteenSection
-      v-for="canteen in filteredCanteens"
+      v-for="(canteen, canteenIndex) in filteredCanteens"
       :key="canteen.id"
       :canteen="canteen"
       :weekday="weekday"
       :layout="layout"
+      :prioritize-first-image="canteenIndex === 0"
       :capacity="capacityForCanteen(canteen.id)"
       :expected-capacity="expectedCapacityForCanteen(canteen.id)"
       :is-today="selectedDayIsToday"

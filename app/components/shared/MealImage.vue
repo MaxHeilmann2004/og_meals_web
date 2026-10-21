@@ -7,6 +7,9 @@
       :src="fullImageUrl"
       :alt="contentDescription"
       class="meal-image"
+      :loading="priority ? 'eager' : 'lazy'"
+      :fetchpriority="priority ? 'high' : undefined"
+      decoding="async"
       @load="onImageLoad"
       @error="onImageError"
     />
@@ -39,10 +42,12 @@ const props = withDefaults(
     contentDescription: string
     showAiBadge?: boolean
     badgePosition?: 'top-right' | 'bottom-right'
+    priority?: boolean
   }>(),
   {
     showAiBadge: true,
-    badgePosition: 'top-right'
+    badgePosition: 'top-right',
+    priority: false
   }
 )
 

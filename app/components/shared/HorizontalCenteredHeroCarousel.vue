@@ -26,6 +26,7 @@
           :content-description="`${contentDescription} - Bild ${index + 1}`"
           class="carousel-img"
           :show-ai-badge="false"
+          :priority="priority && index === 0"
         />
       </div>
       <!-- AI Suggested Badge placed relative to the clipping mask container -->
@@ -48,6 +49,7 @@ const props = defineProps<{
   badgePosition?: 'top-right' | 'bottom-right'
   itemBorderRadiusPx?: number
   collapsedPillWidthPx?: number
+  priority?: boolean
 }>()
 
 const emit = defineEmits<{

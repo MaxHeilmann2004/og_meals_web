@@ -17,6 +17,7 @@
         variant="card"
         :item-border-radius-px="28"
         :collapsed-pill-width-px="44"
+        :priority="priority"
         @image-change="trackMealImageChange"
       />
     </div>
@@ -76,6 +77,7 @@ const props = defineProps<{
   canteen: Canteen
   weekday: string
   layout: 'mobile' | 'desktop'
+  priority?: boolean
 }>()
 
 const emit = defineEmits<{
