@@ -14,6 +14,7 @@
         </svg>
         {{ previousWeekLabel }}
       </var-chip>
+      <span v-if="previousWeekLabel" class="week-separator" aria-hidden="true" />
       <var-chip
         v-for="(dayName, index) in dayNames"
         :key="dayName"
@@ -26,6 +27,7 @@
       >
         {{ dayName }}
       </var-chip>
+      <span v-if="nextWeekLabel" class="week-separator" aria-hidden="true" />
       <var-chip
         v-if="nextWeekLabel"
         class="week-chip"
@@ -90,6 +92,15 @@ const emit = defineEmits<{
 }
 
 .day-chip.is-selected { font-weight: 700; }
+
+.week-separator {
+  align-self: stretch;
+  width: 1px;
+  margin: 4px 8px;
+  flex: 0 0 auto;
+  border-radius: 1px;
+  background-color: var(--color-outline-variant, color-mix(in srgb, currentColor 25%, transparent));
+}
 
 .week-chip {
   cursor: pointer;
