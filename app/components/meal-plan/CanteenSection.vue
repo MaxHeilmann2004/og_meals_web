@@ -13,12 +13,13 @@
 
     <div class="meals-grid">
       <MealCard
-        v-for="meal in canteen.mealsForSelectedDay"
+        v-for="(meal, index) in canteen.mealsForSelectedDay"
         :key="meal.id"
         :meal="meal"
         :canteen="canteen"
         :weekday="weekday"
         :layout="layout"
+        :priority="prioritizeFirstImage && index === 0"
         @select="emit('select-meal', meal, canteen)"
       />
     </div>
@@ -36,6 +37,7 @@ defineProps<{
   canteen: CanteenWithMeals
   weekday: string
   layout: 'mobile' | 'desktop'
+  prioritizeFirstImage?: boolean
   capacity: CanteenCapacity | null
   expectedCapacity: CanteenCapacityPredictionPoint | null
   isToday: boolean

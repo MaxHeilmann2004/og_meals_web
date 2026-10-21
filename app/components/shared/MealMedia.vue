@@ -7,6 +7,7 @@
       :badge-position="badgePosition"
       :item-border-radius-px="itemBorderRadiusPx"
       :collapsed-pill-width-px="collapsedPillWidthPx"
+      :priority="priority"
       @image-change="emit('image-change', $event)"
     />
     <div v-else-if="images.length === 1" class="single-image-wrapper">
@@ -14,10 +15,11 @@
         :meal-image="images[0]!"
         :content-description="contentDescription"
         :badge-position="badgePosition"
+        :priority="priority"
       />
     </div>
     <div v-else class="empty-image-placeholder">
-      <img src="/meal_placeholder.png" alt="No image" class="placeholder-bg" />
+      <img src="/meal_placeholder.webp" alt="No image" class="placeholder-bg" loading="lazy" decoding="async" />
       <div class="placeholder-overlay">
         <span>Kein Bild verfügbar</span>
       </div>
@@ -39,10 +41,12 @@ withDefaults(defineProps<{
   badgePosition?: 'top-right' | 'bottom-right'
   itemBorderRadiusPx?: number
   collapsedPillWidthPx?: number
+  priority?: boolean
 }>(), {
   variant: 'detail',
   badgePosition: 'top-right',
   itemBorderRadiusPx: 28,
+  priority: false,
 })
 </script>
 

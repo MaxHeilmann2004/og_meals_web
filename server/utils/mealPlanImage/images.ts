@@ -5,9 +5,9 @@ import { collectImages } from './markup'
 
 export type AssetFetcher = (path: string) => Promise<Response>
 
-const allowedPathPrefixes = ['/api/backend/', '/icons/', '/ic_ai.svg', '/meal_placeholder.png']
+const allowedPathPrefixes = ['/api/backend/', '/icons/', '/ic_ai.svg', '/meal_placeholder.webp']
 const internalOrigin = 'http://internal.invalid'
-const placeholderPath = '/meal_placeholder.png'
+const placeholderPath = '/meal_placeholder.webp'
 
 const toDataUri = (contentType: string, data: Uint8Array | string) =>
   `data:${contentType};base64,${Buffer.from(data).toString('base64')}`

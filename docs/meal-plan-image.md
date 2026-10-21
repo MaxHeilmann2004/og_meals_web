@@ -151,7 +151,7 @@ Outfit (OFL-Lizenz) in den Schnitten 400, 500 und 700 als `.woff`. Satori und re
 
 ### Bilder: `server/utils/mealPlanImage/images.ts`
 
-- Es werden nur Bilder von gleichem Ursprung geladen: Pfade unter `/api/backend/`, `/icons/`, `/ic_ai.svg` und `/meal_placeholder.png`. Alles andere wird durch den Platzhalter ersetzt (Schutz vor SSRF).
+- Es werden nur Bilder von gleichem Ursprung geladen: Pfade unter `/api/backend/`, `/icons/`, `/ic_ai.svg` und `/meal_placeholder.webp`. Alles andere wird durch den Platzhalter ersetzt (Schutz vor SSRF).
 - Alle Rasterbilder werden zu JPEG umkodiert und auf die benötigte Größe verkleinert (Satori kann kein WebP).
 - Ab 1000 ms (`SLOW_ASSET_MS`) gilt ein Bild im Log als langsam.
 
