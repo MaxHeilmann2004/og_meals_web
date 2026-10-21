@@ -18,8 +18,9 @@ export default defineConfig({
     maskable: {
       ...preset.maskable,
       sizes: [512, 1024],
-      // Keep the logo inside the maskable safe zone (circle, 80% diameter)
-      padding: 0.4,
+      // Keep the logo well inside the maskable safe zone: launchers mask to circles/squircles
+      // and some crop more than the 80% spec minimum
+      padding: 0.5,
       resizeOptions: {
         ...preset.maskable.resizeOptions,
         background: '#201A19',
