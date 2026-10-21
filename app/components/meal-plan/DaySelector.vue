@@ -96,10 +96,11 @@ const emit = defineEmits<{
   user-select: none;
 }
 
-.week-chip-chevron {
-  display: inline-block;
-  flex: 0 0 auto;
-  vertical-align: middle;
-  margin: 0 -2px 2px;
+.week-chip :deep(.var-chip__text-normal) {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
+
+.week-chip-chevron { flex: 0 0 auto; }
 </style>
