@@ -70,8 +70,8 @@ export default defineNuxtConfig({
         { name: 'mobile-web-app-capable', content: 'yes' }
       ],
       link: [
-        { rel: 'icon', href: '/favicon.ico?v=2', sizes: '48x48' },
-        { rel: 'icon', href: '/icon.svg?v=2', sizes: 'any', type: 'image/svg+xml' },
+        { rel: 'icon', href: '/favicon.ico?v=3', sizes: '48x48' },
+        { rel: 'icon', href: '/icon.svg?v=3', sizes: 'any', type: 'image/svg+xml' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png?v=3' }
       ]
     }
