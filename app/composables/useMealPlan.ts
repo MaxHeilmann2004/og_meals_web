@@ -12,18 +12,25 @@ import { getInitialDayIndex, getWeekDates } from '~/utils/meal/week'
 export const useMealPlan = async (enabled: Ref<boolean>) => {
   const filterStore = useFilterStore()
   const canteenStore = useCanteenStore()
-  const weekDates = getWeekDates()
-  const startOfWeek = formatCalendarDate(weekDates[0]!)
-  const endOfWeek = formatCalendarDate(weekDates[4]!)
+  const weekOffset = ref(0)
+  const weekDates = computed(() => getWeekDates(new Date(), weekOffset.value))
+  const startOfWeek = computed(() => formatCalendarDate(weekDates.value[0]!))
+  const endOfWeek = computed(() => formatCalendarDate(weekDates.value[4]!))
 
   const selectedDayIndex = ref(getInitialDayIndex())
-  const selectedDayDateStr = computed(() => formatCalendarDate(weekDates[selectedDayIndex.value]!))
+  const selectedDayDateStr = computed(() => formatCalendarDate(weekDates.value[selectedDayIndex.value]!))
 
   const { data, pending, error, refresh } = await useAsyncData<MealsApiResponse>(
     'meals-week',
-    () => mealsApi.getWeek(startOfWeek, endOfWeek),
-    { immediate: enabled.value, watch: [enabled] },
+    () => mealsApi.getWeek(startOfWeek.value, endOfWeek.value),
+    { immediate: enabled.value, watch: [enabled, weekOffset] },
   )
+
+  const setWeekOffset = (offset: number) => {
+    if (offset === weekOffset.value) return
+    weekOffset.value = offset
+    selectedDayIndex.value = getInitialDayIndex(new Date(), offset)
+  }
 
   const rawCanteens = computed(() => [...(data.value?.canteens ?? [])].sort(compareCanteens))
   const rawMeals = computed(() => data.value?.meals ?? [])
@@ -67,6 +74,8 @@ export const useMealPlan = async (enabled: Ref<boolean>) => {
     pending,
     error,
     refresh,
+    weekOffset,
+    setWeekOffset,
     rawCanteens,
     selectedDayIndex,
     selectedDayDateStr,

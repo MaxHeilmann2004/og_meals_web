@@ -23,6 +23,14 @@ Start the development server at `http://localhost:3000`:
 pnpm dev
 ```
 
+### Local development with a mock backend
+
+Without a valid verification code for the real backend, run `pnpm dev:mock`. It starts a mock backend with generated meals for the current and next week (plus capacity and reviews) and `nuxt dev` against it. Open `http://localhost:3000/?verification=dev-token`. Set `MOCK_PUBLISH_NEXT_WEEK=0` to simulate an unpublished next week. See `scripts/dev-mock.mjs`.
+
+## Meal plan weeks
+
+The last chip after the weekday chips ("Nächste Woche ›") switches to the next week; in that week the first chip ("‹ Aktuelle Woche") leads back. On weekends the current week already shows the following week.
+
 ## Production
 
 Create a production build:

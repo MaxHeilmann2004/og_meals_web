@@ -24,6 +24,30 @@ test.describe('meal plan', () => {
     await expect(page.locator('.meal-title').first()).toHaveText('Tagesgericht 2')
   })
 
+  test('switches to the next week and back', async ({ page }) => {
+    const requestedStarts: string[] = []
+    page.on('request', (request) => {
+      const url = new URL(request.url())
+      if (url.pathname.endsWith('/meals')) requestedStarts.push(url.searchParams.get('start') ?? '')
+    })
+
+    const nextWeekChip = page.locator('.week-chip').filter({ hasText: 'Nächste Woche' })
+    const currentWeekChip = page.locator('.week-chip').filter({ hasText: 'Aktuelle Woche' })
+    await expect(currentWeekChip).toHaveCount(0)
+
+    await nextWeekChip.click()
+
+    await expect(currentWeekChip).toBeVisible()
+    await expect(nextWeekChip).toHaveCount(0)
+    await expect.poll(() => requestedStarts).toContain('2025-01-13')
+    await expect(page.locator('.day-chip').first()).toHaveClass(/is-selected/)
+    await expect(page.locator('.meal-title').first()).toContainText('Gegrilltes Gemüse')
+
+    await currentWeekChip.click()
+    await expect(nextWeekChip).toBeVisible()
+    await expect(currentWeekChip).toHaveCount(0)
+  })
+
   test('opens the filter UI and applies the salad exclusion toggle', async ({ page }) => {
     await expect(page.locator('.meal-title').filter({ hasText: 'Bunter Salat' })).toHaveCount(0)
 

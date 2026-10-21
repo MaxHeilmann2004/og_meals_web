@@ -15,7 +15,7 @@
     />
 
     <div v-if="totalMealsForSelectedDay === 0 && !pending" class="no-meals-state">
-      <p>Keine Gerichte für diesen Tag verfügbar.</p>
+      <p>{{ isFutureWeek ? 'Für diesen Tag wurde noch kein Speiseplan veröffentlicht.' : 'Keine Gerichte für diesen Tag verfügbar.' }}</p>
     </div>
   </div>
 </template>
@@ -32,6 +32,7 @@ defineProps<{
   layout: 'mobile' | 'desktop'
   totalMealsForSelectedDay: number
   pending: boolean
+  isFutureWeek?: boolean
   selectedDayIsToday: boolean
   capacityPending: boolean
   expectationPending: boolean
