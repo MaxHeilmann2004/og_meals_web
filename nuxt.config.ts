@@ -72,7 +72,7 @@ export default defineNuxtConfig({
       link: [
         { rel: 'icon', href: '/favicon.ico?v=2', sizes: '48x48' },
         { rel: 'icon', href: '/icon.svg?v=2', sizes: 'any', type: 'image/svg+xml' },
-        { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png?v=2' }
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon-180x180.png?v=3' }
       ]
     }
   },
@@ -91,10 +91,12 @@ export default defineNuxtConfig({
       start_url: '/',
       scope: '/',
       icons: [
-        { src: 'pwa-64x64.png?v=2', sizes: '64x64', type: 'image/png' },
-        { src: 'pwa-192x192.png?v=2', sizes: '192x192', type: 'image/png' },
-        { src: 'pwa-512x512.png?v=2', sizes: '512x512', type: 'image/png' },
-        { src: 'maskable-icon-512x512.png?v=2', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+        { src: 'pwa-64x64.png?v=3', sizes: '64x64', type: 'image/png', purpose: 'any' },
+        { src: 'pwa-192x192.png?v=3', sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: 'pwa-512x512.png?v=3', sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: 'pwa-1024x1024.png?v=3', sizes: '1024x1024', type: 'image/png', purpose: 'any' },
+        { src: 'maskable-icon-512x512.png?v=3', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        { src: 'maskable-icon-1024x1024.png?v=3', sizes: '1024x1024', type: 'image/png', purpose: 'maskable' }
       ]
     },
     workbox: {
