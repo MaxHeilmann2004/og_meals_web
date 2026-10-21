@@ -26,7 +26,7 @@ test.describe('responsive filter UI', () => {
 
     await expect(page.locator('.filter-panel')).toBeVisible()
     if (!isWideViewport(page)) {
-      await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('hidden')
+      await expect.poll(() => page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden')
     }
   })
 
@@ -37,6 +37,6 @@ test.describe('responsive filter UI', () => {
     await page.locator('.filter-backdrop').click({ position: { x: 4, y: 4 } })
 
     await expect(page.locator('.filter-panel')).toBeHidden()
-    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('')
+    await expect.poll(() => page.evaluate(() => document.documentElement.style.overflow)).toBe('')
   })
 })
