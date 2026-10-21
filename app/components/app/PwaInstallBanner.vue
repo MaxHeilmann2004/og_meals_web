@@ -35,23 +35,25 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useNuxtApp } from '#app'
-import { isBannerSnoozed, isIosSafari, isStandaloneDisplay, snoozeBanner } from '~/utils/pwa/install'
+import { isBannerSnoozed, isIosSafari, isMobileDevice, isStandaloneDisplay, snoozeBanner } from '~/utils/pwa/install'
 
 const { $pwa } = useNuxtApp()
 
 const standalone = ref(true)
+const mobile = ref(false)
 const ios = ref(false)
 const snoozed = ref(true)
 
 onMounted(() => {
   standalone.value = isStandaloneDisplay()
+  mobile.value = isMobileDevice(navigator.userAgent, navigator.maxTouchPoints)
   ios.value = isIosSafari(navigator.userAgent, navigator.maxTouchPoints)
   snoozed.value = isBannerSnoozed(localStorage)
 })
 
 // 'prompt': browser offers a native install prompt; 'ios': manual "Add to Home Screen" hint.
 const mode = computed<'prompt' | 'ios' | null>(() => {
-  if (standalone.value || snoozed.value || $pwa?.isPWAInstalled) return null
+  if (!mobile.value || standalone.value || snoozed.value || $pwa?.isPWAInstalled) return null
   if ($pwa?.showInstallPrompt) return 'prompt'
   return ios.value ? 'ios' : null
 })

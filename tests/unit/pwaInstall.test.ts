@@ -4,6 +4,7 @@ import {
   PWA_BANNER_SNOOZE_MS,
   isBannerSnoozed,
   isIosSafari,
+  isMobileDevice,
   isStandaloneDisplay,
   snoozeBanner,
 } from '~/utils/pwa/install'
@@ -18,6 +19,19 @@ describe('isIosSafari', () => {
     expect(isIosSafari(ipadSafari, 5)).toBe(true)
     expect(isIosSafari(ipadSafari, 0)).toBe(false)
     expect(isIosSafari(iphoneChrome)).toBe(false)
+  })
+})
+
+describe('isMobileDevice', () => {
+  const androidChrome = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36'
+  const desktopChrome = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'
+
+  it('treats phones and tablets as mobile but not desktops', () => {
+    expect(isMobileDevice(iphoneSafari)).toBe(true)
+    expect(isMobileDevice(ipadSafari, 5)).toBe(true)
+    expect(isMobileDevice(androidChrome)).toBe(true)
+    expect(isMobileDevice(desktopChrome)).toBe(false)
+    expect(isMobileDevice(ipadSafari, 0)).toBe(false)
   })
 })
 

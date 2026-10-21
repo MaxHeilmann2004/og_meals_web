@@ -18,6 +18,9 @@ export const isStandaloneDisplay = (win: Window = window) => {
 export const isIosDevice = (userAgent: string, maxTouchPoints = 0) =>
   /iPad|iPhone|iPod/.test(userAgent) || (/Macintosh/.test(userAgent) && maxTouchPoints > 1)
 
+export const isMobileDevice = (userAgent: string, maxTouchPoints = 0) =>
+  isIosDevice(userAgent, maxTouchPoints) || /Android|Mobi/.test(userAgent)
+
 // Only Safari on iOS can add a site to the home screen; in-app browsers and other iOS browsers cannot.
 export const isIosSafari = (userAgent: string, maxTouchPoints = 0) =>
   isIosDevice(userAgent, maxTouchPoints) && /Safari/.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA|FBAN|FBAV|Instagram/.test(userAgent)
