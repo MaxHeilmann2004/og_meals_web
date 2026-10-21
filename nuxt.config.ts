@@ -84,7 +84,8 @@ export default defineNuxtConfig({
       short_name: 'OG Meals',
       description: 'Der inoffizielle Speiseplan für die Otto Group Kantinen.',
       lang: 'de',
-      theme_color: '#EE0020',
+      // Installed PWAs take the system bar colors (incl. the Android navigation bar) from the manifest.
+      theme_color: '#201A19',
       background_color: '#201A19',
       display: 'standalone',
       orientation: 'portrait',
