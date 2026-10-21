@@ -8,6 +8,7 @@
     "check": "pnpm lint && pnpm typecheck && pnpm typecheck:tests && pnpm test && pnpm build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
+    "generate:pwa-assets": "pwa-assets-generator",
     "lint": "eslint .",
     "preview": "nuxt preview",
     "test": "vitest run",
