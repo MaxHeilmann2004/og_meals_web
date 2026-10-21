@@ -10,7 +10,7 @@
     "dev:mock": "node scripts/dev-mock.mjs",
     "generate": "nuxt generate",
     "generate:pwa-assets": "pwa-assets-generator",
-    "generate:pwa-monochrome": "node scripts/generate-monochrome-icon.mjs",
+    "generate:pwa-maskable": "node scripts/generate-maskable-icon.mjs",
     "lint": "eslint .",
     "preview": "nuxt preview",
     "test": "vitest run",
