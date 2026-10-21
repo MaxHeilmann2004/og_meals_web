@@ -1,6 +1,6 @@
 <template>
   <section v-if="visible" class="pwa-banner" role="region" aria-label="App installieren">
-    <img class="pwa-banner-icon" src="/icon.svg?v=3" alt="" width="40" height="40" />
+    <img class="pwa-banner-icon" src="/icon.svg?v=4" alt="" width="40" height="40" />
 
     <div class="pwa-banner-text">
       <p class="pwa-banner-title">OG Meals als App nutzen</p>
@@ -84,6 +84,9 @@ const dismiss = () => {
   flex: none;
   width: 40px;
   height: 40px;
+  border-radius: 4px;
+  /* The red icon tile needs a light outline to stand out on the red banner */
+  box-shadow: 0 0 0 2px #fff;
 }
 
 .pwa-banner-text {
