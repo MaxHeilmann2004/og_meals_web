@@ -25,12 +25,23 @@ export const isMealCategoryIncluded = (meal: Meal) =>
   [meal.category?.unifiedName, meal.category?.name]
     .some(name => allowedCategories.has(normalizeCategoryName(name)))
 
+/** Matches by ID or by the normalized name or display name, so `Elbe`, `elbe` and `8` all select the same canteen. */
+export const isCanteenSelected = (canteen: Canteen, filter: readonly (number | string)[]) => {
+  const names = [canteen.name, canteen.displayName].map(normalizeCategoryName)
+  return filter.some((entry) => {
+    if (String(entry).trim() === String(canteen.id)) return true
+    const normalized = normalizeCategoryName(String(entry))
+    return normalized !== '' && names.includes(normalized)
+  })
+}
+
 export const selectMealPlanImageCanteens = (
   canteens: Canteen[],
   meals: Meal[],
   date: string,
+  canteenFilter: readonly (number | string)[] = MEAL_PLAN_IMAGE_CANTEEN_IDS,
 ): CanteenWithMeals[] => [...canteens]
-  .filter(canteen => MEAL_PLAN_IMAGE_CANTEEN_IDS.includes(canteen.id))
+  .filter(canteen => isCanteenSelected(canteen, canteenFilter))
   .sort(compareCanteens)
   .map(canteen => ({
     ...canteen,

@@ -39,12 +39,13 @@ Alle Parameter sind optional.
 | `scale` | `1` | Ganzzahl `1` bis `3` | Pixeldichte. Das Bild wird `scale`-mal so groß und dadurch schärfer, das Layout bleibt gleich. Breite 1300 mit `scale=2` ergibt 2600 px. |
 | `textScale` | `1` | Zahl `0.5` bis `3` (Dezimalpunkt, auf 2 Stellen gerundet) | Textgröße. Skaliert alle Texte sowie die Bewertungssterne und Feature-Icons. Die Kartenhöhe wächst mit dem Text, Spaltenzahl und Kartenbreite bleiben gleich. |
 | `theme` | `light` | `light`, `dark` | Farbschema. |
+| `canteens` | `8,2` (Elbe, bonprix) | Kommagetrennte Kantinen-IDs oder -Namen, z. B. `8`, `bonprix` oder `Elbe,2` | Kantinen, die im Bild erscheinen. Namen werden ohne Beachtung von Groß-/Kleinschreibung, Umlauten und Sonderzeichen mit Name und Anzeigename der Kantine verglichen (exakter Treffer, kein Teilstring). Die Reihenfolge im Bild richtet sich wie in der App nach der Kantine, nicht nach dem Parameter. Doppelte Einträge werden ignoriert, unbekannte IDs oder Namen ergeben keinen Abschnitt. Ohne Angabe gilt `MEAL_PLAN_IMAGE_CANTEEN_IDS`. Namen mit Komma lassen sich nicht angeben. |
 | `studentPrices` | aus | `1` = an, alles andere = aus | Zeigt zusätzlich den Studentenpreis (der reguläre Preis wird durchgestrichen). Gerichte ohne Studentenpreis zeigen nur den regulären Preis. |
 | `transparent` | aus | `1` = an, alles andere = aus | Transparenter Hintergrund statt der Hintergrundfarbe des Themes. |
 | `inline` | aus | `1` = an, alles andere = aus | Zeigt das Bild im Browser an (`Content-Disposition: inline`) statt es herunterzuladen (`attachment`). |
 | `verification` | – | Verifizierungscode | Alternative zum Header, siehe [Authentifizierung](#authentifizierung). |
 
-Ungültige Werte (außerhalb des Bereichs, keine Zahl, falsches Datum, unbekanntes Theme) ergeben `400`. Unbekannte Parameter werden ignoriert. Die Flags `studentPrices`, `transparent` und `inline` werden nur mit genau `1` aktiv. Bei `width` und `scale` werden Dezimalzahlen auf ganze Zahlen gerundet.
+Ungültige Werte (außerhalb des Bereichs, keine Zahl, falsches Datum, unbekanntes Theme, leere Einträge in `canteens`) ergeben `400`. Unbekannte Parameter werden ignoriert. Die Flags `studentPrices`, `transparent` und `inline` werden nur mit genau `1` aktiv. Bei `width` und `scale` werden Dezimalzahlen auf ganze Zahlen gerundet.
 
 ### Spalten und Breite
 
@@ -97,7 +98,7 @@ Gerenderte Bilder werden im Arbeitsspeicher des Servers gehalten. Parallele Anfr
 | --- | --- | --- |
 | Gültigkeit | 5 Minuten | `CACHE_TTL_MS` in `server/utils/mealPlanImage/render.ts` |
 | Maximale Einträge | 24 (der älteste wird zuerst verdrängt) | `CACHE_MAX_ENTRIES` in `server/utils/mealPlanImage/render.ts` |
-| Cache-Schlüssel | `date`, `width`, `scale`, `textScale`, `theme`, `studentPrices`, `transparent` | `cacheKey` in `server/utils/mealPlanImage/render.ts` |
+| Cache-Schlüssel | `date`, `width`, `scale`, `textScale`, `theme`, `canteens` (sortiert, ohne Beachtung der Groß-/Kleinschreibung), `studentPrices`, `transparent` | `cacheKey` in `server/utils/mealPlanImage/render.ts` |
 
 `inline` und der Verifizierungscode gehören nicht zum Schlüssel. Wer ein frisch gerendertes Bild erzwingen will, ändert einen Parameter des Schlüssels geringfügig (z. B. `textScale=1.01`) oder wartet fünf Minuten. Der Cache geht beim Neustart des Servers verloren; der erste Render danach dauert länger, weil Module und Schriften geladen werden.
 
@@ -121,7 +122,7 @@ Diese Werte sind nicht per URL änderbar, sondern im Quelltext.
 
 | Konstante | Aktuell | Bedeutung |
 | --- | --- | --- |
-| `MEAL_PLAN_IMAGE_CANTEEN_IDS` | `8` (Elbe), `2` (bonprix) | Kantinen-IDs, die im Bild erscheinen |
+| `MEAL_PLAN_IMAGE_CANTEEN_IDS` | `8` (Elbe), `2` (bonprix) | Standard für den Parameter `canteens` |
 | `MEAL_PLAN_IMAGE_CATEGORIES` | Grill, The Original, F&T Vegan, Pasta, Pizza, Heimatküche, Vital, Live-Counter | Kategorien, die im Bild erscheinen |
 | `MEAL_PLAN_IMAGE_DEFAULT_WIDTH` | `1300` | Standardbreite |
 | `MEAL_PLAN_IMAGE_MIN_WIDTH` / `MEAL_PLAN_IMAGE_MAX_WIDTH` | `320` / `2400` | Grenzen für `width` |
@@ -179,6 +180,10 @@ curl -H "x-verification-code: <code>" -o speiseplan.png \
 # Bestimmter Tag, dunkel, doppelte Pixeldichte
 curl -H "x-verification-code: <code>" -o speiseplan.png \
   "https://<host>/api/meal-plan-image?date=2026-10-19&theme=dark&scale=2"
+
+# Nur Elbe
+curl -H "x-verification-code: <code>" -o speiseplan.png \
+  "https://<host>/api/meal-plan-image?canteens=elbe"
 
 # Breit mit 5 Spalten, größere Schrift, transparenter Hintergrund, Studentenpreise
 curl -H "x-verification-code: <code>" -o speiseplan.png \

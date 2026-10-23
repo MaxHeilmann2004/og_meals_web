@@ -14,6 +14,7 @@
 import { computed } from 'vue'
 import type { MealsApiResponse } from '~/types'
 import {
+  MEAL_PLAN_IMAGE_CANTEEN_IDS,
   MEAL_PLAN_IMAGE_DEFAULT_WIDTH,
   MEAL_PLAN_IMAGE_MAX_TEXT_SCALE,
   MEAL_PLAN_IMAGE_MAX_WIDTH,
@@ -42,6 +43,10 @@ const textScale = Math.min(
   Math.max(MEAL_PLAN_IMAGE_MIN_TEXT_SCALE, Number.parseFloat(first(query.textScale)) || 1),
 )
 
+const canteenFilter = first(query.canteens)
+  ? first(query.canteens).split(',').map(entry => entry.trim()).filter(Boolean)
+  : MEAL_PLAN_IMAGE_CANTEEN_IDS
+
 const requestId = import.meta.server ? useRequestHeader('x-meal-plan-image-request-id') : undefined
 const mealsRequestStartedAt = Date.now()
 
@@ -67,5 +72,6 @@ const canteens = computed(() => selectMealPlanImageCanteens(
   data.value?.canteens ?? [],
   data.value?.meals ?? [],
   date,
+  canteenFilter,
 ))
 </script>
