@@ -62,6 +62,25 @@ describe('meal plan image selection', () => {
       .toEqual([1, 3, 4, 7, 8, 9, 10, 11])
   })
 
+  it('selects the given canteens instead of the default ones', () => {
+    const canteens = [canteen(8, 'Elbe'), canteen(2, 'bonprix'), canteen(5, 'Andere')]
+    const meals = [meal(1, 8, 'Grill'), meal(2, 2, 'Grill'), meal(3, 5, 'Grill')]
+
+    const result = selectMealPlanImageCanteens(canteens, meals, '2025-01-06', [5, 8])
+
+    expect(result.map(entry => entry.id)).toEqual([8, 5])
+  })
+
+  it('selects canteens by name, ignoring case and special characters', () => {
+    const canteens = [canteen(8, 'Elbe'), canteen(2, 'bonprix'), canteen(5, 'Café Süd')]
+    const meals = [meal(1, 8, 'Grill'), meal(2, 2, 'Grill'), meal(3, 5, 'Grill')]
+
+    expect(selectMealPlanImageCanteens(canteens, meals, '2025-01-06', ['BonPrix']).map(entry => entry.id)).toEqual([2])
+    expect(selectMealPlanImageCanteens(canteens, meals, '2025-01-06', ['elbe', '5']).map(entry => entry.id)).toEqual([8, 5])
+    expect(selectMealPlanImageCanteens(canteens, meals, '2025-01-06', ['cafe sud', 'Café Süd']).map(entry => entry.id)).toEqual([5])
+    expect(selectMealPlanImageCanteens(canteens, meals, '2025-01-06', ['']).map(entry => entry.id)).toEqual([])
+  })
+
   it('omits canteens without matching meals and meals of other days', () => {
     const result = selectMealPlanImageCanteens(
       [canteen(8, 'Elbe'), canteen(2, 'bonprix')],
@@ -120,6 +139,7 @@ describe('meal plan image options', () => {
       scale: 1,
       textScale: 1,
       theme: 'light',
+      canteens: ['8', '2'],
       studentPrices: false,
       transparent: false,
       inline: false,
@@ -133,6 +153,7 @@ describe('meal plan image options', () => {
       scale: '2',
       textScale: '1.25',
       theme: 'dark',
+      canteens: '5, Elbe,5,elbe',
       studentPrices: '1',
       transparent: '1',
       inline: '1',
@@ -142,6 +163,7 @@ describe('meal plan image options', () => {
       scale: 2,
       textScale: 1.25,
       theme: 'dark',
+      canteens: ['5', 'Elbe'],
       studentPrices: true,
       transparent: true,
       inline: true,
@@ -159,6 +181,8 @@ describe('meal plan image options', () => {
     { textScale: '5' },
     { textScale: 'big' },
     { theme: 'blue' },
+    { canteens: '8,,2' },
+    { canteens: ' , ' },
   ])('rejects invalid input %j', (query) => {
     expect(() => parseMealPlanImageOptions(query, now)).toThrowError(MealPlanImageOptionsError)
   })

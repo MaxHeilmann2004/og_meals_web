@@ -1,4 +1,5 @@
 import {
+  MEAL_PLAN_IMAGE_CANTEEN_IDS,
   MEAL_PLAN_IMAGE_DEFAULT_WIDTH,
   MEAL_PLAN_IMAGE_MAX_SCALE,
   MEAL_PLAN_IMAGE_MAX_TEXT_SCALE,
@@ -14,6 +15,8 @@ export interface MealPlanImageOptions {
   scale: number
   textScale: number
   theme: MealPlanImageTheme
+  /** Canteen IDs or names; names can only be resolved once the canteens are loaded from the backend. */
+  canteens: string[]
   studentPrices: boolean
   transparent: boolean
   inline: boolean
@@ -67,6 +70,21 @@ const parseTextScale = (value: string | undefined) => {
   return Math.round(parsed * 100) / 100
 }
 
+const parseCanteens = (value: string | undefined) => {
+  if (value === undefined || value.trim() === '') return MEAL_PLAN_IMAGE_CANTEEN_IDS.map(String)
+  const tokens = value.split(',').map(part => part.trim())
+  if (tokens.some(token => token === '')) {
+    throw badRequest('Ungültiger Wert für canteens, erwartet wird eine kommagetrennte Liste von Kantinen-IDs oder -Namen, z. B. 8,bonprix.')
+  }
+  const seen = new Set<string>()
+  return tokens.filter((token) => {
+    const key = token.toLowerCase()
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 export const parseMealPlanImageOptions = (
   query: Record<string, string | undefined>,
   now = new Date(),
@@ -80,6 +98,7 @@ export const parseMealPlanImageOptions = (
     scale: parseNumber(query.scale, 'scale', 1, MEAL_PLAN_IMAGE_MAX_SCALE, 1),
     textScale: parseTextScale(query.textScale),
     theme,
+    canteens: parseCanteens(query.canteens),
     studentPrices: query.studentPrices === '1',
     transparent: query.transparent === '1',
     inline: query.inline === '1',
