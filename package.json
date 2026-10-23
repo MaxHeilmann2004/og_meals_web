@@ -28,7 +28,7 @@
     "@unovis/vue": "^1.6.7",
     "@varlet/nuxt": "^0.1.5",
     "@varlet/touch-emulator": "^3.18.2",
-    "@varlet/ui": "^3.18.2",
+    "@varlet/ui": "^3.20.7",
     "@vueuse/core": "^14.3.0",
     "@zxing/browser": "0.2.1",
     "nuxt": "^4.4.8",
