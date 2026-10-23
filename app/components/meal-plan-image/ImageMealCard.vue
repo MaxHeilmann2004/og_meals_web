@@ -163,7 +163,6 @@ const titleStyle = computed(() => ({
   fontSize: fontSize(16),
   fontWeight: 700,
   lineHeight: 1.4,
-  lineClamp: 2,
   wordBreak: 'break-word',
   color: props.colors.onSurface,
 }))
