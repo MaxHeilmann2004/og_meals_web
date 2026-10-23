@@ -25,6 +25,9 @@ export const isMobileDevice = (userAgent: string, maxTouchPoints = 0) =>
 export const isIosSafari = (userAgent: string, maxTouchPoints = 0) =>
   isIosDevice(userAgent, maxTouchPoints) && /Safari/.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS|GSA|FBAN|FBAV|Instagram/.test(userAgent)
 
+// Firefox for Android has no install prompt event; installing works through its browser menu.
+export const isFirefoxAndroid = (userAgent: string) => /Android/.test(userAgent) && /Firefox\//.test(userAgent)
+
 export const isBannerSnoozed = (storage: Pick<Storage, 'getItem'>, now = Date.now()) => {
   try {
     const dismissedAt = Number(storage.getItem(PWA_BANNER_DISMISSED_KEY))

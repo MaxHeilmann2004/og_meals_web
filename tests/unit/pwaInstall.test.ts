@@ -3,6 +3,7 @@ import {
   PWA_BANNER_DISMISSED_KEY,
   PWA_BANNER_SNOOZE_MS,
   isBannerSnoozed,
+  isFirefoxAndroid,
   isIosSafari,
   isMobileDevice,
   isStandaloneDisplay,
@@ -19,6 +20,14 @@ describe('isIosSafari', () => {
     expect(isIosSafari(ipadSafari, 5)).toBe(true)
     expect(isIosSafari(ipadSafari, 0)).toBe(false)
     expect(isIosSafari(iphoneChrome)).toBe(false)
+  })
+})
+
+describe('isFirefoxAndroid', () => {
+  it('detects Firefox on Android only', () => {
+    expect(isFirefoxAndroid('Mozilla/5.0 (Android 14; Mobile; rv:120.0) Gecko/120.0 Firefox/120.0')).toBe(true)
+    expect(isFirefoxAndroid('Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 Chrome/120.0 Mobile Safari/537.36')).toBe(false)
+    expect(isFirefoxAndroid('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:120.0) Gecko/20100101 Firefox/120.0')).toBe(false)
   })
 })
 

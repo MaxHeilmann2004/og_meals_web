@@ -16,6 +16,9 @@
         </svg>
         und wähle „Zum Home-Bildschirm“.
       </p>
+      <p v-else-if="mode === 'firefox-android'" class="pwa-banner-description">
+        Öffne das Browser-Menü (⋮) und wähle „Installieren“.
+      </p>
     </div>
 
     <div class="pwa-banner-actions">
@@ -35,27 +38,30 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useNuxtApp } from '#app'
-import { isBannerSnoozed, isIosSafari, isMobileDevice, isStandaloneDisplay, snoozeBanner } from '~/utils/pwa/install'
+import { isBannerSnoozed, isFirefoxAndroid, isIosSafari, isMobileDevice, isStandaloneDisplay, snoozeBanner } from '~/utils/pwa/install'
 
 const { $pwa } = useNuxtApp()
 
 const standalone = ref(true)
 const mobile = ref(false)
 const ios = ref(false)
+const firefoxAndroid = ref(false)
 const snoozed = ref(true)
 
 onMounted(() => {
   standalone.value = isStandaloneDisplay()
   mobile.value = isMobileDevice(navigator.userAgent, navigator.maxTouchPoints)
   ios.value = isIosSafari(navigator.userAgent, navigator.maxTouchPoints)
+  firefoxAndroid.value = isFirefoxAndroid(navigator.userAgent)
   snoozed.value = isBannerSnoozed(localStorage)
 })
 
-// 'prompt': browser offers a native install prompt; 'ios': manual "Add to Home Screen" hint.
-const mode = computed<'prompt' | 'ios' | null>(() => {
+// 'prompt': native install prompt; 'ios' / 'firefox-android': manual install hints.
+const mode = computed<'prompt' | 'ios' | 'firefox-android' | null>(() => {
   if (!mobile.value || standalone.value || snoozed.value || $pwa?.isPWAInstalled) return null
   if ($pwa?.showInstallPrompt) return 'prompt'
-  return ios.value ? 'ios' : null
+  if (ios.value) return 'ios'
+  return firefoxAndroid.value ? 'firefox-android' : null
 })
 
 const visible = computed(() => mode.value !== null)
