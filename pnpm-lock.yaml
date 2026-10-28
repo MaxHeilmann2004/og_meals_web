@@ -27,8 +27,8 @@ importers:
         specifier: ^0.1.5
         version: 0.1.5(@varlet/ui@3.20.3(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3)(vue@3.5.41(typescript@5.9.3)))(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(debug@4.4.3(supports-color@10.2.2))(magicast@0.5.4)(rollup@3.30.0)(supports-color@10.2.2)(typescript@5.9.3)(vite@8.2.1(@types/node@26.6.1)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.50.0)(tsx@4.23.12)(yaml@2.9.0))(vue@3.5.41(typescript@5.9.3))
       '@varlet/touch-emulator':
-        specifier: ^3.18.2
-        version: 3.20.3
+        specifier: ^3.20.8
+        version: 3.20.8
       '@varlet/ui':
         specifier: ^3.18.2
         version: 3.20.3(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3)(vue@3.5.41(typescript@5.9.3))
@@ -2669,8 +2669,8 @@ packages:
   '@varlet/shared@3.20.3':
     resolution: {integrity: sha512-Sws59++IW+0InCxIV2asoiO7oFTqcPLyHBhjHZoixRMtw3OK/hP4p48iKk/qf/R3s+o0+kIt/ygVtPonmMTvnw==}
 
-  '@varlet/touch-emulator@3.20.3':
-    resolution: {integrity: sha512-n1QVcjn1CKeTgxZ/1tB43lSfh+rm12uHoYrsH+zOqW2/AgKZQ5cSW2X4m8pSQlHuwPqmQAnhGi1QRfhuvJZ/Dw==}
+  '@varlet/touch-emulator@3.20.8':
+    resolution: {integrity: sha512-uQ0HMJoUc+Tbj64jUILkozM7zIfIadrzsVI3QalwMxEPJXWNy1rbbXU+A5A2cJ9b2xRXruxruyolF0Y11VFufQ==}
 
   '@varlet/ui@3.20.3':
     resolution: {integrity: sha512-4LtoeG1DqH90Yb0yPV1tiJurpll4QRzbbIEIgINvKxHSuwd1CzCHEXPzdApSAp3fQkuJKCEFvtZcPYqOySdIVw==}
@@ -10338,7 +10338,7 @@ snapshots:
       - vite-plus
       - vue
 
-  '@varlet/touch-emulator@3.20.3': {}
+  '@varlet/touch-emulator@3.20.8': {}
 
   '@varlet/ui@3.20.3(conventional-commits-filter@5.0.0)(conventional-commits-parser@6.4.0)(debug@4.4.3(supports-color@10.2.2))(supports-color@10.2.2)(typescript@5.9.3)(vue@3.5.41(typescript@5.9.3))':
     dependencies:
