@@ -6,7 +6,7 @@
         :key="drop.id"
         class="disabled-notice__drop"
         :style="{ left: drop.left, fontSize: drop.size, animationDuration: drop.duration, animationDelay: drop.delay }"
-      >☹</span>
+      >😭</span>
     </div>
     <section class="disabled-notice__card">
       <div class="disabled-notice__icon-wrap">
@@ -76,8 +76,7 @@ const parts = computed(() =>
   position: absolute;
   top: -48px;
   line-height: 1;
-  color: var(--color-primary);
-  opacity: 0.12;
+  opacity: 0.15;
   animation: disabled-notice-fall linear infinite;
 }
 
