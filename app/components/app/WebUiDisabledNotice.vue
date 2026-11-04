@@ -34,16 +34,18 @@
 <script setup lang="ts">
 const props = defineProps<{ message: string }>()
 
-// Each blob is a soft circle that orbits around the viewport center on its own radius and speed.
-const blobs = Array.from({ length: 6 }, (_, i) => ({
+// Each blob is a soft circle orbiting its own anchor point; anchors are spread across the viewport.
+const anchors = [[10, 14], [90, 20], [50, 6], [12, 72], [88, 78], [50, 94]]
+const blobs = anchors.map(([x, y], i) => ({
   id: i,
   style: {
-    '--size': `${42 + (i % 3) * 14}vmax`,
-    '--radius': `${14 + (i % 4) * 7}vmin`,
-    '--duration': `${9 + i * 2}s`,
-    '--delay': `-${i * 4}s`,
+    '--cx': `${x}%`,
+    '--cy': `${y}%`,
+    '--size': `${24 + (i % 3) * 8}vmax`,
+    '--radius': `${8 + (i % 3) * 5}vmin`,
+    '--duration': `${11 + i * 3}s`,
+    '--delay': `-${i * 5}s`,
     '--direction': i % 2 ? 'reverse' : 'normal',
-    opacity: 0.55 + (i % 3) * 0.15,
   },
 }))
 
@@ -89,14 +91,20 @@ const parts = computed(() =>
 
 .disabled-notice__blob {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  top: var(--cy);
+  left: var(--cx);
   width: var(--size);
   height: var(--size);
   margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
   border-radius: 50%;
+  opacity: 0.4;
   background: radial-gradient(circle, var(--color-primary-container) 0, transparent 65%);
   animation: disabled-notice-orbit var(--duration) linear var(--delay) infinite var(--direction);
+}
+
+/* The dark theme's container color is much stronger, so dim it further. */
+:root[var-theme='dark'] .disabled-notice__blob {
+  opacity: 0.2;
 }
 
 @keyframes disabled-notice-orbit {
