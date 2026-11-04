@@ -1,9 +1,6 @@
 <template>
   <VitePwaManifest />
-  <main v-if="uiDisabled" class="ui-disabled" role="alert">
-    <h1>OG Meals</h1>
-    <p>{{ message }}</p>
-  </main>
+  <WebUiDisabledNotice v-if="uiDisabled" :message="message" />
   <NuxtLayout v-else>
     <NuxtPage />
   </NuxtLayout>
@@ -27,19 +24,3 @@ useDark({
   valueLight: 'light',
 })
 </script>
-
-
-
-<style>
-.ui-disabled {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 24px;
-  text-align: center;
-  color: var(--color-on-background, inherit);
-}
-</style>
