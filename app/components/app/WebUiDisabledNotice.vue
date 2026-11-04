@@ -1,5 +1,13 @@
 <template>
   <main class="disabled-notice" role="alert">
+    <div class="disabled-notice__rain" aria-hidden="true">
+      <span
+        v-for="drop in drops"
+        :key="drop.id"
+        class="disabled-notice__drop"
+        :style="{ left: drop.left, fontSize: drop.size, animationDuration: drop.duration, animationDelay: drop.delay }"
+      >☹</span>
+    </div>
     <section class="disabled-notice__card">
       <div class="disabled-notice__icon-wrap">
         <img class="disabled-notice__logo" src="/icon.svg" alt="OG Meals" width="96" height="96">
@@ -22,6 +30,15 @@
 
 <script setup lang="ts">
 const props = defineProps<{ message: string }>()
+
+// Deterministic values keep server and client markup identical (no hydration mismatch).
+const drops = Array.from({ length: 14 }, (_, i) => ({
+  id: i,
+  left: `${(i * 37 + 6) % 96}%`,
+  size: `${18 + ((i * 7) % 4) * 6}px`,
+  duration: `${14 + ((i * 5) % 7)}s`,
+  delay: `-${(i * 3) % 17}s`,
+}))
 
 // Splits the message so plain http(s) URLs become links without rendering raw HTML.
 const parts = computed(() =>
@@ -48,7 +65,32 @@ const parts = computed(() =>
   color: var(--color-on-surface);
 }
 
+.disabled-notice__rain {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.disabled-notice__drop {
+  position: absolute;
+  top: -48px;
+  line-height: 1;
+  color: var(--color-primary);
+  opacity: 0.12;
+  animation: disabled-notice-fall linear infinite;
+}
+
+@keyframes disabled-notice-fall {
+  to { transform: translateY(calc(100vh + 96px)) rotate(12deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disabled-notice__rain { display: none; }
+}
+
 .disabled-notice__card {
+  position: relative;
   max-width: 480px;
   width: 100%;
   padding: 40px 28px 36px;
