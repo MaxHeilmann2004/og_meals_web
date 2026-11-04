@@ -1,5 +1,8 @@
 <template>
   <main class="disabled-notice" role="alert">
+    <div class="disabled-notice__blobs" aria-hidden="true">
+      <span v-for="blob in blobs" :key="blob.id" class="disabled-notice__blob" :style="blob.style" />
+    </div>
     <div class="disabled-notice__rain" aria-hidden="true">
       <span
         v-for="drop in drops"
@@ -30,6 +33,19 @@
 
 <script setup lang="ts">
 const props = defineProps<{ message: string }>()
+
+// Each blob is a soft circle that orbits around the viewport center on its own radius and speed.
+const blobs = Array.from({ length: 6 }, (_, i) => ({
+  id: i,
+  style: {
+    '--size': `${42 + (i % 3) * 14}vmax`,
+    '--radius': `${14 + (i % 4) * 7}vmin`,
+    '--duration': `${9 + i * 2}s`,
+    '--delay': `-${i * 4}s`,
+    '--direction': i % 2 ? 'reverse' : 'normal',
+    opacity: 0.55 + (i % 3) * 0.15,
+  },
+}))
 
 // Deterministic values keep server and client markup identical (no hydration mismatch).
 const drops = Array.from({ length: 14 }, (_, i) => ({
@@ -64,21 +80,28 @@ const parts = computed(() =>
   color: var(--color-on-surface);
 }
 
-.disabled-notice::before {
-  content: '';
+.disabled-notice__blobs {
   position: fixed;
-  inset: -25%;
+  inset: 0;
+  overflow: hidden;
   pointer-events: none;
-  background:
-    radial-gradient(circle at 20% 15%, var(--color-primary-container) 0, transparent 45%),
-    radial-gradient(circle at 85% 90%, var(--color-primary-container) 0, transparent 40%);
-  animation: disabled-notice-drift 5s ease-in-out infinite alternate;
 }
 
-@keyframes disabled-notice-drift {
-  from { transform: translate(-6%, -4%) scale(1); }
-  50% { transform: translate(5%, 6%) scale(1.15); }
-  to { transform: translate(6%, -5%) rotate(8deg) scale(1.05); }
+.disabled-notice__blob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-primary-container) 0, transparent 65%);
+  animation: disabled-notice-orbit var(--duration) linear var(--delay) infinite var(--direction);
+}
+
+@keyframes disabled-notice-orbit {
+  from { transform: rotate(0deg) translateX(var(--radius)) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(var(--radius)) rotate(-360deg); }
 }
 
 .disabled-notice__rain {
@@ -102,7 +125,7 @@ const parts = computed(() =>
 
 @media (prefers-reduced-motion: reduce) {
   .disabled-notice__rain { display: none; }
-  .disabled-notice::before { animation: none; }
+  .disabled-notice__blob { animation: none; }
 }
 
 .disabled-notice__card {
