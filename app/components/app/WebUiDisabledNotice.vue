@@ -42,9 +42,9 @@ const blobs = anchors.map(([x, y], i) => ({
     '--cx': `${x}%`,
     '--cy': `${y}%`,
     '--size': `${24 + (i % 3) * 8}vmax`,
-    '--radius': `${8 + (i % 3) * 5}vmin`,
-    '--duration': `${11 + i * 3}s`,
-    '--delay': `-${i * 5}s`,
+    '--radius': `${12 + (i % 3) * 6}vmin`,
+    '--duration': `${4 + i * 0.8}s`,
+    '--delay': `-${i * 2}s`,
     '--direction': i % 2 ? 'reverse' : 'normal',
   },
 }))
