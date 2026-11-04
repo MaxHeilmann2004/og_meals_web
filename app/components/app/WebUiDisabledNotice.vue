@@ -1,5 +1,16 @@
 <template>
   <main class="disabled-notice" role="alert">
+    <div class="disabled-notice__blobs" aria-hidden="true">
+      <span v-for="blob in blobs" :key="blob.id" class="disabled-notice__blob" :style="blob.style" />
+    </div>
+    <div class="disabled-notice__rain" aria-hidden="true">
+      <span
+        v-for="drop in drops"
+        :key="drop.id"
+        class="disabled-notice__drop"
+        :style="{ left: drop.left, fontSize: drop.size, animationDuration: drop.duration, animationDelay: drop.delay }"
+      >😭</span>
+    </div>
     <section class="disabled-notice__card">
       <div class="disabled-notice__icon-wrap">
         <img class="disabled-notice__logo" src="/icon.svg" alt="OG Meals" width="96" height="96">
@@ -23,6 +34,30 @@
 <script setup lang="ts">
 const props = defineProps<{ message: string }>()
 
+// Each blob is a soft circle orbiting its own anchor point; anchors are spread across the viewport.
+const anchors = [[10, 14], [90, 20], [50, 6], [12, 72], [88, 78], [50, 94]]
+const blobs = anchors.map(([x, y], i) => ({
+  id: i,
+  style: {
+    '--cx': `${x}%`,
+    '--cy': `${y}%`,
+    '--size': `${24 + (i % 3) * 8}vmax`,
+    '--radius': `${12 + (i % 3) * 6}vmin`,
+    '--duration': `${4 + i * 0.8}s`,
+    '--delay': `-${i * 2}s`,
+    '--direction': i % 2 ? 'reverse' : 'normal',
+  },
+}))
+
+// Deterministic values keep server and client markup identical (no hydration mismatch).
+const drops = Array.from({ length: 14 }, (_, i) => ({
+  id: i,
+  left: `${(i * 37 + 6) % 96}%`,
+  size: `${18 + ((i * 7) % 4) * 6}px`,
+  duration: `${14 + ((i * 5) % 7)}s`,
+  delay: `-${(i * 3) % 17}s`,
+}))
+
 // Splits the message so plain http(s) URLs become links without rendering raw HTML.
 const parts = computed(() =>
   props.message
@@ -41,14 +76,68 @@ const parts = computed(() =>
   justify-content: center;
   padding: 24px;
   box-sizing: border-box;
-  background:
-    radial-gradient(circle at 20% 15%, var(--color-primary-container) 0, transparent 45%),
-    radial-gradient(circle at 85% 90%, var(--color-primary-container) 0, transparent 40%),
-    var(--color-body);
+  position: relative;
+  overflow: hidden;
+  background: var(--color-body);
   color: var(--color-on-surface);
 }
 
+.disabled-notice__blobs {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.disabled-notice__blob {
+  position: absolute;
+  top: var(--cy);
+  left: var(--cx);
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  border-radius: 50%;
+  opacity: 0.4;
+  background: radial-gradient(circle, var(--color-primary-container) 0, transparent 65%);
+  animation: disabled-notice-orbit var(--duration) linear var(--delay) infinite var(--direction);
+}
+
+/* The dark theme's container color is much stronger, so dim it further. */
+:root[var-theme='dark'] .disabled-notice__blob {
+  opacity: 0.2;
+}
+
+@keyframes disabled-notice-orbit {
+  from { transform: rotate(0deg) translateX(var(--radius)) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(var(--radius)) rotate(-360deg); }
+}
+
+.disabled-notice__rain {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.disabled-notice__drop {
+  position: absolute;
+  top: -48px;
+  line-height: 1;
+  opacity: 0.15;
+  animation: disabled-notice-fall linear infinite;
+}
+
+@keyframes disabled-notice-fall {
+  to { transform: translateY(calc(100vh + 96px)) rotate(12deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disabled-notice__rain { display: none; }
+  .disabled-notice__blob { animation: none; }
+}
+
 .disabled-notice__card {
+  position: relative;
   max-width: 480px;
   width: 100%;
   padding: 40px 28px 36px;
