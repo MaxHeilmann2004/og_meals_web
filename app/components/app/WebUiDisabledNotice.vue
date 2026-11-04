@@ -72,7 +72,7 @@ const parts = computed(() =>
   background:
     radial-gradient(circle at 20% 15%, var(--color-primary-container) 0, transparent 45%),
     radial-gradient(circle at 85% 90%, var(--color-primary-container) 0, transparent 40%);
-  animation: disabled-notice-drift 10s ease-in-out infinite alternate;
+  animation: disabled-notice-drift 5s ease-in-out infinite alternate;
 }
 
 @keyframes disabled-notice-drift {
