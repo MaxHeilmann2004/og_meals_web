@@ -58,11 +58,27 @@ const parts = computed(() =>
   justify-content: center;
   padding: 24px;
   box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  background: var(--color-body);
+  color: var(--color-on-surface);
+}
+
+.disabled-notice::before {
+  content: '';
+  position: fixed;
+  inset: -25%;
+  pointer-events: none;
   background:
     radial-gradient(circle at 20% 15%, var(--color-primary-container) 0, transparent 45%),
-    radial-gradient(circle at 85% 90%, var(--color-primary-container) 0, transparent 40%),
-    var(--color-body);
-  color: var(--color-on-surface);
+    radial-gradient(circle at 85% 90%, var(--color-primary-container) 0, transparent 40%);
+  animation: disabled-notice-drift 24s ease-in-out infinite alternate;
+}
+
+@keyframes disabled-notice-drift {
+  from { transform: translate(-6%, -4%) scale(1); }
+  50% { transform: translate(5%, 6%) scale(1.15); }
+  to { transform: translate(6%, -5%) rotate(8deg) scale(1.05); }
 }
 
 .disabled-notice__rain {
@@ -86,6 +102,7 @@ const parts = computed(() =>
 
 @media (prefers-reduced-motion: reduce) {
   .disabled-notice__rain { display: none; }
+  .disabled-notice::before { animation: none; }
 }
 
 .disabled-notice__card {
