@@ -120,6 +120,9 @@ The following public environment variables are also supported:
 ```bash
 NUXT_PUBLIC_TURNSTILE_SITE_KEY=
 NUXT_PUBLIC_PLAUSIBLE_DOMAIN=
+# Set to true to replace the web UI with a notice showing the message below.
+NUXT_PUBLIC_WEB_UI_DISABLED=false
+NUXT_PUBLIC_WEB_UI_DISABLED_MESSAGE=
 ```
 
 Plausible events are sent to the self-hosted instance at `https://insights.matix-media.net`.
