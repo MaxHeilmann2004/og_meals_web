@@ -134,10 +134,10 @@ const parts = computed(() =>
   animation: disabled-notice-fall linear infinite;
 }
 
-/* Only the emojis are interactive; the rain layer itself stays click-through. */
+/* Only the emojis are interactive; the rain layer itself stays click-through. The default cursor keeps the bypass hidden. */
 .disabled-notice__drop--clickable {
   pointer-events: auto;
-  cursor: pointer;
+  cursor: default;
 }
 
 @keyframes disabled-notice-fall {
