@@ -12,6 +12,8 @@ export default defineNuxtConfig({
     public: {
       // Set NUXT_PUBLIC_WEB_UI_DISABLED=true to replace the UI with a notice (NUXT_PUBLIC_WEB_UI_DISABLED_MESSAGE).
       webUiDisabled: false,
+      // Set NUXT_PUBLIC_WEB_UI_DISABLED_BYPASS=true to let visitors click a falling emoji to open the site anyway.
+      webUiDisabledBypass: false,
       webUiDisabledMessage: 'Die Web-Oberfläche ist derzeit deaktiviert.',
       apiBaseUrl: 'https://3b-meals.mh-home.net',
       turnstileSiteKey: '0x4AAAAAADqKcwY5vdT51caz' // Default sitekey, overridden by NUXT_PUBLIC_TURNSTILE_SITE_KEY env variable at runtime

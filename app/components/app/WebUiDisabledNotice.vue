@@ -4,12 +4,15 @@
       <span v-for="blob in blobs" :key="blob.id" class="disabled-notice__blob" :style="blob.style" />
     </div>
     <div class="disabled-notice__rain" aria-hidden="true">
-      <span
+      <component
+        :is="allowBypass ? 'button' : 'span'"
         v-for="drop in drops"
         :key="drop.id"
         class="disabled-notice__drop"
+        :class="{ 'disabled-notice__drop--clickable': allowBypass }"
         :style="{ left: drop.left, fontSize: drop.size, animationDuration: drop.duration, animationDelay: drop.delay }"
-      >😭</span>
+        v-bind="allowBypass ? { type: 'button', 'aria-label': 'Seite trotzdem öffnen', onClick: () => emit('bypass') } : {}"
+      >😭</component>
     </div>
     <section class="disabled-notice__card">
       <div class="disabled-notice__icon-wrap">
@@ -32,7 +35,8 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ message: string }>()
+const props = defineProps<{ message: string, allowBypass?: boolean }>()
+const emit = defineEmits<{ bypass: [] }>()
 
 // Each blob is a soft circle orbiting its own anchor point; anchors are spread across the viewport.
 const anchors = [[10, 14], [90, 20], [50, 6], [12, 72], [88, 78], [50, 94]]
@@ -120,11 +124,20 @@ const parts = computed(() =>
 }
 
 .disabled-notice__drop {
+  border: 0;
+  padding: 0;
+  background: none;
   position: absolute;
   top: -48px;
   line-height: 1;
   opacity: 0.15;
   animation: disabled-notice-fall linear infinite;
+}
+
+/* Only the emojis are interactive; the rain layer itself stays click-through. */
+.disabled-notice__drop--clickable {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 @keyframes disabled-notice-fall {
