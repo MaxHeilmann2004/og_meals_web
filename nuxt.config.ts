@@ -21,6 +21,22 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { headers: { 'cache-control': 'private, no-store' } },
     '/__image/**': { headers: { 'cache-control': 'private, no-store' } },
+    '/api/meal-plan-image': {
+      cors: true,
+      headers: {
+        'access-control-allow-origin': '*',
+        'access-control-allow-methods': 'GET, HEAD, OPTIONS',
+        'access-control-allow-headers': 'x-verification-code, content-type',
+        'access-control-expose-headers': 'Content-Disposition, Server-Timing, X-Meal-Plan-Image-Request',
+        'cross-origin-resource-policy': 'cross-origin',
+      },
+    },
+    '/icons/**': { headers: { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' } },
+    '/meal_placeholder.webp': { headers: { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' } },
+    '/logo.svg': { headers: { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' } },
+    '/icon.svg': { headers: { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' } },
+    '/icon.png': { headers: { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' } },
+    '/ic_ai.svg': { headers: { 'access-control-allow-origin': '*', 'cross-origin-resource-policy': 'cross-origin' } },
   },
 
   nitro: {
