@@ -4,15 +4,14 @@
       <span v-for="blob in blobs" :key="blob.id" class="disabled-notice__blob" :style="blob.style" />
     </div>
     <div class="disabled-notice__rain" aria-hidden="true">
-      <component
-        :is="allowBypass ? 'button' : 'span'"
+      <span
         v-for="drop in drops"
         :key="drop.id"
         class="disabled-notice__drop"
         :class="{ 'disabled-notice__drop--clickable': allowBypass }"
         :style="{ left: drop.left, fontSize: drop.size, animationDuration: drop.duration, animationDelay: drop.delay }"
-        v-bind="allowBypass ? { type: 'button', 'aria-label': 'Seite trotzdem öffnen', onClick: () => emit('bypass') } : {}"
-      >😭</component>
+        @click="allowBypass && emit('bypass')"
+      >😭</span>
     </div>
     <section class="disabled-notice__card">
       <div class="disabled-notice__icon-wrap">
@@ -37,6 +36,17 @@
 <script setup lang="ts">
 const props = defineProps<{ message: string, allowBypass?: boolean }>()
 const emit = defineEmits<{ bypass: [] }>()
+
+// Typing the secret word anywhere on the page triggers the same bypass as clicking an emoji.
+const SECRET = 'kochwerk'
+let typed = ''
+function onKeydown(event: KeyboardEvent) {
+  if (!props.allowBypass || event.key.length !== 1) return
+  typed = (typed + event.key.toLowerCase()).slice(-SECRET.length)
+  if (typed === SECRET) emit('bypass')
+}
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 
 // Each blob is a soft circle orbiting its own anchor point; anchors are spread across the viewport.
 const anchors = [[10, 14], [90, 20], [50, 6], [12, 72], [88, 78], [50, 94]]
@@ -124,9 +134,6 @@ const parts = computed(() =>
 }
 
 .disabled-notice__drop {
-  border: 0;
-  padding: 0;
-  background: none;
   position: absolute;
   top: -48px;
   line-height: 1;
