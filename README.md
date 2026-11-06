@@ -123,6 +123,8 @@ NUXT_PUBLIC_PLAUSIBLE_DOMAIN=
 # Set to true to replace the web UI with a notice showing the message below.
 NUXT_PUBLIC_WEB_UI_DISABLED=false
 NUXT_PUBLIC_WEB_UI_DISABLED_MESSAGE=
+# Set to true to let visitors click a falling emoji on the notice (or type "kochwerk" on it) to open the site anyway.
+NUXT_PUBLIC_WEB_UI_DISABLED_BYPASS=false
 ```
 
 Plausible events are sent to the self-hosted instance at `https://insights.matix-media.net`.

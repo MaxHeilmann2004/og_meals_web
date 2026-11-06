@@ -8,7 +8,9 @@
         v-for="drop in drops"
         :key="drop.id"
         class="disabled-notice__drop"
+        :class="{ 'disabled-notice__drop--clickable': allowBypass }"
         :style="{ left: drop.left, fontSize: drop.size, animationDuration: drop.duration, animationDelay: drop.delay }"
+        @click="allowBypass && emit('bypass')"
       >😭</span>
     </div>
     <section class="disabled-notice__card">
@@ -32,7 +34,19 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ message: string }>()
+const props = defineProps<{ message: string, allowBypass?: boolean }>()
+const emit = defineEmits<{ bypass: [] }>()
+
+// Typing the secret word anywhere on the page triggers the same bypass as clicking an emoji.
+const SECRET = 'kochwerk'
+let typed = ''
+function onKeydown(event: KeyboardEvent) {
+  if (!props.allowBypass || event.key.length !== 1) return
+  typed = (typed + event.key.toLowerCase()).slice(-SECRET.length)
+  if (typed === SECRET) emit('bypass')
+}
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 
 // Each blob is a soft circle orbiting its own anchor point; anchors are spread across the viewport.
 const anchors = [[10, 14], [90, 20], [50, 6], [12, 72], [88, 78], [50, 94]]
@@ -125,6 +139,12 @@ const parts = computed(() =>
   line-height: 1;
   opacity: 0.15;
   animation: disabled-notice-fall linear infinite;
+}
+
+/* Only the emojis are interactive; the rain layer itself stays click-through. The default cursor keeps the bypass hidden. */
+.disabled-notice__drop--clickable {
+  pointer-events: auto;
+  cursor: default;
 }
 
 @keyframes disabled-notice-fall {
